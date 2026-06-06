@@ -43,7 +43,7 @@ class RateLimiter
         $this->configs = $configs;
 
         if (!is_dir($this->storagePath)) {
-            @mkdir($this->storagePath, 0755, true);
+            mkdir($this->storagePath, 0755, true);
         }
 
         // Limpeza probabilística para evitar acúmulo
@@ -295,7 +295,7 @@ class RateLimiter
             return null;
         }
 
-        $content = @file_get_contents($file);
+        $content = file_get_contents($file);
         if ($content === false) {
             return null;
         }
@@ -332,7 +332,7 @@ class RateLimiter
         $dir = $this->storagePath . '/' . $prefix;
 
         if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
+            mkdir($dir, 0755, true);
         }
 
         return $dir . '/' . $hash . '.json';
@@ -357,7 +357,7 @@ class RateLimiter
                     if (is_array($data)) {
                         $updatedAt = $data['updated_at'] ?? 0;
                         if ($updatedAt < $cutoff) {
-                            @unlink($file->getPathname());
+                            if (is_file($file->getPathname())) { unlink($file->getPathname()); }
                             $removed++;
                         }
                     }

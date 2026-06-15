@@ -1,14 +1,14 @@
 <?php
 
-function loadLocalEnvFile(string $envPath): void
+function loadEnvFile(string $envPath): bool
 {
     if (!is_file($envPath) || !is_readable($envPath)) {
-        return;
+        return false;
     }
 
     $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     if (!is_array($lines)) {
-        return;
+        return false;
     }
 
     foreach ($lines as $line) {
@@ -36,7 +36,6 @@ function loadLocalEnvFile(string $envPath): void
             continue;
         }
 
-        // Remove aspas como par (simples ou duplas)
         if ((str_starts_with($value, '"') && str_ends_with($value, '"')) ||
             (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
             $value = substr($value, 1, -1);
@@ -44,27 +43,48 @@ function loadLocalEnvFile(string $envPath): void
         putenv($key . '=' . $value);
         $_ENV[$key] = $value;
     }
+
+    return true;
 }
 
-// Tenta carregar .env de local seguro externo primeiro (produção),
-// depois fallback para o .env na raiz do projeto (desenvolvimento).
-$externalEnvPaths = [
-    '/etc/sistema-cameras/.env',
-    'C:\env\sistema-cameras\.env',
-];
-$envLoaded = false;
-foreach ($externalEnvPaths as $externalPath) {
-    if (is_file($externalPath) && is_readable($externalPath)) {
-        loadLocalEnvFile($externalPath);
-        $envLoaded = true;
-        break;
+function getEnvPath(): string
+{
+    $os = PHP_OS_FAMILY;
+    if ($os === 'Windows') {
+        return 'C:\env\sistema-cameras\.env';
+    }
+    return '/etc/sistema-cameras/.env';
+}
+
+function getCameraEnv(): string
+{
+    return getenv('CAMERAS_ENV') ?: 'development';
+}
+
+function isProduction(): bool
+{
+    return getCameraEnv() === 'production';
+}
+
+function loadConfiguration(): void
+{
+    $envPath = getEnvPath();
+    if (!loadEnvFile($envPath)) {
+        $samplePath = dirname(__DIR__) . '/.env.example';
+        $msg = sprintf(
+            "Arquivo de configuração não encontrado.\n\n" .
+            "Crie o arquivo de configuração em:\n  %s\n\n" .
+            "Copie o conteúdo de .env.example para começar.\n\n" .
+            "Documentação: https://github.com/seu-projeto/docs/SETUP.md",
+            $envPath
+        );
+        error_log('[CONFIG] Arquivo de configuração não encontrado: ' . $envPath);
+        throw new RuntimeException($msg);
     }
 }
-if (!$envLoaded) {
-    loadLocalEnvFile(__DIR__ . '/../.env');
-}
 
-// Padrao global de codificacao/locale para ambiente Linux e Windows.
+loadConfiguration();
+
 ini_set('default_charset', 'UTF-8');
 if (function_exists('mb_internal_encoding')) {
     mb_internal_encoding('UTF-8');
@@ -75,34 +95,35 @@ if (function_exists('mb_http_output')) {
 setlocale(LC_ALL, 'pt_BR.UTF-8', 'pt_BR.utf8', 'pt_BR', 'Portuguese_Brazil.1252');
 date_default_timezone_set(getenv('APP_TIMEZONE') ?: 'America/Sao_Paulo');
 
-
 if (!defined('ENVIRONMENT')) {
-    define('ENVIRONMENT', getenv('CAMERAS_ENV') ?: 'development');
+    define('ENVIRONMENT', getCameraEnv());
 }
 
-// Configuracao do banco via variaveis de ambiente.
 $envDbHost = getenv('DB_HOST');
 $envDbName = getenv('DB_NAME');
 $envDbUser = getenv('DB_USER');
 $envDbPass = getenv('DB_PASS');
 
-$isProduction = defined('ENVIRONMENT') && ENVIRONMENT === 'production';
-
+$missingVars = [];
+if ($envDbHost === false || $envDbHost === '') {
+    $missingVars[] = 'DB_HOST';
+}
+if ($envDbName === false || $envDbName === '') {
+    $missingVars[] = 'DB_NAME';
+}
+if ($envDbUser === false || $envDbUser === '') {
+    $missingVars[] = 'DB_USER';
+}
 if ($envDbPass === false || $envDbPass === '') {
-    $msg = 'Configuracao do banco ausente: DB_PASS';
-    error_log($msg);
+    $missingVars[] = 'DB_PASS';
+}
+
+if (!empty($missingVars)) {
+    $msg = 'Configurações ausentes: ' . implode(', ', $missingVars);
+    error_log('[CONFIG] ' . $msg);
     throw new RuntimeException($msg);
 }
 
-if ($envDbHost === false || $envDbHost === '') {
-    throw new RuntimeException('DB_HOST não configurado. Verifique .env ou variáveis de ambiente.');
-}
-if ($envDbName === false || $envDbName === '') {
-    throw new RuntimeException('DB_NAME não configurado. Verifique .env ou variáveis de ambiente.');
-}
-if ($envDbUser === false || $envDbUser === '') {
-    throw new RuntimeException('DB_USER não configurado. Verifique .env ou variáveis de ambiente.');
-}
 define('DB_HOST', $envDbHost);
 define('DB_NAME', $envDbName);
 define('DB_USER', $envDbUser);

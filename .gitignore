@@ -1,8 +1,8 @@
-# Environment
+# Environment - BLOQUEADO (usar .env.example como template)
+# Configurar em: C:\env\sistema-cameras\.env (Windows) ou /etc/sistema-cameras/.env (Linux)
 .env
 .env.*
 !.env.example
-!.env.template
 
 # OS
 .DS_Store
@@ -26,7 +26,7 @@ node_modules/
 logs/
 .tmp/
 
-# Uploads (conteudo gerado pelo usuario)
+# Uploads
 public/uploads/**
 !public/uploads/
 !public/uploads/**/
@@ -35,23 +35,20 @@ public/uploads/**
 public/uploads/*.tmp
 public/uploads/temp/
 
-# Database dumps
+# Database
 *.sql
 !config/DB/cftv_gml.sql
 !config/DB/private/seed_dev.sql
 !config/DB/migrations/*.sql
 
-# Nginx certificates (auto-assinados, gerados localmente)
-nginx/certs/
-
-# SSL / TLS
+# SSL/TLS
 *.pem
 *.key
 *.crt
 *.p12
 *.pfx
 
-# Backups & temp
+# Backups
 *.bak
 *.swp
 *.tmp
@@ -61,3 +58,6 @@ nginx/certs/
 
 # Docker
 docker-compose.override.yml
+
+# Configuração local (não versionar)
+config/local.php

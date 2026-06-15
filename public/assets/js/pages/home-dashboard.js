@@ -1,25 +1,16 @@
 class HomeDashboard extends window.DashboardCore {
     constructor() {
         super();
-        this.themeManager = new window.ThemeManager();
         this.chartManager = new window.ChartManager();
         this.init();
     }
 
     getApiBase() {
-        if (window.APP_API_BASE) {
-            return window.APP_API_BASE;
-        }
-        if (typeof APP_API_BASE !== 'undefined' && APP_API_BASE) {
-            return APP_API_BASE;
-        }
-        const base = window.BASE_URL || (typeof BASE_URL !== 'undefined' ? BASE_URL : '/');
-        return `${base}index.php?page=api/`;
+        return window.APP_API_BASE;
     }
 
     async init() {
         try {
-            this.themeManager.init();
             await this.loadData();
             this.setupAutoRefresh();
             this.setupEventListeners();
@@ -48,6 +39,9 @@ class HomeDashboard extends window.DashboardCore {
             this.updateUI();
         } catch (error) {
             console.error('Falha ao carregar dados:', error);
+            if (typeof window.showToast === 'function') {
+                window.showToast('Falha ao carregar dados do dashboard. Tentando novamente...', 'warning');
+            }
         } finally {
             this._loading = false;
             this.setLoading(false);
@@ -259,17 +253,20 @@ class HomeDashboard extends window.DashboardCore {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
     document.body.classList.add('page-home');
-
-    if (!document.body.classList.contains('page-home')) return;
-
     try {
         window.homeDashboard = new HomeDashboard();
     } catch (e) {
         console.error('Falha ao instanciar HomeDashboard', e);
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    initDashboard();
+}
 
 window.addEventListener('beforeunload', () => {
     if (window.homeDashboard && typeof window.homeDashboard.destroy === 'function') {

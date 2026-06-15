@@ -242,17 +242,17 @@ class AccessibilityHelper {
   }
 }
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-  // Theme Manager
+function initThemeFeatures() {
   new ThemeManager();
-
-  // Skeleton Loader (instância mantida para side effects, se necessário)
   new SkeletonLoader();
-
-  // Accessibility
   AccessibilityHelper.init();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initThemeFeatures);
+} else {
+  initThemeFeatures();
+}
 
 // Exportar para uso em outros módulos (se usando módulos ES6)
 if (typeof module !== 'undefined' && module.exports) {

@@ -47,6 +47,7 @@ try {
     $auditAfter = $svc->buildAuditData($equipId, $fields);
     auditEvent(db(), 'equipamentos', $equipId, 'INSERT', null, $auditAfter, 'api');
     $svc->commit();
+    $svc->resetAppUserContext();
 
     ApiResponse::created([
         'message' => "Equipamento cadastrado com sucesso! ID: $equipId",

@@ -8,6 +8,7 @@ class RateLimiter
     private string $strategy;
     private array $configs;
     private ?bool $useDb = null;
+    private bool $storageFailed = false;
 
     public function __construct(
         ?string $storagePath = null,
@@ -34,6 +35,10 @@ class RateLimiter
         $config = $this->resolveConfig($key, $limit, $window);
         $limit = $config[0];
         $window = $config[1];
+
+        if ($this->storageFailed) {
+            return false;
+        }
 
         if ($this->strategy === 'token_bucket') {
             return $this->consumeTokenBucket($key, $limit, $window);
@@ -287,9 +292,13 @@ class RateLimiter
         if (!file_exists($file)) return null;
 
         $fp = @fopen($file, 'r');
-        if (!$fp) return null;
+        if (!$fp) {
+            $this->storageFailed = true;
+            return null;
+        }
 
         if (!flock($fp, LOCK_SH)) {
+            $this->storageFailed = true;
             fclose($fp);
             return null;
         }
@@ -298,7 +307,10 @@ class RateLimiter
         flock($fp, LOCK_UN);
         fclose($fp);
 
-        if ($content === false) return null;
+        if ($content === false) {
+            $this->storageFailed = true;
+            return null;
+        }
 
         $data = json_decode($content, true);
         return is_array($data) ? $data : null;
@@ -308,12 +320,19 @@ class RateLimiter
     {
         $file = $this->getFilePath($key);
         $content = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($content === false) return;
+        if ($content === false) {
+            $this->storageFailed = true;
+            return;
+        }
 
         $fp = @fopen($file, 'c+');
-        if (!$fp) return;
+        if (!$fp) {
+            $this->storageFailed = true;
+            return;
+        }
 
         if (!flock($fp, LOCK_EX)) {
+            $this->storageFailed = true;
             fclose($fp);
             return;
         }

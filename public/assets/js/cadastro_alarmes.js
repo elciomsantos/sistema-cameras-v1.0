@@ -3,7 +3,7 @@
   let savedAlarmeId = null;
 
   function getApiBase() {
-    return window.APP_API_BASE || `${window.BASE_URL || '/'}index.php?page=api/`;
+    return window.APP_API_BASE;
   }
 
   function formToPayload(form) {
@@ -150,5 +150,9 @@
     document.getElementById('btnFinalizar')?.addEventListener('click', resetForm);
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

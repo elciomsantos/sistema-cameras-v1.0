@@ -26,8 +26,34 @@ try {
     $tipo = trim($_POST['tipo'] ?? 'foto');
     $descricao = trim($_POST['descricao'] ?? '');
 
-    if (!$equipamentoId && !$alarmeId && !$manutencaoCameraId && !$manutencaoAlarmeId) {
+    $fkCount = (int)(bool)$equipamentoId + (int)(bool)$alarmeId + (int)(bool)$manutencaoCameraId + (int)(bool)$manutencaoAlarmeId;
+    if ($fkCount === 0) {
         ApiResponse::error('VALIDATION_ERROR', 'Informe equipamento_id, alarme_id, manutencao_camera_id ou manutencao_alarme_id.');
+    }
+    if ($fkCount > 1) {
+        ApiResponse::error('VALIDATION_ERROR', 'Informe apenas um ID por vez (equipamento, alarme, manutenção câmera ou manutenção alarme).');
+    }
+
+    if ($equipamentoId) {
+        $check = $db->query("SELECT id FROM equipamentos WHERE id = ? AND deleted_at IS NULL LIMIT 1", [$equipamentoId]);
+        if ($check['status'] !== 'success' || empty($check['data'])) {
+            ApiResponse::error('VALIDATION_ERROR', 'Equipamento não encontrado.');
+        }
+    } elseif ($alarmeId) {
+        $check = $db->query("SELECT id FROM central_alarmes WHERE id = ? LIMIT 1", [$alarmeId]);
+        if ($check['status'] !== 'success' || empty($check['data'])) {
+            ApiResponse::error('VALIDATION_ERROR', 'Alarme não encontrado.');
+        }
+    } elseif ($manutencaoCameraId) {
+        $check = $db->query("SELECT id FROM equipamentos_manutencoes WHERE id = ? LIMIT 1", [$manutencaoCameraId]);
+        if ($check['status'] !== 'success' || empty($check['data'])) {
+            ApiResponse::error('VALIDATION_ERROR', 'Manutenção de câmera não encontrada.');
+        }
+    } elseif ($manutencaoAlarmeId) {
+        $check = $db->query("SELECT id FROM alarmes_manutencoes WHERE id = ? LIMIT 1", [$manutencaoAlarmeId]);
+        if ($check['status'] !== 'success' || empty($check['data'])) {
+            ApiResponse::error('VALIDATION_ERROR', 'Manutenção de alarme não encontrada.');
+        }
     }
 
     $tipoPermitido = ['foto', 'documento', 'anexo'];
@@ -108,6 +134,7 @@ try {
 
     $caminhoRelativo = 'uploads/' . $subdir . '/' . $nomeArquivo;
 
+    $db->beginTransaction();
     try {
         $result = $db->insert('equipamentos_anexos', [
             'equipamento_id' => $equipamentoId,
@@ -130,7 +157,9 @@ try {
         }
 
         $anexoId = (int)$db->lastInsertId();
+        $db->commit();
     } catch (Throwable $e) {
+        if ($db->inTransaction()) { $db->rollback(); }
         if (is_file($caminhoAbsoluto)) { unlink($caminhoAbsoluto); }
         error_log('Erro ao inserir anexo: ' . $e->getMessage());
         ApiResponse::internalError('Erro ao registrar anexo no banco de dados.');

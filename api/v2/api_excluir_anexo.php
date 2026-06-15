@@ -56,16 +56,19 @@ try {
             error_log('[api_excluir_anexo] Tentativa de exclusao fora de uploads: ' . $resolvedPath);
             ApiResponse::error('VALIDATION_ERROR', 'Caminho do anexo invalido.');
         }
-
-        if (is_file($caminhoAbsoluto) && !unlink($caminhoAbsoluto)) {
-            ApiResponse::error('OPERATION_FAILED', 'Nao foi possivel excluir o arquivo do anexo.');
-        }
     }
 
-    $db->query(
+    $db->beginTransaction();
+
+    $deleteResult = $db->query(
         "DELETE FROM equipamentos_anexos WHERE id = :id",
         [':id' => $anexoId]
     );
+
+    if ($deleteResult['status'] !== 'success' || ($deleteResult['affected_rows'] ?? 0) === 0) {
+        error_log('[api_excluir_anexo] DELETE falhou ou nenhuma linha afetada para anexo_id=' . $anexoId);
+        ApiResponse::error('OPERATION_FAILED', 'Erro ao excluir registro do anexo.');
+    }
 
     if ($anexo->manutencao_camera_id) {
         $entityType = 'manutencao_camera';
@@ -88,9 +91,19 @@ try {
         error_log('Erro ao registrar auditoria: ' . $e->getMessage());
     }
 
+    $db->commit();
+
+    // Excluir arquivo fisico apos commit do DB
+    if ($caminhoAbsoluto !== false && is_file($caminhoAbsoluto) && !unlink($caminhoAbsoluto)) {
+        error_log('[api_excluir_anexo] Nao foi possivel excluir o arquivo: ' . $caminhoAbsoluto);
+    }
+
     ApiResponse::success(['message' => 'Anexo excluído com sucesso.']);
 
 } catch (Throwable $e) {
+    if (isset($db) && $db instanceof database && $db->inTransaction()) {
+        $db->rollback();
+    }
     error_log('[api_excluir_anexo] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao excluir anexo.');
 }

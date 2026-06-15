@@ -48,8 +48,14 @@
   // Registrar Service Worker para PWA support
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/sw.js')
-      .then(registration => console.log('✅ Service Worker registered'))
-      .catch(error => console.warn('⚠️ Service Worker registration failed:', error));
+      .then(registration => {
+        console.log('Service Worker registered');
+        registration.active?.postMessage({ type: 'INIT_BASE_URL', baseUrl: '<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>' });
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          navigator.serviceWorker.controller?.postMessage({ type: 'INIT_BASE_URL', baseUrl: '<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>' });
+        });
+      })
+      .catch(error => console.warn('Service Worker registration failed:', error));
   }
 </script>
 

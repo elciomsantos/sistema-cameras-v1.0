@@ -375,13 +375,12 @@ class EditarCamera {
     }
 }
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener("DOMContentLoaded", () => {
-
+function onReady() {
     new EditarCamera();
-});
+    initCameraEditor();
+}
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initCameraEditor() {
     const form = document.getElementById('formEditarCamera');
     const idInput = document.getElementById('camera_id');
     const cameraSelector = document.getElementById('cameraSelector');
@@ -663,5 +662,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Erro ao carregar camera para edicao:', e);
         cameraSelector.innerHTML = '<option value="">Erro ao carregar cameras</option>';
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady);
+} else {
+    onReady();
+}
 

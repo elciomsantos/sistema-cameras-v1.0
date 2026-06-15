@@ -11,10 +11,30 @@ $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $isSwaggerSpec = strpos($requestUri, '/swagger-spec') !== false;
 $isSwaggerJson = strpos($requestUri, '/swagger.json') !== false;
 
+// Requer autenticação admin para acessar Swagger
+configureSessionSecurity();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!isset($_SESSION['usuario'])) {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Autenticação necessária.']);
+    exit;
+}
+
+$userLevel = resolveUserAccessLevel($_SESSION['usuario']);
+if ($userLevel !== 'admin') {
+    http_response_code(403);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['success' => false, 'error' => 'Apenas administradores podem acessar a documentação da API.']);
+    exit;
+}
+
 // Servir especificação OpenAPI em JSON
 if ($isSwaggerSpec || $isSwaggerJson) {
     header('Content-Type: application/json');
-    header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, OPTIONS');
     
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

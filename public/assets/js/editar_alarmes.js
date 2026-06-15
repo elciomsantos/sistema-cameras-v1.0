@@ -3,7 +3,7 @@
   let formDirty = false;
 
   function getApiBase() {
-    return window.APP_API_BASE || `${window.BASE_URL || '/'}index.php?page=api/`;
+    return window.APP_API_BASE;
   }
 
   function escapeHtml(value) {
@@ -217,5 +217,9 @@
     form?.addEventListener('submit', handleSave);
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

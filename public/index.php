@@ -35,7 +35,7 @@ if (!defined('BASE_URL')) {
 }
 
 $isProduction = defined('ENVIRONMENT') && ENVIRONMENT === 'production';
-$scriptEvalPolicy = $isProduction ? "" : " 'unsafe-eval'";
+$scriptEvalPolicy = "";
 $cspNonce = rtrim(strtr(base64_encode(random_bytes(16)), '+/', '-_'), '=');
 $CSP_NONCE = $cspNonce;
 

@@ -664,7 +664,7 @@ class CadastroCamera {
             const csrfToken = metaTag ? metaTag.getAttribute("content") : "";
             if (!csrfToken) {
                 this.showLoading(false);
-                showToast('Erro: token CSRF ausente. Recarregue a página.', 'error');
+                showToast('Erro: token CSRF ausente. Recarregue a página.', 'danger');
                 return;
             }
             const response = await fetchWithTimeout(`${window.APP_API_BASE}api_cadastrar_cameras`, {
@@ -831,13 +831,9 @@ class CadastroCamera {
     }
 }
 
-// Inicializar quando DOM estiver pronto
-document.addEventListener("DOMContentLoaded", () => {
-
+function onReady() {
     new CadastroCamera();
-});
 
-document.addEventListener('DOMContentLoaded', function () {
     const chk = document.getElementById('temAlarme');
     const container = document.getElementById('containerAlarmeConta');
     const input = document.getElementById('alarmeConta');
@@ -863,7 +859,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chk.addEventListener('change', toggleAlarmeSection);
     toggleAlarmeSection();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady);
+} else {
+    onReady();
+}
 
 
 

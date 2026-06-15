@@ -19,6 +19,7 @@
 class ApiResponse
 {
     private static string $requestId = '';
+    private static bool $shouldExit = true;
     private static array $errorCodes = [
         // 2xx Success
         'SUCCESS' => 200,
@@ -284,6 +285,14 @@ class ApiResponse
     }
 
     /**
+     * Ativa/desativa modo de teste (suprime exit e headers)
+     */
+    public static function setTestMode(bool $testMode): void
+    {
+        self::$shouldExit = !$testMode;
+    }
+
+    /**
      * Obtém metadados da resposta
      */
     private static function getMeta(): array
@@ -299,16 +308,24 @@ class ApiResponse
     /**
      * Envia resposta como JSON
      */
-    private static function send(array $response, int $httpCode): void
+    public static function send(array $response, int $httpCode): string
     {
-        http_response_code($httpCode);
-        header('Content-Type: application/json; charset=utf-8');
-        header('X-Content-Type-Options: nosniff');
-        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-        header('Pragma: no-cache');
-        header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+        if (self::$shouldExit) {
+            http_response_code($httpCode);
+            header('Content-Type: application/json; charset=utf-8');
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+            header('Pragma: no-cache');
+            header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+        }
 
-        echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        exit;
+        $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo $json;
+
+        if (self::$shouldExit) {
+            exit;
+        }
+
+        return $json;
     }
 }

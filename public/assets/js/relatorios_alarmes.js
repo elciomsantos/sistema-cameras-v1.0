@@ -63,7 +63,10 @@ $(document).ready(function () {
     return params.toString();
   }
 
+  let _buscando = false;
   async function buscarDados(pagina = 1) {
+    if (_buscando) return;
+    _buscando = true;
     try {
       paginaAtual = pagina;
       mostrarLoading(true);
@@ -120,6 +123,7 @@ $(document).ready(function () {
       mostrarErro('Erro ao carregar dados: ' + error.message);
     } finally {
       mostrarLoading(false);
+      _buscando = false;
     }
   }
 
@@ -320,7 +324,6 @@ $(document).ready(function () {
   // Função vazia intencional (placeholder)
   function carregarFiltrosSalvos() {
     }
-  }
 
   // ---- Seletor de colunas ----
   function setupColumnSelector() {

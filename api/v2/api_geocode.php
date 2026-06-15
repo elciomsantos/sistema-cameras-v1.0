@@ -101,6 +101,21 @@ try {
         ];
     }
 
+    $db = db();
+
+    // Verificar cache (TTL 30 dias)
+    $cacheHash = md5(strtolower(trim($query)));
+    $cacheResult = $db->query(
+        "SELECT response, created_at FROM geocode_cache WHERE query_hash = ? AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY) LIMIT 1",
+        [$cacheHash]
+    );
+    if ($cacheResult['status'] === 'success' && !empty($cacheResult['data'])) {
+        $cached = json_decode($cacheResult['data'][0]->response, true);
+        if (is_array($cached) && !empty($cached['lat'])) {
+            ApiResponse::success($cached);
+        }
+    }
+
     $params = [
         'q' => $query,
         'format' => 'jsonv2',
@@ -135,6 +150,16 @@ try {
         }
 
         if ($parsed !== null) {
+            // Salvar no cache
+            try {
+                $db->query(
+                    "INSERT INTO geocode_cache (query_hash, query, response, created_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE response = VALUES(response), created_at = NOW()",
+                    [$cacheHash, $query, json_encode($parsed)]
+                );
+            } catch (Throwable $cacheErr) {
+                error_log('[api_geocode] Cache write failed: ' . $cacheErr->getMessage());
+            }
+
             ApiResponse::success($parsed);
         }
 

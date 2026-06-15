@@ -11,10 +11,11 @@ function getSessionClientIp(): string
         if (in_array($remoteAddr, $trustedProxies, true)) {
             $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
             if ($forwarded !== '') {
-                $ips = explode(',', $forwarded);
-                $last = trim(end($ips));
-                if (filter_var($last, FILTER_VALIDATE_IP)) {
-                    return $last;
+                $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
+                foreach ($ips as $ip) {
+                    if (!in_array($ip, $trustedProxies, true) && filter_var($ip, FILTER_VALIDATE_IP)) {
+                        return $ip;
+                    }
                 }
             }
             $realIp = $_SERVER['HTTP_X_REAL_IP'] ?? '';

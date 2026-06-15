@@ -9,8 +9,15 @@ class database
     private static ?self $instance = null;
     private \PDO $pdo;
     private bool $inTransaction = false;
+    private int $reconnectAttempts = 0;
+    private const MAX_RECONNECT_ATTEMPTS = 1;
 
     final public function __construct()
+    {
+        $this->connect();
+    }
+
+    private function connect(): void
     {
         try {
             $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
@@ -26,14 +33,28 @@ class database
                 $sslCa = getenv('DB_SSL_CA');
                 if ($sslCa !== false && $sslCa !== '') {
                     $options[\PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+                    $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
                 }
-                $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
             }
 
             $this->pdo = new \PDO($dsn, DB_USER, DB_PASS, $options);
+            $this->reconnectAttempts = 0;
         } catch (\PDOException $err) {
             error_log('Erro de conexao: ' . $err->getMessage());
             throw new \RuntimeException('Erro de conexao com o banco de dados.');
+        }
+    }
+
+    private function ensureConnection(): void
+    {
+        try {
+            $this->pdo->query("SELECT 1")->fetch();
+        } catch (\PDOException $e) {
+            if ($this->reconnectAttempts < self::MAX_RECONNECT_ATTEMPTS && !$this->inTransaction) {
+                $this->reconnectAttempts++;
+                error_log('[database] Connection lost, attempting reconnect (' . $this->reconnectAttempts . ')');
+                $this->connect();
+            }
         }
     }
 
@@ -52,6 +73,8 @@ class database
 
     public function query($sql, $params = [])
     {
+        $this->ensureConnection();
+
         try {
             $stmt = $this->pdo->prepare($sql);
 
@@ -61,18 +84,13 @@ class database
                     
                     if (is_int($value)) {
                         $paramType = PDO::PARAM_INT;
-                    } elseif (is_bool($value)) {
-                        $paramType = PDO::PARAM_BOOL;
                     } elseif (is_null($value)) {
                         $paramType = PDO::PARAM_NULL;
                     }
                     
-                    // Corrigir bind para parametros nomeados e posicionais
                     if (is_int($key)) {
-                        // Parametro posicional (comeca em 1, nao 0)
                         $stmt->bindValue($key + 1, $value, $paramType);
                     } else {
-                        // Parametro nomeado
                         $stmt->bindValue($key, $value, $paramType);
                     }
                 }
@@ -80,8 +98,11 @@ class database
             
             $stmt->execute();
             
-            // Verificar se e SELECT
-            if (stripos(trim($sql), 'SELECT') === 0) {
+            $trimmedSql = ltrim($sql);
+            $isSelect = (stripos($trimmedSql, 'SELECT') === 0)
+                || (stripos($trimmedSql, 'WITH') === 0);
+
+            if ($isSelect) {
                 $results = $stmt->fetchAll();
                 return [
                     'status' => 'success',
@@ -95,14 +116,33 @@ class database
                 ];
             }
 
+        } catch (\PDOException $err) {
+            if ($this->isConnectionLostError($err) && !$this->inTransaction) {
+                try {
+                    $this->connect();
+                    return $this->query($sql, $params);
+                } catch (\Throwable $retryErr) {
+                    error_log('Database error (after reconnect): ' . $retryErr->getMessage());
+                    throw new \RuntimeException('Erro interno no banco de dados.', 0, $retryErr);
+                }
+            }
+            error_log('Database error: ' . $err->getMessage() . ' | SQL: ' . $sql);
+            throw new \RuntimeException('Erro interno no banco de dados.', 0, $err);
         } catch (\Throwable $err) {
             error_log('Database error: ' . $err->getMessage());
-            return [
-                'status' => 'error',
-                'error' => 'Erro interno no banco de dados.',
-                'error_code' => $err->getCode()
-            ];
+            throw new \RuntimeException('Erro interno no banco de dados.', 0, $err);
         }
+    }
+
+    private function isConnectionLostError(\Throwable $e): bool
+    {
+        $msg = $e->getMessage();
+        return stripos($msg, 'server has gone away') !== false
+            || stripos($msg, 'no connection to the server') !== false
+            || stripos($msg, 'Lost connection') !== false
+            || stripos($msg, 'is not connected') !== false
+            || $e->getCode() === 'HY000'
+            || $e->getCode() === '08S01';
     }
     
     public function lastInsertId()
@@ -110,10 +150,21 @@ class database
         return $this->pdo->lastInsertId();
     }
     
+    public function inTransaction(): bool
+    {
+        return $this->pdo->inTransaction();
+    }
+
     public function beginTransaction()
     {
-        $this->inTransaction = true;
-        return $this->pdo->beginTransaction();
+        try {
+            $result = $this->pdo->beginTransaction();
+            $this->inTransaction = true;
+            return $result;
+        } catch (\Throwable $e) {
+            $this->inTransaction = $this->pdo->inTransaction();
+            throw $e;
+        }
     }
     
     public function commit()

@@ -71,7 +71,10 @@ $(document).ready(function () {
   }
 
   // Função para buscar dados
+  let _buscando = false;
   async function buscarDados(pagina = 1) {
+    if (_buscando) return;
+    _buscando = true;
     try {
       paginaAtual = pagina;
       mostrarLoading(true);
@@ -130,6 +133,7 @@ $(document).ready(function () {
       mostrarErro('Erro ao carregar dados: ' + error.message);
     } finally {
       mostrarLoading(false);
+      _buscando = false;
     }
   }
 

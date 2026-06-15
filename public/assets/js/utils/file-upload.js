@@ -32,9 +32,22 @@
         var icon = getFileIcon(anexo.mime_type)
 
         if (isImage) {
-            return '<img src="' + anexo.url + '" alt="' + escapeHtml(anexo.nome_original) + '" class="anexo-preview-img" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML=\'<i class=\\\'fas ' + icon + ' fa-3x\\\'></i>\'">'
+            var img = document.createElement('img')
+            img.src = anexo.url
+            img.alt = anexo.nome_original || ''
+            img.className = 'anexo-preview-img'
+            img.loading = 'lazy'
+            img.onerror = function () {
+                this.onerror = null
+                var fallback = document.createElement('i')
+                fallback.className = 'fas ' + icon + ' fa-3x'
+                this.parentElement.replaceChild(fallback, this)
+            }
+            return img
         }
-        return '<i class="fas ' + icon + ' fa-3x"></i>'
+        var wrapper = document.createElement('i')
+        wrapper.className = 'fas ' + icon + ' fa-3x'
+        return wrapper
     }
 
     function loadAnexos(container) {
@@ -75,18 +88,26 @@
                 anexos.forEach(function (a) {
                     html += '<div class="col-6 col-md-4 col-lg-3">'
                     html += '<div class="anexo-item card card-body p-2 text-center" data-id="' + a.id + '">'
-                    html += '<a href="' + a.url + '" target="_blank" class="anexo-link d-block mb-1" title="' + escapeHtml(a.nome_original) + '">'
-                    html += getPreviewHtml(a)
+                    html += '<a href="' + escapeHtml(a.url) + '" target="_blank" class="anexo-link d-block mb-1" title="' + escapeHtml(a.nome_original) + '">'
+                    html += '<span class="anexo-preview-placeholder"></span>'
                     html += '</a>'
                     html += '<small class="anexo-nome text-truncate d-block" title="' + escapeHtml(a.nome_original) + '">' + escapeHtml(a.nome_original) + '</small>'
                     html += '<small class="text-muted">' + (a.tamanho_formatado || formatSize(a.tamanho)) + '</small>'
                     if (container.classList.contains('anexos-editable')) {
-                        html += '<button type="button" class="btn btn-sm btn-outline-danger mt-1 anexo-btn-excluir" data-id="' + a.id + '" data-nome="' + escapeHtml(a.nome_original) + '" data-url="' + a.url + '" data-tipo="' + (a.mime_type || '') + '"><i class="fas fa-trash-alt"></i></button>'
+                        html += '<button type="button" class="btn btn-sm btn-outline-danger mt-1 anexo-btn-excluir" data-id="' + a.id + '" data-nome="' + escapeHtml(a.nome_original) + '" data-url="' + escapeHtml(a.url) + '" data-tipo="' + escapeHtml(a.mime_type || '') + '"><i class="fas fa-trash-alt"></i></button>'
                     }
                     html += '</div></div>'
                 })
                 html += '</div>'
                 listEl.innerHTML = html
+
+                var placeholders = listEl.querySelectorAll('.anexo-preview-placeholder')
+                anexos.forEach(function (a, index) {
+                    if (placeholders[index]) {
+                        var preview = getPreviewHtml(a)
+                        placeholders[index].replaceWith(preview)
+                    }
+                })
             })
             .catch(function () {
                 listEl.innerHTML = '<p class="text-danger text-center mb-0">Erro ao carregar anexos.</p>'
@@ -216,7 +237,7 @@
             var htmlContent = '<p class="mb-2">Deseja realmente excluir este anexo?</p>'
             htmlContent += '<p class="fw-bold mb-2 text-break">' + escapeHtml(nome) + '</p>'
             if (isImage && url) {
-                htmlContent += '<img src="' + url + '" alt="' + escapeHtml(nome) + '" class="img-thumbnail mb-2" style="max-height:120px;object-fit:cover" onerror="this.style.display=\'none\'">'
+                htmlContent += '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(nome) + '" class="img-thumbnail mb-2" style="max-height:120px;object-fit:cover" onerror="this.style.display=\'none\'">'
             }
 
             if (typeof showConfirm === 'function') {

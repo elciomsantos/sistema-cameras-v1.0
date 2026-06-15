@@ -327,7 +327,7 @@ function initListarAlarmes() {
         return;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function onReady() {
         carregarListaAlarmes(1);
         document.getElementById('btnAtualizarListaAlarmes').addEventListener('click', () => carregarListaAlarmes(currentPage));
         document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
@@ -395,7 +395,13 @@ function initListarAlarmes() {
         window._listarAlarmesTooltips = tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+        onReady();
+    }
 }
 
 initListarAlarmes();

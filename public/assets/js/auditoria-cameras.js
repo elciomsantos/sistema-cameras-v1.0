@@ -5,10 +5,7 @@
   };
 
   function getApiBase() {
-    if (window.APP_API_BASE) return window.APP_API_BASE;
-    if (typeof APP_API_BASE !== 'undefined' && APP_API_BASE) return APP_API_BASE;
-    const base = window.BASE_URL || '/';
-    return `${base}index.php?page=api/`;
+    return window.APP_API_BASE;
   }
 
   function getBadgeClass(operacao) {
@@ -59,13 +56,12 @@
 
     tbody.innerHTML = rows.map((item) => {
       const usuario = item.usuario_nome || item.usuario_login || 'Sistema';
-      const cameraInfo = `${item.codigo_publico || '-'}<br><small class="text-muted">ID ${item.equipamento_id || '-'} | ${item.numero_serie || '-'} | ${item.ip || '-'}</small>`;
       return `
         <tr>
           <td>${escapeHtml(toBrDate(item.created_at))}</td>
           <td>${escapeHtml(usuario)}</td>
           <td><span class="badge badge-op ${getBadgeClass(item.operacao)}">${escapeHtml(item.operacao || '-')}</span></td>
-          <td>${cameraInfo}</td>
+          <td>${escapeHtml(item.codigo_publico || '-')}<br><small class="text-muted">ID ${escapeHtml(String(item.equipamento_id || '-'))} | ${escapeHtml(item.numero_serie || '-')} | ${escapeHtml(item.ip || '-')}</small></td>
           <td>${escapeHtml(item.origem || '-')}</td>
           <td>${escapeHtml(item.resumo || '-')}</td>
         </tr>
@@ -150,9 +146,14 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  function onReady() {
     if (!document.body.classList.contains('page-auditoria_cameras')) return;
     bindEvents();
     fetchAuditoria();
-  });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onReady);
+  } else {
+    onReady();
+  }
 })();

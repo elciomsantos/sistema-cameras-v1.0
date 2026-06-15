@@ -357,7 +357,6 @@ class EquipamentoService
     public function saveTipoSpecificInsert(int $equipId, int $tipoId, array $data): void
     {
         $fields = $this->extractCommonData($data);
-        $tipoCameraId = (int)($data['tipo_camera'] ?? 0);
 
         $insertCamera = $this->db->query(
             "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas) VALUES (?, ?, ?, ?)",
@@ -367,15 +366,7 @@ class EquipamentoService
             throw new Exception('Erro ao salvar detalhes da câmera.');
         }
 
-        if ($tipoId === 2 || $tipoCameraId === 3) {
-            $result = $this->db->query(
-                    "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna) VALUES (?, ?, ?, ?, ?)",
-                    [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
-            );
-            if ($result['status'] !== 'success') {
-                throw new Exception('Erro ao salvar dados LPR.');
-            }
-        } elseif ($tipoId === 3) {
+        if ($tipoId === 3) {
             $result = $this->db->query(
                 "INSERT INTO equipamentos_dvr (equipamento_id, modelo, canais, armazenamento_tb) VALUES (?, ?, ?, ?)",
                 [$equipId, $fields['dvr_modelo'], $fields['dvr_canais'], $fields['dvr_armazenamento_tb']]
@@ -391,13 +382,20 @@ class EquipamentoService
             if ($result['status'] !== 'success') {
                 throw new Exception('Erro ao salvar dados Totem.');
             }
+        } elseif ($tipoId === 2) {
+            $result = $this->db->query(
+                    "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna) VALUES (?, ?, ?, ?, ?)",
+                    [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
+            );
+            if ($result['status'] !== 'success') {
+                throw new Exception('Erro ao salvar dados LPR.');
+            }
         }
     }
 
     public function saveTipoSpecificUpsert(int $equipId, int $tipoId, array $data): void
     {
         $fields = $this->extractCommonData($data);
-        $tipoCameraId = (int)($data['tipo_camera'] ?? 0);
 
         $this->db->query(
             "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas)
@@ -409,18 +407,7 @@ class EquipamentoService
             [$equipId, $fields['mosaico'], $fields['coordenadas'], $fields['numero_ruas']]
         );
 
-        if ($tipoId === 2 || $tipoCameraId === 3) {
-            $this->db->query(
-                "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna)
-                 VALUES (?, ?, ?, ?, ?)
-                 ON DUPLICATE KEY UPDATE
-                    sentido_via = VALUES(sentido_via),
-                    faixa_monitorada = VALUES(faixa_monitorada),
-                    url_acesso = VALUES(url_acesso),
-                    leitura_noturna = VALUES(leitura_noturna)",
-                [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
-            );
-        } elseif ($tipoId === 3) {
+        if ($tipoId === 3) {
             $this->db->query(
                 "INSERT INTO equipamentos_dvr (equipamento_id, modelo, canais, armazenamento_tb)
                  VALUES (?, ?, ?, ?)
@@ -439,6 +426,17 @@ class EquipamentoService
                     tem_facial = VALUES(tem_facial),
                     tem_lpr = VALUES(tem_lpr)",
                 [$equipId, $fields['totem_quantidade_cameras'], $fields['totem_tem_facial'], $fields['totem_tem_lpr']]
+            );
+        } elseif ($tipoId === 2) {
+            $this->db->query(
+                "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna)
+                 VALUES (?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    sentido_via = VALUES(sentido_via),
+                    faixa_monitorada = VALUES(faixa_monitorada),
+                    url_acesso = VALUES(url_acesso),
+                    leitura_noturna = VALUES(leitura_noturna)",
+                [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
             );
         }
     }
@@ -486,6 +484,12 @@ class EquipamentoService
     {
         $this->db->query("SET @app_user_id = ?", [$userId]);
         $this->db->query("SET @app_origem = 'api'");
+    }
+
+    public function resetAppUserContext(): void
+    {
+        $this->db->query("SET @app_user_id = NULL");
+        $this->db->query("SET @app_origem = NULL");
     }
 
     public function beginTransaction(): void

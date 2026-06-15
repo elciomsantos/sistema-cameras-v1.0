@@ -24,9 +24,7 @@
   };
 
   function getApiBase() {
-    if (window.APP_API_BASE) return window.APP_API_BASE;
-    const base = window.BASE_URL || '/';
-    return `${base}index.php?page=api/`;
+    return window.APP_API_BASE;
   }
 
   function escapeHtml(value) {
@@ -565,37 +563,41 @@
   }
 
   async function fetchDados() {
-    const params = new URLSearchParams();
-    params.set('page_num', String(state.historicoPage));
-    params.set('per_page', String(state.historicoPerPage));
-    if (state.cameraSelecionada) {
-      params.set('equipamento_id', String(state.cameraSelecionada));
-    }
-    if (state.historicoBusca) {
-      params.set('busca', state.historicoBusca);
-    }
-    if (state.dataInicial) {
-      params.set('data_inicial', state.dataInicial);
-    }
-    if (state.dataFinal) {
-      params.set('data_final', state.dataFinal);
-    }
-    params.set('include_lists', state.listsLoaded ? '0' : '1');
-    params.set('sort_by', state.historicoSortBy);
-    params.set('sort_dir', state.historicoSortDir);
-    params.set('_t', String(Date.now()));
+    if (state._fetching) return;
+    state._fetching = true;
 
-    const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_cameras&${params.toString()}`, {
-      headers: { Accept: 'application/json' },
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
+    try {
+      const params = new URLSearchParams();
+      params.set('page_num', String(state.historicoPage));
+      params.set('per_page', String(state.historicoPerPage));
+      if (state.cameraSelecionada) {
+        params.set('equipamento_id', String(state.cameraSelecionada));
+      }
+      if (state.historicoBusca) {
+        params.set('busca', state.historicoBusca);
+      }
+      if (state.dataInicial) {
+        params.set('data_inicial', state.dataInicial);
+      }
+      if (state.dataFinal) {
+        params.set('data_final', state.dataFinal);
+      }
+      params.set('include_lists', state.listsLoaded ? '0' : '1');
+      params.set('sort_by', state.historicoSortBy);
+      params.set('sort_dir', state.historicoSortDir);
+      params.set('_t', String(Date.now()));
 
-    const payload = await response.json();
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
-    }
-    const data = payload.data || {};
+      const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_cameras&${params.toString()}`, {
+        headers: { Accept: 'application/json' },
+        credentials: 'same-origin',
+        cache: 'no-store'
+      });
+
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
+      }
+      const data = payload.data || {};
     if (Array.isArray(data.cameras)) {
       renderCameras(data.cameras);
     }
@@ -631,6 +633,11 @@
     renderPaginacao(data.pagination || {});
     renderSortIndicators();
     setupHistoricoDualScroll();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      state._fetching = false;
+    }
   }
 
   async function fetchHistoricoCompleto() {
@@ -1219,5 +1226,9 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

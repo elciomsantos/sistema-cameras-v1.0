@@ -151,8 +151,8 @@ function enforceUniqueSession(bool $isApi = false): void
         $db = getRequestDatabase();
         $valid = isUniqueSessionValid($db, $usuarioId, $sessionToken);
     } catch (Throwable $e) {
-        error_log('Erro ao validar sessao unica: ' . $e->getMessage());
-        $valid = false;
+        error_log('Erro ao validar sessao unica (fallback: aceitando sessao): ' . $e->getMessage());
+        $valid = true;
     }
 
     if ($valid) {

@@ -70,6 +70,7 @@ try {
     auditEvent(db(), 'equipamentos', $equipId, 'UPDATE', $before, $auditAfter, 'api');
 
     $svc->commit();
+    $svc->resetAppUserContext();
 
     ApiResponse::success([
         'message' => 'Equipamento atualizado com sucesso!',
@@ -81,7 +82,9 @@ try {
         if (isset($svc) && db()->getConnection()->inTransaction()) {
             $svc->rollback();
         }
-    } catch (Exception $ignored) {}
+    } catch (Exception $rollbackEx) {
+        error_log('[api_editar_camera] Rollback falhou: ' . $rollbackEx->getMessage());
+    }
 
     error_log('[api_editar_camera] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao editar câmera.');

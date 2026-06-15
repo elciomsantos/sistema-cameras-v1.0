@@ -16,10 +16,12 @@ require_once APP_ROOT . '/config/database.php';
 require_once APP_ROOT . '/inc/security.php';
 require_once APP_ROOT . '/inc/single_session.php';
 require_once APP_ROOT . '/src/ErrorHandler.php';
+require_once APP_ROOT . '/src/Logger.php';
 require_once APP_ROOT . '/src/Api/ApiResponse.php';
 require_once APP_ROOT . '/src/Api/RequestValidator.php';
 require_once APP_ROOT . '/src/Api/RateLimiter.php';
 require_once APP_ROOT . '/src/Services/EquipamentoService.php';
+require_once APP_ROOT . '/src/Services/AlarmeService.php';
 
 function requiredAccessForApiEndpoint(string $endpoint): string
 {
@@ -99,6 +101,8 @@ function executeApiRequest(?string $endpointOverride = null): void
         configs: [
             '/^auth:/' => [10, 60],
             '/^login:/' => [5, 60],
+            '/^upload_anexo:/' => [10, 60],
+            '/^geocode:/' => [5, 60],
             '/^POST:/' => [30, 60],
             '/^PUT:/' => [30, 60],
             '/^DELETE:/' => [20, 60],
@@ -109,9 +113,9 @@ function executeApiRequest(?string $endpointOverride = null): void
     if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
         $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $rateLimitKey = "{$method}:{$endpoint}:{$clientIp}";
+        $rateLimitKey = "{$endpoint}:{$clientIp}";
 
-        if (!$rateLimiter->check($rateLimitKey)) {
+        if (!$rateLimiter->consume($rateLimitKey)) {
             ApiResponse::rateLimited($rateLimiter->getRetryAfter($rateLimitKey));
         }
     }

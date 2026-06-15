@@ -396,7 +396,7 @@ function initListarCameras() {
         return;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function onReady() {
         carregarListaCameras(1);
         document.getElementById('btnAtualizarListaCameras').addEventListener('click', () => carregarListaCameras(currentPage));
         document.getElementById('filtroStatus').addEventListener('change', aplicarFiltros);
@@ -487,7 +487,13 @@ function initListarCameras() {
         window._listarCamerasTooltips = tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', onReady);
+    } else {
+        onReady();
+    }
 }
 
 initListarCameras();

@@ -62,6 +62,12 @@ $fromClause = "FROM locais l
 
 // Export CSV
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    if (!isset($_GET['csrf_token']) || !validateCsrfToken($_GET['csrf_token'])) {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Token CSRF inválido.']);
+        exit;
+    }
     $allResult = $db->query("SELECT $selectColumns $fromClause $where ORDER BY l.nome", $params);
     $allLocais = ($allResult['status'] === 'success') ? $allResult['data'] : [];
 
@@ -166,7 +172,7 @@ $locais = ($result['status'] === 'success') ? $result['data'] : [];
                     </a>
                 </div>
                 <div class="col-md-2">
-                    <a href="?page=listar_locais&export=csv<?= $search ? '&busca=' . urlencode($search) : '' ?><?= $filtro_tipo !== '' ? '&tipo_local_id=' . urlencode($filtro_tipo) : '' ?><?= $filtro_camera !== '' ? '&camera=' . urlencode($filtro_camera) : '' ?>"
+                    <a href="?page=listar_locais&export=csv&csrf_token=<?= urlencode(getCsrfToken()) ?><?= $search ? '&busca=' . urlencode($search) : '' ?><?= $filtro_tipo !== '' ? '&tipo_local_id=' . urlencode($filtro_tipo) : '' ?><?= $filtro_camera !== '' ? '&camera=' . urlencode($filtro_camera) : '' ?>"
                        class="btn btn-success btn-sm w-100">
                         <i class="fas fa-file-csv me-1"></i>Exportar CSV
                     </a>

@@ -34,9 +34,7 @@
 
   // Funções utilitárias
   function getApiBase() {
-    if (window.APP_API_BASE) return window.APP_API_BASE;
-    const base = window.BASE_URL || '/';
-    return `${base}index.php?page=api/`;
+    return window.APP_API_BASE;
   }
 
   function escapeHtml(value) {
@@ -376,6 +374,8 @@
   }
 
   async function fetchDados() {
+    if (state._fetching) return;
+    state._fetching = true;
     showLoading('Carregando dados...');
 
     try {
@@ -443,6 +443,7 @@
       throw error;
     } finally {
       hideLoading();
+      state._fetching = false;
     }
   }
 
@@ -1114,5 +1115,9 @@
   }
 
   // Iniciar quando DOM estiver pronto
-  document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

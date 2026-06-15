@@ -1,29 +1,38 @@
 /**
  * Service Worker para Progressive Web App (PWA)
- * v3 - HTML sempre do servidor, assets estáticos em cache, fallback offline com index.php
+ * v4 - HTML sempre do servidor, assets estáticos em cache, fallback offline com index.php
  */
 
-const CACHE_NAME = 'cameras-app-v3';
-const API_CACHE = 'cameras-api-v3';
-const ASSETS_CACHE = 'cameras-assets-v3';
+const CACHE_NAME = 'cameras-app-v4';
+const API_CACHE = 'cameras-api-v4';
+const ASSETS_CACHE = 'cameras-assets-v4';
 
 const ASSETS_TO_CACHE = [
   './assets/css/main.css',
   './assets/css/theme-enhancements.css',
   './assets/js/main.js',
   './assets/js/utils/ui/theme-manager.js',
-  './assets/js/utils/search/AlarmeSearch.js',
   './images/favicon-32x32.png',
   './images/favicon-16x16.png',
   './images/apple-touch-icon.png',
   './index.php'
 ];
 
+let BASE_URL = '';
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'INIT_BASE_URL') {
+    BASE_URL = event.data.baseUrl || '';
+  }
+});
+
 self.addEventListener('install', event => {
   event.waitUntil(
     Promise.all([
       caches.open(CACHE_NAME).then(cache => {
-        return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
+        return cache.addAll(ASSETS_TO_CACHE).catch(err => {
+          console.error('[SW] Failed to cache app assets:', err);
+        });
       }),
       caches.open(ASSETS_CACHE).then(cache => {
         return cache.addAll([
@@ -31,9 +40,13 @@ self.addEventListener('install', event => {
           'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
           'https://code.jquery.com/jquery-3.7.1.min.js',
           'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js'
-        ]).catch(() => {});
+        ]).catch(err => {
+          console.error('[SW] Failed to cache CDN assets:', err);
+        });
       })
-    ]).catch(() => {})
+    ]).catch(err => {
+      console.error('[SW] Install failed:', err);
+    })
   );
   self.skipWaiting();
 });
@@ -96,7 +109,14 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('sync', event => {
   if (event.tag === 'sync-api') {
-    event.waitUntil(fetch(BASE_URL + '/index.php?page=api/api_ping', { method: 'GET' }));
+    if (!BASE_URL) {
+      console.error('[SW] BASE_URL not initialized — postMessage INIT_BASE_URL first');
+      return;
+    }
+    event.waitUntil(
+      fetch(BASE_URL + '/index.php?page=api/api_ping', { method: 'GET' })
+        .catch(err => console.error('[SW] Sync failed:', err))
+    );
   }
 });
 

@@ -31,6 +31,8 @@ try {
         ApiResponse::notFound('câmera', $id);
     }
 
+    $db->beginTransaction();
+
     $before = null;
     $beforeResult = $db->query(
         "SELECT e.*, c.mosaico, c.coordenadas, c.numero_ruas
@@ -49,6 +51,7 @@ try {
 
     if ($result['status'] === 'success' && !empty($result['affected_rows']) && $result['affected_rows'] > 0) {
         auditEvent($db, 'equipamentos', (int)$id, 'DELETE', $before, null, 'api');
+        $db->commit();
         ApiResponse::success([
             'message' => 'Câmera excluída com sucesso',
             'affected_rows' => $result['affected_rows'],
@@ -58,6 +61,9 @@ try {
     ApiResponse::error('NOT_FOUND', 'Câmera já foi excluída ou não encontrada.');
 
 } catch (Throwable $e) {
+    if (isset($db) && $db instanceof database && $db->inTransaction()) {
+        $db->rollback();
+    }
     error_log('[api_excluir_camera] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao excluir câmera.');
 }

@@ -6,28 +6,208 @@ Sistemas **Sistema de Câmeras e Alarmes** (porta 80) e **Sistema de Visitantes*
 
 ## Sumário
 
-- [1. Visão Geral da Arquitetura](#1-visão-geral-da-arquitetura)
-- [2. Cenário A — WSL2 (Desenvolvimento Local)](#2-cenário-a--wsl2-desenvolvimento-local)
-  - [2.1. Pré-requisitos](#21-pré-requisitos)
-  - [2.2. Instalação do Docker Engine no WSL2](#22-instalação-do-docker-engine-no-wsl2)
-  - [2.3. Clonar Repositórios](#23-clonar-repositórios)
-  - [2.4. Configurar .env](#24-configurar-env)
-  - [2.5. Build e Deploy](#25-build-e-deploy)
-  - [2.6. Acesso Local](#26-acesso-local)
-  - [2.7. Port Forwarding para Acesso LAN](#27-port-forwarding-para-acesso-lan)
-  - [2.8. Parar e Reiniciar](#28-parar-e-reiniciar)
-- [3. Cenário B — Servidor Linux Dedicado](#3-cenário-b--servidor-linux-dedicado)
-  - [3.1. Pré-requisitos](#31-pré-requisitos)
-  - [3.2. Instalação do Docker Engine](#32-instalação-do-docker-engine)
-  - [3.3. Clonar e Configurar](#33-clonar-e-configurar)
-  - [3.4. Build e Deploy](#34-build-e-deploy)
-  - [3.5. Firewall](#35-firewall)
-- [4. Pós-Implantação](#4-pós-implantação)
-  - [4.1. Senhas Padrão](#41-senhas-padrão)
-  - [4.2. Backup Automático](#42-backup-automático)
-  - [4.3. Manutenção](#43-manutenção)
+- [1. Configuração de Ambiente](#1-configuração-de-ambiente)
+  - [1.1. Arquitetura de Configuração](#11-arquitetura-de-configuração)
+  - [1.2. Windows (Desenvolvimento)](#12-windows-desenvolvimento)
+  - [1.3. Linux (Produção)](#13-linux-produção)
+- [2. Instalação](#2-instalação)
+  - [2.1. Windows + XAMPP](#21-windows--xampp)
+  - [2.2. Linux + Apache](#22-linux--apache)
+- [3. Usuários Padrão](#3-usuários-padrão)
+- [4. Manutenção](#4-manutenção)
 - [5. Troubleshooting](#5-troubleshooting)
-- [6. Referências](#6-referências)
+
+---
+
+## 1. Configuração de Ambiente
+
+### 1.1. Arquitetura de Configuração
+
+Todas as credenciais são armazenadas em **arquivos externos** ao projeto, nunca dentro do repositório.
+
+```
+WINDOWS (Desenvolvimento)
+└── C:\env\sistema-cameras\
+    └── .env
+
+LINUX (Produção)
+└── /etc/sistema-cameras/
+    └── .env
+```
+
+### 1.2. Windows (Desenvolvimento)
+
+**1. Criar pasta de configuração:**
+```powershell
+New-Item -ItemType Directory -Path "C:\env\sistema-cameras" -Force
+```
+
+**2. Copiar arquivo de exemplo:**
+```powershell
+# Na pasta do projeto
+Copy-Item ".env.example" "C:\env\sistema-cameras\.env"
+```
+
+**3. Editar com suas credenciais:**
+```env
+CAMERAS_ENV=development
+DB_HOST=localhost
+DB_NAME=cftv_gml
+DB_USER=gmluser
+DB_PASS=sua_senha_aqui
+APP_TIMEZONE=America/Sao_Paulo
+CAMERAS_SESSION_TIMEOUT=3600
+CAMERAS_SESSION_ABSOLUTE_TIMEOUT=28800
+CAMERAS_CSP_ALLOW_INLINE_STYLES=0
+```
+
+**4. Configurar XAMPP:**
+Edite `C:\xampp\php\php.ini`:
+```ini
+error_reporting = E_ALL
+display_errors = On
+```
+
+### 1.3. Linux (Produção)
+
+**1. Criar pasta e arquivo:**
+```bash
+sudo mkdir -p /etc/sistema-cameras
+sudo nano /etc/sistema-cameras/.env
+```
+
+**2. Conteúdo do arquivo:**
+```env
+CAMERAS_ENV=production
+DB_HOST=localhost
+DB_NAME=cftv_gml
+DB_USER=cftv_user
+DB_PASS=GERAR_SENHA_FORTE_AQUI
+APP_TIMEZONE=America/Sao_Paulo
+CAMERAS_SESSION_TIMEOUT=3600
+CAMERAS_SESSION_ABSOLUTE_TIMEOUT=28800
+CAMERAS_CSP_ALLOW_INLINE_STYLES=0
+```
+
+> Gere senhas seguras com: `openssl rand -base64 24`
+
+**3. Permissões (Apache precisa ler):**
+```bash
+sudo chown www-data:www-data /etc/sistema-cameras/.env
+sudo chmod 600 /etc/sistema-cameras/.env
+```
+
+---
+
+## 2. Instalação
+
+### 2.1. Windows + XAMPP
+
+1. Clone o repositório para `C:\xampp\htdocs\`
+2. Configure o ambiente conforme [seção 1.2](#12-windows-desenvolvimento)
+3. Acesse http://localhost no navegador
+
+### 2.2. Linux + Apache
+
+```bash
+# Instalar dependências
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y apache2 php php-mysql php-mbstring php-xml php-curl mysql-server
+
+# Configurar Apache
+sudo chown -R www-data:www-data /var/www/sistema-cameras-v1.0
+sudo chmod -R 755 /var/www/sistema-cameras-v1.0
+
+# Criar virtual host
+sudo nano /etc/apache2/sites-available/cameras.conf
+```
+
+**Conteúdo do virtual host:**
+```apache
+<VirtualHost *:80>
+    ServerName cameras.seu-dominio.com
+    DocumentRoot /var/www/sistema-cameras-v1.0/public
+
+    <Directory /var/www/sistema-cameras-v1.0/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/cameras_error.log
+    CustomLog ${APACHE_LOG_DIR}/cameras_access.log combined
+</VirtualHost>
+```
+
+```bash
+sudo a2ensite cameras.conf
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+
+**Firewall:**
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+```
+
+---
+
+## 3. Usuários Padrão
+
+| Usuário | Senha (primeiro acesso) | Nível |
+|---------|------------------------|-------|
+| `admin` | `Admin@2026Temp!` | admin |
+| `supervisor` | `Supervisor@2026Temp!` | supervisor |
+| `user` | `User@2026Temp!` | user |
+
+> Na primeira vez que cada usuário fizer login, o sistema exigirá a troca de senha.
+
+---
+
+## 4. Manutenção
+
+**Logs Apache (Linux):**
+```bash
+sudo tail -f /var/log/apache2/cameras_error.log
+```
+
+**Logs PHP (Linux):**
+```bash
+sudo tail -f /var/log/php*-fpm.log
+```
+
+**Reiniciar Apache:**
+```bash
+sudo systemctl restart apache2
+```
+
+---
+
+## 5. Troubleshooting
+
+### Erro: "Arquivo de configuração não encontrado"
+
+1. Verifique se a pasta existe:
+   - Windows: `C:\env\sistema-cameras\.env`
+   - Linux: `/etc/sistema-cameras/.env`
+
+2. Verifique se o arquivo contém `DB_PASS`
+
+### Erro: "Configurações ausentes: DB_PASS"
+
+O arquivo existe mas não contém `DB_PASS`. Adicione a linha ao arquivo.
+
+### Erro: Conexão MySQL recusada
+
+1. Verifique se MySQL está rodando:
+   - Windows: Abra o XAMPP Control Panel e inicie MySQL
+   - Linux: `sudo systemctl status mysql`
+
+2. Verifique as credenciais no arquivo .env
+
+---
+
+*Para dúvidas adicionais, consulte a documentação em `docs/SETUP.md`*
 
 ---
 

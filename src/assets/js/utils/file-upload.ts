@@ -312,3 +312,4 @@ function doDelete(container: HTMLElement, id: string, nome: string): void {
 
 window.initAnexoSection = initAnexoSection
 window.loadAnexos = loadAnexos
+export {};

@@ -407,3 +407,4 @@ function initListarAlarmes(): void {
 initListarAlarmes();
 
 })();
+export {};

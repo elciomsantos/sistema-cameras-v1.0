@@ -40,3 +40,4 @@ function showSuccessModal(title?: string, message?: string): void {
 }
 
 window.showSuccessModal = showSuccessModal;
+export {};

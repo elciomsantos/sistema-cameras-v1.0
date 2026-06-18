@@ -16,3 +16,4 @@ function aplicarUppercaseUniversal(formOrSelector: string | Element | null): voi
         });
     });
 }
+export {};

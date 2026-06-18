@@ -148,7 +148,7 @@ class ErrorHandler {
         const notifications = wrapper.querySelectorAll('.error-notification');
         if (notifications.length > 5) {
             for (let i = notifications.length - 1; i >= 5; i--) {
-                this.removeNotification(notifications[i]);
+                this.removeNotification(notifications[i] as HTMLElement);
             }
         }
     }
@@ -309,3 +309,4 @@ class ErrorHandler {
 
 const errorHandler = new ErrorHandler();
 (window as any).ErrorHandler = errorHandler;
+export {};

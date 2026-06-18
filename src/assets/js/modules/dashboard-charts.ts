@@ -204,3 +204,4 @@ class ChartManager {
 }
 
 (window as any).ChartManager = ChartManager;
+export {};

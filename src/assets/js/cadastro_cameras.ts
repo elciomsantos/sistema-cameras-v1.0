@@ -836,3 +836,4 @@ if (document.readyState === 'loading') {
 } else {
     onReady();
 }
+export {};

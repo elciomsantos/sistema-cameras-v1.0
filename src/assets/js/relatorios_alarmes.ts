@@ -377,7 +377,7 @@ $(document).ready(function (): void {
     });
   }
 
-  $(document).on('change', '.toggle-coluna', function (this: HTMLElement) {
+  $(document).on('change', '.toggle-coluna', function (this: HTMLInputElement) {
     const index = parseInt($(this).data('col-index') as string);
     toggleColuna(index, this.checked);
     salvarVisibilidade();
@@ -480,7 +480,7 @@ $(document).ready(function (): void {
     exportarDados();
   });
 
-  paginacao.on('click', '.page-link', function (e: Event) {
+  paginacao.on('click', '.page-link', function (this: HTMLElement, e: Event) {
     e.preventDefault();
     const pagina = $(this).data('pagina') as number;
     if (pagina && !$(this).parent().hasClass('disabled')) {
@@ -500,3 +500,4 @@ $(document).ready(function (): void {
   inicializar();
 
 });
+export {};

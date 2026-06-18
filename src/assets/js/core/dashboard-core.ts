@@ -29,3 +29,4 @@ class DashboardCore {
 }
 
 window.DashboardCore = DashboardCore as unknown as typeof window.DashboardCore;
+export {};

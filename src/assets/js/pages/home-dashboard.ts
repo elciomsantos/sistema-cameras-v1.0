@@ -276,3 +276,4 @@ window.addEventListener('beforeunload', () => {
         hd.destroy();
     }
 });
+export {};

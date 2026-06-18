@@ -640,9 +640,10 @@
     (document.getElementById('formCriarOs') as HTMLFormElement | null)?.addEventListener('submit', criarOs);
     (document.getElementById('formManutencaoAlarme') as HTMLFormElement | null)?.addEventListener('submit', salvarManutencao);
 
-    (document.getElementById('filtroAlarmeOs') as HTMLInputElement | null)?.addEventListener('input', window.debounce(async (e: Event) => {
+    const onFilterInput = (async (e: Event): Promise<void> => {
       try { await loadAlarmeOptions((e.target as HTMLInputElement).value, 'equipamento_id_os'); } catch (error) { showMessage('danger', 'Erro ao buscar alarmes: ' + (error as Error).message); }
-    }, 300));
+    }) as (...args: unknown[]) => unknown;
+    (document.getElementById('filtroAlarmeOs') as HTMLInputElement | null)?.addEventListener('input', window.debounce(onFilterInput, 300));
 
     (document.getElementById('btnBuscarAlarmeLista') as HTMLButtonElement | null)?.addEventListener('click', () => {
       const term = (document.getElementById('filtroAlarmeOs') as HTMLInputElement)?.value || '';
@@ -770,3 +771,4 @@
     init();
   }
 })();
+export {};

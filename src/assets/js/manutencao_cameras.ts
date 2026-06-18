@@ -467,7 +467,8 @@
     if (rows.length === 0) { showMessage('warning', 'Não há dados no histórico para exportar.'); return; }
 
     let csv = 'Data/Hora;OS;Tipo;Câmera;IP;Série;Modelo;Local Serviço;Endereço Serviço;Procedimento;Status;Técnico;Descrição;Peças;Usuário\n';
-    rows.forEach((item) => {
+    rows.forEach((r: unknown) => {
+      const item = r as Record<string, unknown>;
       csv += [
         csvEscape(toBrDate(item.data_execucao || item.data_hora || item.created_at)),
         csvEscape(item.numero_os || ''),
@@ -504,24 +505,25 @@
     if (!rows) rows = await fetchHistoricoCompleto();
     if (rows.length === 0) { showMessage('warning', 'Não há dados no histórico para exportar.'); return; }
 
-    const htmlRows = rows.map((item) => `
-      <tr>
-        <td>${escapeHtml(toBrDate(item.data_execucao || item.data_hora || item.created_at))}</td>
-        <td>${escapeHtml(item.numero_os || '-')}</td>
-        <td>${escapeHtml(item.tipo_equipamento_nome || '-')}</td>
-        <td>${escapeHtml(item.camera_nome || '-')}</td>
-        <td>${escapeHtml(item.ip || '-')}</td>
-        <td>${escapeHtml(item.modelo_nome || '-')}</td>
-        <td>${escapeHtml(item.local_servico || '-')}</td>
-        <td>${escapeHtml(item.endereco_servico || '-')}</td>
-        <td>${escapeHtml(item.procedimento_nome || '-')}</td>
-        <td>${escapeHtml(item.status_nome || '-')}</td>
-        <td>${escapeHtml(item.tecnico || '-')}</td>
-        <td>${escapeHtml(item.descricao || '-')}</td>
-        <td>${escapeHtml(item.pecas_previstas || '-')}</td>
-        <td>${escapeHtml(item.usuario_nome || 'Sistema')}</td>
-      </tr>
-    `).join('');
+    const htmlRows = rows.map((r: unknown) => {
+      const item = r as Record<string, unknown>;
+      return '<tr>'
+        + '<td>' + escapeHtml(toBrDate(item.data_execucao || item.data_hora || item.created_at)) + '</td>'
+        + '<td>' + escapeHtml(item.numero_os || '-') + '</td>'
+        + '<td>' + escapeHtml(item.tipo_equipamento_nome || '-') + '</td>'
+        + '<td>' + escapeHtml(item.camera_nome || '-') + '</td>'
+        + '<td>' + escapeHtml(item.ip || '-') + '</td>'
+        + '<td>' + escapeHtml(item.modelo_nome || '-') + '</td>'
+        + '<td>' + escapeHtml(item.local_servico || '-') + '</td>'
+        + '<td>' + escapeHtml(item.endereco_servico || '-') + '</td>'
+        + '<td>' + escapeHtml(item.procedimento_nome || '-') + '</td>'
+        + '<td>' + escapeHtml(item.status_nome || '-') + '</td>'
+        + '<td>' + escapeHtml(item.tecnico || '-') + '</td>'
+        + '<td>' + escapeHtml(item.descricao || '-') + '</td>'
+        + '<td>' + escapeHtml(item.pecas_previstas || '-') + '</td>'
+        + '<td>' + escapeHtml(item.usuario_nome || 'Sistema') + '</td>'
+        + '</tr>';
+    }).join('');
 
     const reportHtml = `<!doctype html>
 <html lang="pt-BR">
@@ -743,7 +745,7 @@
     equipamentoOsSelect?.addEventListener('change', () => {
       const cameraId = String(equipamentoOsSelect.value || '');
       const camera = state.cameraOptions.find((item) => String(item.id || '') === cameraId);
-      if ((camera as any)?.em_manutencao) {
+      if (camera && (camera as any)?.em_manutencao) {
         const nome = (camera as any).local_nome || (camera as any).descricao || `ID ${camera.id}`;
         const modal = new (window as any).bootstrap.Modal(document.getElementById('modalManutencaoAtiva'));
         document.getElementById('modalManutencaoNome')!.textContent = nome;
@@ -901,3 +903,4 @@
     init();
   }
 })();
+export {};

@@ -104,3 +104,4 @@ function escapeHtml(text: string): string {
 
 window.showToast = showToast
 window.showConfirm = showConfirm
+export {};

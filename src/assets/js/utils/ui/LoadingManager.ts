@@ -205,11 +205,11 @@ function debounce<T extends (...args: unknown[]) => unknown>(func: T, wait: numb
         }
     };
 
-    debounced.flush = function () {
+    debounced.flush = function (this: unknown, ...args: unknown[]) {
         if (timeout) {
             clearTimeout(timeout);
             timeout = null;
-            func.apply(this, arguments);
+            func.apply(this, args);
         }
     };
 
@@ -228,9 +228,10 @@ function throttle<T extends (...args: unknown[]) => unknown>(func: T, limit: num
             inThrottle = true;
         } else {
             clearTimeout(lastFunc);
-            lastFunc = setTimeout(function () {
+            const self = this;
+            lastFunc = setTimeout(function (this: unknown) {
                 if ((Date.now() - lastRan) >= limit) {
-                    func.apply(this, args);
+                    func.apply(self, args);
                     lastRan = Date.now();
                 }
             }, limit - (Date.now() - lastRan));
@@ -242,3 +243,4 @@ const loadingManager = new LoadingManager();
 (window as any).LoadingManager = loadingManager;
 (window as any).debounce = debounce;
 (window as any).throttle = throttle;
+export {};

@@ -61,3 +61,10 @@ docker-compose.override.yml
 
 # Configuração local (não versionar)
 config/local.php
+
+# opencode workspace files
+.agents/
+skills-lock.json
+
+# Vite build gzip artifacts
+dist/*.gz

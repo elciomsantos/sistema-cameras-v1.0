@@ -14,9 +14,14 @@
     <title>Sistema de Gerenciamento de Cameras e Alarmes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
+<?php
+    $viteCss = vite_css();
+    if ($viteCss): ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteCss ?>">
+<?php else: ?>
     <link rel="stylesheet" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/css/main.css">
-    <!-- Theme Enhancements (Dark Mode, Skeleton Loading, Accessibility, Responsive) -->
     <link rel="stylesheet" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/css/theme-enhancements.css">
+<?php endif; ?>
     <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
         const BASE_URL = '<?= htmlspecialchars(rtrim($APP_PUBLIC_PATH ?? '/public', '/') . '/', ENT_QUOTES, 'UTF-8') ?>';
         const APP_API_BASE = `${BASE_URL}index.php?page=api/`;
@@ -40,10 +45,15 @@
         window.console.error = function () {};
     }
 </script>
+<?php
+    $viteMainJs = vite_asset('main');
+    if ($viteMainJs): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteMainJs ?>"></script>
+<?php else: ?>
 <script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/fetchWithTimeout.js"></script>
 <script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/main.js') ?: 0 ?>"></script>
-<!-- Theme Manager (Dark Mode Toggle + Skeleton Loader + Accessibility) -->
 <script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui/theme-manager.js"></script>
+<?php endif; ?>
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
   // Registrar Service Worker para PWA support
   if ('serviceWorker' in navigator) {

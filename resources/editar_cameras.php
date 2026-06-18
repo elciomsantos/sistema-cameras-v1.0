@@ -485,8 +485,18 @@ try {
     <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
 </div>
 
+<?php
+$vitePageJs = vite_asset('editar-cameras');
+$viteImports = vite_entry_imports('editar-cameras');
+if ($vitePageJs):
+    foreach ($viteImports as $imp): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php else: ?>
 <script src="<?= BASE_URL ?>/assets/js/utils/uppercase.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/uppercase.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/utils/ui-utils.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui-utils.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/utils/file-upload.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/file-upload.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/editar_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/editar_cameras.js') ?>"></script>
+<?php endif; ?>
 

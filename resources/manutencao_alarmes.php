@@ -392,8 +392,18 @@ requererAcesso('supervisor');
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 window._CSP_NONCE = '<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>';
 </script>
+<?php
+$vitePageJs = vite_asset('manutencao-alarmes');
+$viteImports = vite_entry_imports('manutencao-alarmes');
+if ($vitePageJs):
+    foreach ($viteImports as $imp): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php else: ?>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui-utils.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui-utils.js') ?>"></script>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/file-upload.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/file-upload.js') ?>"></script>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui/ErrorHandler.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui/ErrorHandler.js') ?>"></script>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui/LoadingManager.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui/LoadingManager.js') ?>"></script>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/manutencao_alarmes_v2.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/manutencao_alarmes_v2.js') ?>"></script>
+<?php endif; ?>

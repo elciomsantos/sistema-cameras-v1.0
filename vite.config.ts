@@ -1,8 +1,17 @@
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
   root: 'src',
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
   publicDir: '../public',
   build: {
     outDir: '../dist',
@@ -18,6 +27,13 @@ export default defineConfig({
         'home-dashboard': './assets/js/entries/home-dashboard.ts',
         'cadastro-cameras': './assets/js/entries/cadastro-cameras.ts',
         'editar-cameras': './assets/js/entries/editar-cameras.ts',
+        'listar-cameras': './assets/js/entries/listar-cameras.ts',
+        'listar-alarmes': './assets/js/entries/listar-alarmes.ts',
+        'relatorios-cameras': './assets/js/entries/relatorios-cameras.ts',
+        'relatorios-alarmes': './assets/js/entries/relatorios-alarmes.ts',
+        'auditoria-cameras': './assets/js/entries/auditoria-cameras.ts',
+        'cadastro-alarmes': './assets/js/entries/cadastro-alarmes.ts',
+        'editar-alarmes': './assets/js/entries/editar-alarmes.ts',
       },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',
@@ -34,7 +50,7 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:80',
+        target: process.env.VITE_API_URL || 'http://localhost:80',
         changeOrigin: true,
       },
     },

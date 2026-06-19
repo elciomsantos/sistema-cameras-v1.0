@@ -86,5 +86,15 @@ requererAcesso('admin');
     </div>
 </div>
 
+<?php
+$vitePageJs = vite_asset('auditoria-cameras');
+$viteImports = vite_entry_imports('auditoria-cameras');
+if ($vitePageJs):
+    foreach ($viteImports as $imp): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php else: ?>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/auditoria-cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/auditoria-cameras.js') ?>"></script>
+<?php endif; ?>
 

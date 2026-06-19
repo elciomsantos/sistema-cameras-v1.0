@@ -1,18 +1,13 @@
+import { escapeHtml } from './utils/html';
+
 (function() {
 'use strict';
 
 const listarCamerasConfigEl = document.getElementById('listarCamerasConfig') as HTMLElement;
 const API_URL: string = listarCamerasConfigEl?.dataset.apiUrl || '';
 const CAN_DELETE: boolean = listarCamerasConfigEl?.dataset.canDelete === '1';
-
-function escapeHtml(value: unknown): string {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+const PER_PAGE = (window as any).PER_PAGE || 10;
+let currentPage = (window as any).currentPage || 1;
 
 function getFiltros(): { status: string; local: string; pesquisa: string } {
     const status = (document.getElementById('filtroStatus') as HTMLSelectElement).value;
@@ -354,6 +349,7 @@ async function excluirCamera(): Promise<void> {
             body: formData
         });
 
+        if (!response.ok) throw new Error('Falha ao excluir camera.');
         const resultado = await response.json();
 
         if (resultado.success === true) {
@@ -387,8 +383,7 @@ let currentCameraId: string | null = null;
 let todasCameras: Array<Record<string, unknown>> = [];
 let totalRecords: number = 0;
 let totalPages: number = 1;
-let currentPage: number = 1;
-const PER_PAGE: number = 50;
+
 let lastFocusedTrigger: HTMLElement | null = null;
 
 function initListarCameras(): void {

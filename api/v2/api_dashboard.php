@@ -60,8 +60,9 @@ try {
 
     $result = $db->query("
         SELECT COUNT(*) as total,
-               SUM(CASE WHEN ca.status = 'FUNCIONANDO' OR ca.status IS NULL THEN 1 ELSE 0 END) as manutencao
+               SUM(CASE WHEN COALESCE(s.nome, 'ATIVO') = 'ATIVO' THEN 1 ELSE 0 END) as manutencao
         FROM central_alarmes ca
+        LEFT JOIN status s ON ca.status_id = s.id
     ");
     if ($result['status'] === 'success' && !empty($result['data'])) {
         $row = $result['data'][0];
@@ -146,10 +147,11 @@ try {
 
     $result = $db->query("
         SELECT
-            COALESCE(ca.status, 'SEM STATUS') as status,
+            COALESCE(s.nome, 'SEM STATUS') as status,
             COUNT(*) as quantidade
         FROM central_alarmes ca
-        GROUP BY ca.status
+        LEFT JOIN status s ON ca.status_id = s.id
+        GROUP BY ca.status_id, s.nome
         ORDER BY quantidade DESC
     ");
     $alarmStatusData = $result['status'] === 'success' ? $result['data'] : [];

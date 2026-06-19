@@ -98,8 +98,11 @@
         credentials: 'same-origin',
         body: JSON.stringify(payload)
       });
+      if (!response.ok) {
+        throw new Error('Falha ao cadastrar alarme.');
+      }
       const result = await response.json();
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.message || 'Falha ao cadastrar alarme.');
       }
 
@@ -131,7 +134,7 @@
         btnFinalizar.classList.remove('d-none');
       }
     } catch (error) {
-      window.showToast((error as Error).message || 'Erro ao cadastrar alarme.', 'danger');
+      handleApiError(error, 'Erro ao cadastrar alarme.');
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar';
     }

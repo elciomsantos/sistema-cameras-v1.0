@@ -1,32 +1,37 @@
 class EditarCamera {
-    form: HTMLFormElement;
-    marcaSelect: HTMLSelectElement;
-    toggleModeloExistente: HTMLInputElement;
-    loadingOverlay: HTMLElement;
-    btnSubmit: HTMLButtonElement;
-    tipoSelect: HTMLSelectElement;
+    form!: HTMLFormElement;
+    marcaSelect!: HTMLSelectElement;
+    toggleModeloExistente!: HTMLInputElement;
+    loadingOverlay!: HTMLElement;
+    btnSubmit!: HTMLButtonElement;
+    tipoSelect!: HTMLSelectElement;
+    private modeloRequestController: AbortController | null = null;
 
     constructor() {
-        this.form = document.getElementById("formEditarCamera") as HTMLFormElement;
-        this.marcaSelect = document.getElementById("marcaSelect") as HTMLSelectElement;
-        this.toggleModeloExistente = document.getElementById("toggleModeloExistente") as HTMLInputElement;
-        this.loadingOverlay = document.getElementById("loadingOverlay") as HTMLElement;
-        this.btnSubmit = document.getElementById("btnSubmit") as HTMLButtonElement;
-        this.tipoSelect = this.form.querySelector('[name="tipo_id"]') as HTMLSelectElement;
-
         this.init();
     }
 
     init(): void {
+        this.form = document.getElementById("formEditarCamera") as HTMLFormElement;
         if (!this.form) {
             return;
         }
+        this.marcaSelect = document.getElementById("marcaSelect") as HTMLSelectElement;
+        if (!this.marcaSelect) return;
+
+        this.toggleModeloExistente = document.getElementById("toggleModeloExistente") as HTMLInputElement;
+        if (!this.toggleModeloExistente) return;
+
+        this.loadingOverlay = document.getElementById("loadingOverlay") as HTMLElement;
+        if (!this.loadingOverlay) return;
+
+        this.btnSubmit = document.getElementById("btnSubmit") as HTMLButtonElement;
+        if (!this.btnSubmit) return;
+
+        this.tipoSelect = this.form.querySelector('[name="tipo_id"]') as HTMLSelectElement;
 
         this.form.addEventListener("submit", (e: Event) => this.handleSubmit(e));
-
-        if (this.marcaSelect) {
-            this.marcaSelect.addEventListener("change", () => this.handleMarcaChange());
-        }
+        this.marcaSelect.addEventListener("change", () => this.handleMarcaChange());
 
         if (this.tipoSelect) {
             this.tipoSelect.addEventListener("change", () => this.handleTipoChange());
@@ -37,9 +42,7 @@ class EditarCamera {
             tipoCameraSelect.addEventListener("change", () => this.handleTipoChange());
         }
 
-        if (this.toggleModeloExistente) {
-            this.toggleModeloExistente.addEventListener("change", () => this.toggleTipoModelo());
-        }
+        this.toggleModeloExistente.addEventListener("change", () => this.toggleTipoModelo());
 
         this.initMasks();
         if (window.aplicarUppercaseUniversal) {
@@ -154,6 +157,11 @@ class EditarCamera {
     }
 
     async carregarModelosExistentes(marcaId: string): Promise<void> {
+        if (this.modeloRequestController) {
+            this.modeloRequestController.abort();
+        }
+        this.modeloRequestController = new AbortController();
+
         const select = document.getElementById("modeloExistenteSelect") as HTMLSelectElement;
         if (!select) return;
 
@@ -167,7 +175,9 @@ class EditarCamera {
             if (tipoId) {
                 qs.set('tipo_id', tipoId);
             }
-            const response = await fetchWithTimeout(`${window.APP_API_BASE}api_modelos_cameras&${qs.toString()}`);
+            const response = await fetchWithTimeout(`${window.APP_API_BASE}api_modelos_cameras&${qs.toString()}`, {
+                signal: this.modeloRequestController.signal
+            });
 
             if (!response.ok) {
                 throw new Error(`Erro HTTP: ${response.status}`);
@@ -312,6 +322,7 @@ class EditarCamera {
                 body: JSON.stringify(formData),
             });
 
+            if (!response.ok) throw new Error('Falha ao atualizar camera.');
             const resultado = await response.json();
 
             if (resultado.success === true) {
@@ -334,8 +345,7 @@ class EditarCamera {
                 window.showToast(resultado.message || "Erro ao editar câmera", "danger");
             }
         } catch (error) {
-            console.error("Erro de rede:", error);
-            window.showToast("Erro de conexão com o servidor.", "danger");
+            handleApiError(error, 'Erro de conexão com o servidor.');
         } finally {
             this.showLoading(false);
         }
@@ -409,8 +419,11 @@ async function initCameraEditor(): Promise<void> {
         }
 
         const response = await fetchWithTimeout(`${window.APP_API_BASE}api_cameras&${qs.toString()}`);
+        if (!response.ok) {
+            throw new Error('Erro ao carregar cameras');
+        }
         const payload = await response.json();
-        if (!response.ok || !payload.success) {
+        if (!payload.success) {
             throw new Error(payload.error || 'Erro ao carregar cameras');
         }
         return payload;

@@ -52,12 +52,12 @@ try {
         $params[':id'] = $id;
     }
     if ($status !== '') {
-        $where[] = 'a.status = :status';
-        $params[':status'] = $status;
+        $where[] = 'a.status_id = (SELECT id FROM status WHERE nome = :status LIMIT 1)';
+        $params[':status'] = strtoupper($status);
     }
     if ($regiao !== '') {
-        $where[] = 'a.regiao = :regiao';
-        $params[':regiao'] = $regiao;
+        $where[] = 'a.regiao_id = (SELECT id FROM regioes WHERE nome = :regiao LIMIT 1)';
+        $params[':regiao'] = strtoupper($regiao);
     }
     if ($conta !== '' && ctype_digit($conta)) {
         $where[] = 'a.conta = :conta';
@@ -125,8 +125,8 @@ try {
         SELECT
             a.id,
             a.conta,
-            a.status,
-            a.regiao,
+            COALESCE(s.nome, a.status) AS status,
+            COALESCE(r.nome, a.regiao) AS regiao,
             a.local,
             a.endereco,
             a.numero,
@@ -149,6 +149,8 @@ try {
             a.observacao,
             m.nome AS modelo_central
         FROM central_alarmes a
+        LEFT JOIN status s ON a.status_id = s.id
+        LEFT JOIN regioes r ON a.regiao_id = r.id
         LEFT JOIN catalogo_modelos_alarmes m ON m.id = a.modelo_alarme_id
         {$whereSql}
         ORDER BY a.data_atualizacao DESC, a.id DESC

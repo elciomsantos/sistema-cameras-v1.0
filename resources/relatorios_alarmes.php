@@ -141,6 +141,16 @@ try {
     <div class="mt-3">Carregando dados...</div>
 </div>
 
+<?php
+$vitePageJs = vite_asset('relatorios-alarmes');
+$viteImports = vite_entry_imports('relatorios-alarmes');
+if ($vitePageJs):
+    foreach ($viteImports as $imp): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php else: ?>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/relatorios_alarmes.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/relatorios_alarmes.js') ?>"></script>
+<?php endif; ?>
 
 

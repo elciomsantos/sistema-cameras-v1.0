@@ -25,7 +25,7 @@ try {
     if ($perPage > 200) $perPage = 200;
     $offset = ($page - 1) * $perPage;
 
-    $whereParts = [];
+    $whereParts = ['e.deleted_at IS NULL'];
     $params = [];
 
     if (!empty($_GET['data_inicial'])) {
@@ -48,17 +48,17 @@ try {
 
     if (!empty($_GET['status'])) {
         $whereParts[] = "e.status_id = :status";
-        $params[':status'] = $_GET['status'];
+        $params[':status'] = (int)$_GET['status'];
     }
 
     if (!empty($_GET['local'])) {
         $whereParts[] = "e.local_id = :local";
-        $params[':local'] = $_GET['local'];
+        $params[':local'] = (int)$_GET['local'];
     }
 
     if (!empty($_GET['regiao'])) {
         $whereParts[] = "e.regiao_id = :regiao";
-        $params[':regiao'] = $_GET['regiao'];
+        $params[':regiao'] = (int)$_GET['regiao'];
     }
 
     if (!empty($_GET['pesquisa'])) {

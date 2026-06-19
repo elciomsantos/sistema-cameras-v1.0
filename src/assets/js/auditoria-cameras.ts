@@ -1,3 +1,5 @@
+import { escapeHtml } from './utils/html';
+
 (function (): void {
   const state: { page: number; perPage: number } = {
     page: 1,
@@ -13,15 +15,6 @@
     if (operacao === 'UPDATE') return 'bg-warning text-dark';
     if (operacao === 'DELETE') return 'bg-danger';
     return 'bg-secondary';
-  }
-
-  function escapeHtml(value: unknown): string {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   function toBrDate(value: unknown): string {
@@ -115,9 +108,12 @@
         headers: { Accept: 'application/json' },
         credentials: 'same-origin'
       });
+      if (!response.ok) {
+        throw new Error('Falha ao carregar auditoria');
+      }
       const payload = await response.json();
 
-      if (!response.ok || !payload.success) {
+      if (!payload.success) {
         throw new Error(payload.error || 'Falha ao carregar auditoria');
       }
 

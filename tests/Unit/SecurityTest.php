@@ -66,7 +66,7 @@ class SecurityTest extends TestCase
     public function testPasswordPolicyValid(): void
     {
         $errors = [];
-        $result = validatePasswordPolicy('MySecure1', $errors);
+        $result = validatePasswordPolicy('MySecure1!', $errors);
 
         $this->assertTrue($result);
         $this->assertEmpty($errors);
@@ -88,6 +88,33 @@ class SecurityTest extends TestCase
 
         $this->assertFalse($result);
         $this->assertNotEmpty($errors);
+    }
+
+    public function testPasswordPolicyNoSpecialFails(): void
+    {
+        $errors = [];
+        $result = validatePasswordPolicy('MySecure1', $errors);
+
+        $this->assertFalse($result);
+        $this->assertStringContainsString('caractere especial', implode(' ', $errors));
+    }
+
+    public function testPasswordPolicyNoUppercaseFails(): void
+    {
+        $errors = [];
+        $result = validatePasswordPolicy('mysecure1!', $errors);
+
+        $this->assertFalse($result);
+        $this->assertStringContainsString('maiuscula', implode(' ', $errors));
+    }
+
+    public function testPasswordPolicyNoLowercaseFails(): void
+    {
+        $errors = [];
+        $result = validatePasswordPolicy('MYSECURE1!', $errors);
+
+        $this->assertFalse($result);
+        $this->assertStringContainsString('minuscula', implode(' ', $errors));
     }
 
     public function testGenerateCsrfToken(): void

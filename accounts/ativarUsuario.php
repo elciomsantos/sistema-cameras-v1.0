@@ -25,6 +25,12 @@ if ($id <= 0) {
     exit;
 }
 
+if ((int)$_SESSION['usuario']->id === $id) {
+    $_SESSION['erro'] = 'Voce nao pode ativar sua propria conta.';
+    header('Location: index.php?page=listarUsuario');
+    exit;
+}
+
 $db = db();
 $before = null;
 $beforeResult = $db->query("SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.ativo, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id", [':id' => $id]);

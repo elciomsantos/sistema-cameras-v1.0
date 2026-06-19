@@ -29,7 +29,9 @@ try {
         'classificacao_enderecos' => 'classificacao_enderecos',
     ];
 
+    $allowedTables = array_flip(['status', 'procedimentos', 'regioes', 'tipos_equipamento', 'tipo_cameras', 'transmissoes', 'origem_link', 'marcas', 'locais', 'secretarias', 'classificacao_enderecos']);
     foreach ($tabelas as $key => $tabela) {
+        if (!isset($allowedTables[$tabela])) continue;
         $order = $tabela === 'transmissoes' ? 'tipo' : 'nome';
         $result = $db->query("SELECT * FROM $tabela ORDER BY $order");
         $dados[$key] = $result['status'] === 'success' ? $result['data'] : [];

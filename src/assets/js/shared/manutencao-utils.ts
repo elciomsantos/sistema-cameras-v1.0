@@ -1,3 +1,5 @@
+import { escapeHtml } from '../utils/html';
+
 // Shared utilities for maintenance pages (câmeras & alarmes)
 // Assigns global functions to window for use by page-specific scripts
 
@@ -35,14 +37,7 @@
   };
 
   // === String Utilities ===
-  window.escapeHtml = function escapeHtml(value: unknown): string {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  };
+  window.escapeHtml = escapeHtml;
 
   window.csvEscape = function csvEscape(value: unknown): string {
     return `"${String(value ?? '').replace(/"/g, '""')}"`;

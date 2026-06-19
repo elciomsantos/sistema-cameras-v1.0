@@ -1,3 +1,5 @@
+import { escapeHtml } from './html';
+
 const API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/'
 
 const UPLOAD_URL = API_BASE + 'api_upload_anexo'
@@ -73,7 +75,7 @@ function loadAnexos(container: HTMLElement): void {
     fetchWithTimeout(LIST_URL + '&' + params, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
-        .then(function (r: Response) { return r.json() })
+        .then(function (r: Response) { if (!r.ok) throw new Error('Falha ao carregar anexos.'); return r.json() })
         .then(function (res: ApiResponse<unknown>) {
             const anexos = Array.isArray(res.data) ? res.data as AnexoData[] : (res.data && (res.data as any).data ? (res.data as any).data as AnexoData[] : [])
             if (!res.success || !anexos.length) {
@@ -109,13 +111,6 @@ function loadAnexos(container: HTMLElement): void {
         .catch(function () {
             listEl.innerHTML = '<p class="text-danger text-center mb-0">Erro ao carregar anexos.</p>'
         })
-}
-
-function escapeHtml(text: string): string {
-    if (!text) return ''
-    const d = document.createElement('div')
-    d.appendChild(document.createTextNode(text))
-    return d.innerHTML
 }
 
 function uploadFile(
@@ -182,7 +177,7 @@ function excluirAnexo(anexoId: string): Promise<ApiResponse<unknown>> {
             'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ id: anexoId })
-    }).then(function (r: Response) { return r.json() })
+    }).then(function (r: Response) { if (!r.ok) throw new Error('Falha ao excluir anexo.'); return r.json() })
 }
 
 function initAnexoSection(container: HTMLElement | null): void {

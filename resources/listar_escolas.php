@@ -9,7 +9,7 @@ $perPage = 50;
 $offset = ($page - 1) * $perPage;
 $search = trim($_GET['busca'] ?? '');
 
-$where = "WHERE l.nome LIKE '%ESCOLA%'";
+$where = "WHERE l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'ESCOLA' LIMIT 1)";
 $params = [];
 if ($search !== '') {
     $where .= " AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ? OR l.cidade LIKE ?)";

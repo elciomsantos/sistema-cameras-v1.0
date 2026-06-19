@@ -6,6 +6,7 @@ class DashboardCore {
     async fetchData(endpoint: string): Promise<ApiResponse> {
         try {
             const response = await fetchWithTimeout(endpoint);
+            if (!response.ok) throw new Error('Erro ao carregar dados do dashboard.');
             return await response.json() as ApiResponse;
         } catch (error) {
             console.error('Erro ao buscar dados:', error);

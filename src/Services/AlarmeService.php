@@ -60,6 +60,26 @@ class AlarmeService
             ApiResponse::error('VALIDATION_ERROR', 'Status inválido. Use: ' . implode(', ', self::STATUS_PERMITIDOS));
         }
 
+        $statusLookup = $this->db->query(
+            "SELECT id FROM status WHERE nome = ? LIMIT 1",
+            [strtoupper($status)]
+        );
+        $statusId = ($statusLookup['status'] === 'success' && !empty($statusLookup['data']))
+            ? (int)$statusLookup['data'][0]->id
+            : null;
+
+        $regiaoText = trim((string)($data['regiao'] ?? '')) ?: null;
+        $regiaoId = null;
+        if ($regiaoText !== null) {
+            $regiaoLookup = $this->db->query(
+                "SELECT id FROM regioes WHERE nome = ? LIMIT 1",
+                [strtoupper($regiaoText)]
+            );
+            $regiaoId = ($regiaoLookup['status'] === 'success' && !empty($regiaoLookup['data']))
+                ? (int)$regiaoLookup['data'][0]->id
+                : null;
+        }
+
         $ip = trim((string)($data['ip'] ?? ''));
         if ($ip !== '' && !filter_var($ip, FILTER_VALIDATE_IP)) {
             ApiResponse::error('VALIDATION_ERROR', 'IP inválido.');
@@ -81,7 +101,9 @@ class AlarmeService
             'conta' => $conta,
             'local' => $local,
             'status' => $status,
-            'regiao' => trim((string)($data['regiao'] ?? '')) ?: null,
+            'status_id' => $statusId,
+            'regiao' => $regiaoText,
+            'regiao_id' => $regiaoId,
             'endereco' => trim((string)($data['endereco'] ?? '')) ?: null,
             'numero' => trim((string)($data['numero'] ?? '')) ?: null,
             'pgm1' => trim((string)($data['pgm1'] ?? '')) ?: null,
@@ -110,12 +132,12 @@ class AlarmeService
 
         try {
             $sql = "INSERT INTO central_alarmes (
-                regiao, conta, status, local, endereco, numero, pgm1, pgm2, mac, ip,
+                regiao, regiao_id, conta, status, status_id, local, endereco, numero, pgm1, pgm2, mac, ip,
                 integracao, camera_gm, quant_camera_gm, ip_dvr, cameras_dvr, modelo_alarme_id,
                 quant_repetidor, qtde_sensores, documentacao, monitorada, numero_sei,
                 data_atualizacao, observacao
             ) VALUES (
-                :regiao, :conta, :status, :local, :endereco, :numero, :pgm1, :pgm2, :mac, :ip,
+                :regiao, :regiao_id, :conta, :status, :status_id, :local, :endereco, :numero, :pgm1, :pgm2, :mac, :ip,
                 :integracao, :camera_gm, :quant_camera_gm, :ip_dvr, :cameras_dvr, :modelo_alarme_id,
                 :quant_repetidor, :qtde_sensores, :documentacao, :monitorada, :numero_sei,
                 :data_atualizacao, :observacao
@@ -154,9 +176,11 @@ class AlarmeService
 
             $params['id'] = $id;
             $sql = "UPDATE central_alarmes SET
-                regiao = :regiao, conta = :conta, status = :status, local = :local,
-                endereco = :endereco, numero = :numero, pgm1 = :pgm1, pgm2 = :pgm2,
-                mac = :mac, ip = :ip, integracao = :integracao, camera_gm = :camera_gm,
+                regiao = :regiao, regiao_id = :regiao_id,
+                conta = :conta, status = :status, status_id = :status_id,
+                local = :local, endereco = :endereco, numero = :numero,
+                pgm1 = :pgm1, pgm2 = :pgm2, mac = :mac, ip = :ip,
+                integracao = :integracao, camera_gm = :camera_gm,
                 quant_camera_gm = :quant_camera_gm, ip_dvr = :ip_dvr, cameras_dvr = :cameras_dvr,
                 modelo_alarme_id = :modelo_alarme_id, quant_repetidor = :quant_repetidor,
                 qtde_sensores = :qtde_sensores, documentacao = :documentacao,
@@ -186,8 +210,10 @@ class AlarmeService
     {
         $params = [
             ':regiao' => $data['regiao'],
+            ':regiao_id' => $data['regiao_id'],
             ':conta' => $data['conta'],
             ':status' => $data['status'],
+            ':status_id' => $data['status_id'],
             ':local' => $data['local'],
             ':endereco' => $data['endereco'],
             ':numero' => $data['numero'],

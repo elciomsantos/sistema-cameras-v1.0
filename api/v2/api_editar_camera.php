@@ -45,8 +45,6 @@ try {
     $svc->validateCoordenadas($fields['coordenadas']);
     $svc->validateTipoSpecific($fields['tipo_id'], $fields['dvr_modelo'], $fields['totem_quantidade_cameras']);
 
-    $before = $svc->loadBeforeSnapshot($equipId);
-
     $svc->setAppUserContext($_SESSION['usuario']->id ?? null);
 
     $equipData = $svc->buildEquipData($fields, $localId, $modeloId);
@@ -65,9 +63,6 @@ try {
             descricao_posicao = COALESCE(NULLIF(?, ''), descricao_posicao) WHERE id = ?",
         [$fields['tem_alarme'], $fields['alarme_conta'], $fields['classif_endereco_id'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], $localId]
     );
-
-    $auditAfter = $svc->buildAuditData($equipId, $fields);
-    auditEvent(db(), 'equipamentos', $equipId, 'UPDATE', $before, $auditAfter, 'api');
 
     $svc->commit();
     $svc->resetAppUserContext();

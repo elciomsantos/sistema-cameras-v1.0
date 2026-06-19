@@ -40,7 +40,10 @@ function loadEnvFile(string $envPath): bool
             (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
             $value = substr($value, 1, -1);
         }
-        putenv($key . '=' . $value);
+        if (!putenv($key . '=' . $value)) {
+            error_log("Failed to set env: {$key}");
+            continue;
+        }
         $_ENV[$key] = $value;
     }
 

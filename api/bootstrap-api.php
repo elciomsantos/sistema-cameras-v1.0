@@ -96,7 +96,7 @@ function executeApiRequest(?string $endpointOverride = null): void
     $exists = file_exists($filepath);
 
     $rateLimiter = new RateLimiter(
-        storagePath: sys_get_temp_dir() . '/ratelimit',
+        storagePath: APP_ROOT . '/storage/ratelimit',
         strategy: 'sliding_window',
         configs: [
             '/^auth:/' => [10, 60],
@@ -124,8 +124,13 @@ function executeApiRequest(?string $endpointOverride = null): void
     header('X-API-Version: v2');
     header('X-Request-ID: ' . ApiResponse::getRequestId());
     header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
+    header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'");
+    if (isHttpsRequest()) {
+        header('Strict-Transport-Security: max-age=63072000; includeSubDomains; preload');
+    }
 
     $allowedOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $isSameOrigin = false;

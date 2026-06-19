@@ -1,11 +1,13 @@
-$(document).ready(function (): void {
-  const formFiltros = $('#formFiltros');
-  const btnLimpar = $('#btnLimpar');
-  const btnExportar = $('#btnExportar');
-  const corpoTabela = $('#corpoTabela');
-  const totalRegistros = $('#totalRegistros');
-  const loadingOverlay = $('#loadingOverlay');
-  const paginacao = $('#paginacao');
+import { escapeHtml } from './utils/html';
+
+document.addEventListener('DOMContentLoaded', function (): void {
+  const formFiltros = document.getElementById('formFiltros') as HTMLFormElement;
+  const btnLimpar = document.getElementById('btnLimpar') as HTMLElement;
+  const btnExportar = document.getElementById('btnExportar') as HTMLElement;
+  const corpoTabela = document.getElementById('corpoTabela') as HTMLElement;
+  const totalRegistros = document.getElementById('totalRegistros') as HTMLElement;
+  const loadingOverlay = document.getElementById('loadingOverlay') as HTMLElement;
+  const paginacao = document.getElementById('paginacao') as HTMLElement;
 
   const apiUrl: string = `${window.APP_API_BASE}api_alarmes`;
   const itensPorPagina: number = 50;
@@ -15,19 +17,10 @@ $(document).ready(function (): void {
 
   function mostrarLoading(mostrar: boolean): void {
     if (mostrar) {
-      loadingOverlay.removeClass('is-hidden');
+      loadingOverlay.classList.remove('is-hidden');
     } else {
-      loadingOverlay.addClass('is-hidden');
+      loadingOverlay.classList.add('is-hidden');
     }
-  }
-
-  function escapeHtml(value: unknown): string {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   function formatarData(dataString: string): string {
@@ -70,9 +63,9 @@ $(document).ready(function (): void {
       mostrarLoading(true);
 
       const filtros: Record<string, string> = {
-        conta: $('#conta').val() as string,
-        status: $('#status').val() as string,
-        regiao: $('#regiao').val() as string
+        conta: (document.getElementById('conta') as HTMLInputElement).value,
+        status: (document.getElementById('status') as HTMLInputElement).value,
+        regiao: (document.getElementById('regiao') as HTMLInputElement).value
       };
 
       const queryString = construirQueryString(filtros, pagina);
@@ -136,12 +129,12 @@ $(document).ready(function (): void {
       texto = `<i class="fas fa-check-circle"></i> ${total} alarmes encontrados`;
     }
 
-    totalRegistros.html(texto);
+    totalRegistros.innerHTML = texto;
   }
 
   function renderizarTabela(dados: Array<Record<string, unknown>>): void {
     if (dados.length === 0) {
-      corpoTabela.html(`
+      corpoTabela.innerHTML = `
                 <tr>
                     <td colspan="25" class="no-results">
                         <i class="fas fa-search fa-3x"></i>
@@ -149,7 +142,7 @@ $(document).ready(function (): void {
                         <p class="text-muted">Tente ajustar os filtros de busca</p>
                     </td>
                 </tr>
-            `);
+            `;
       return;
     }
 
@@ -195,7 +188,7 @@ $(document).ready(function (): void {
             `;
     });
 
-    corpoTabela.html(html);
+    corpoTabela.innerHTML = html;
 
     setupTopScrollbar();
     setupColumnSelector();
@@ -204,7 +197,7 @@ $(document).ready(function (): void {
 
   function renderizarPaginacao(): void {
     if (totalItens <= itensPorPagina) {
-      paginacao.addClass('is-hidden');
+      paginacao.classList.add('is-hidden');
       return;
     }
 
@@ -239,12 +232,13 @@ $(document).ready(function (): void {
             </li>
         `;
 
-    paginacao.find('ul').html(html);
-    paginacao.removeClass('is-hidden');
+    const pagUl = paginacao.querySelector('ul');
+    if (pagUl) pagUl.innerHTML = html;
+    paginacao.classList.remove('is-hidden');
   }
 
   function mostrarErro(mensagem: string): void {
-    corpoTabela.html(`
+    corpoTabela.innerHTML = `
             <tr>
                 <td colspan="25" class="text-center text-danger py-5">
                     <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
@@ -255,13 +249,13 @@ $(document).ready(function (): void {
                     </button>
                 </td>
             </tr>
-        `);
+        `;
 
-    totalRegistros.html('<i class="fas fa-exclamation-triangle"></i> Erro na busca');
+    totalRegistros.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro na busca';
   }
 
   function limparFiltros(): void {
-    (formFiltros[0] as HTMLFormElement).reset();
+    formFiltros.reset();
     buscarDados();
   }
 
@@ -377,28 +371,36 @@ $(document).ready(function (): void {
     });
   }
 
-  $(document).on('change', '.toggle-coluna', function (this: HTMLInputElement) {
-    const index = parseInt($(this).data('col-index') as string);
-    toggleColuna(index, this.checked);
-    salvarVisibilidade();
+  document.addEventListener('change', function (e: Event) {
+    const target = e.target as HTMLElement;
+    if (target.matches('.toggle-coluna')) {
+      const index = parseInt(target.dataset.colIndex!);
+      toggleColuna(index, (target as HTMLInputElement).checked);
+      salvarVisibilidade();
+    }
   });
 
-  $(document).on('click', '#selecionarTodasColunas', function (e: Event) {
-    e.preventDefault();
-    document.querySelectorAll('.toggle-coluna').forEach(cb => {
-      (cb as HTMLInputElement).checked = true;
-      toggleColuna(parseInt((cb as HTMLInputElement).dataset.colIndex!), true);
-    });
-    salvarVisibilidade();
-  });
-
-  $(document).on('click', '#limparTodasColunas', function (e: Event) {
-    e.preventDefault();
-    document.querySelectorAll('.toggle-coluna').forEach(cb => {
-      (cb as HTMLInputElement).checked = false;
-      toggleColuna(parseInt((cb as HTMLInputElement).dataset.colIndex!), false);
-    });
-    salvarVisibilidade();
+  document.addEventListener('click', function (e: Event) {
+    const target = e.target as HTMLElement;
+    const todasLink = target.closest('#selecionarTodasColunas');
+    if (todasLink) {
+      e.preventDefault();
+      document.querySelectorAll('.toggle-coluna').forEach(cb => {
+        (cb as HTMLInputElement).checked = true;
+        toggleColuna(parseInt((cb as HTMLInputElement).dataset.colIndex!), true);
+      });
+      salvarVisibilidade();
+      return;
+    }
+    const limparLink = target.closest('#limparTodasColunas');
+    if (limparLink) {
+      e.preventDefault();
+      document.querySelectorAll('.toggle-coluna').forEach(cb => {
+        (cb as HTMLInputElement).checked = false;
+        toggleColuna(parseInt((cb as HTMLInputElement).dataset.colIndex!), false);
+      });
+      salvarVisibilidade();
+    }
   });
 
   function setupTopScrollbar(): void {
@@ -467,29 +469,38 @@ $(document).ready(function (): void {
     'Observacao': d => ((d.observacao as string) || '').replace(/"/g, '""')
   };
 
-  formFiltros.on('submit', function (e: Event) {
+  formFiltros.addEventListener('submit', function (e: Event) {
     e.preventDefault();
     buscarDados();
   });
 
-  btnLimpar.on('click', function () {
+  btnLimpar.addEventListener('click', function () {
     limparFiltros();
   });
 
-  btnExportar.on('click', function () {
+  btnExportar.addEventListener('click', function () {
     exportarDados();
   });
 
-  paginacao.on('click', '.page-link', function (this: HTMLElement, e: Event) {
-    e.preventDefault();
-    const pagina = $(this).data('pagina') as number;
-    if (pagina && !$(this).parent().hasClass('disabled')) {
-      buscarDados(pagina);
+  paginacao.addEventListener('click', function (e: Event) {
+    const target = e.target as HTMLElement;
+    const link = target.closest('.page-link');
+    if (link) {
+      e.preventDefault();
+      const pagina = Number((link as HTMLElement).dataset.pagina);
+      if (pagina && !link.parentElement!.classList.contains('disabled')) {
+        buscarDados(pagina);
+      }
     }
   });
 
-  $('#status, #regiao').on('change', function () {
-    buscarDados();
+  ['status', 'regiao'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', function () {
+        buscarDados();
+      });
+    }
   });
 
   function inicializar(): void {

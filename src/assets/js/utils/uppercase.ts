@@ -9,6 +9,8 @@ function aplicarUppercaseUniversal(formOrSelector: string | Element | null): voi
     form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(selectors).forEach(field => {
         if (field.dataset.uppercase === 'false') return;
 
+        if (field.dataset.uppercaseBound) return;
+        field.dataset.uppercaseBound = 'true';
         field.addEventListener('input', function (this: HTMLInputElement | HTMLTextAreaElement) {
             const pos = this.selectionStart;
             this.value = this.value.toUpperCase();

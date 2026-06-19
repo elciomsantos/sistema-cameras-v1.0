@@ -44,8 +44,6 @@ try {
 
     $svc->saveTipoSpecificInsert($equipId, $fields['tipo_id'], $data);
 
-    $auditAfter = $svc->buildAuditData($equipId, $fields);
-    auditEvent(db(), 'equipamentos', $equipId, 'INSERT', null, $auditAfter, 'api');
     $svc->commit();
     $svc->resetAppUserContext();
 

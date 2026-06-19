@@ -64,6 +64,7 @@ class EquipamentoService
             'mosaico' => trim((string)($data['mosaico'] ?? '')) ?: null,
             'coordenadas' => trim((string)($data['coordenadas'] ?? '')) ?: null,
             'numero_ruas' => trim((string)($data['numero_ruas'] ?? '')) ?: null,
+            'horario_funcionamento' => trim((string)($data['horario_funcionamento'] ?? '')) ?: null,
             'lpr_sentido_via' => trim((string)($data['lpr_sentido_via'] ?? '')) ?: null,
             'lpr_faixa_monitorada' => trim((string)($data['lpr_faixa_monitorada'] ?? '')) ?: null,
             'lpr_leitura_noturna' => !empty($data['lpr_leitura_noturna']) ? 1 : 0,
@@ -137,8 +138,8 @@ class EquipamentoService
     {
         $fields = $this->extractCommonData($data);
         $insertLocal = $this->db->query(
-            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [strtoupper($nomeLocal), $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $secretariaId, $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id']]
+            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id, regiao_id, horario_funcionamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [strtoupper($nomeLocal), $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $secretariaId, $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento']]
         );
         if ($insertLocal['status'] !== 'success') {
             throw new Exception('Erro ao criar local da câmera.');
@@ -164,8 +165,8 @@ class EquipamentoService
         }
 
         $this->db->query(
-            "UPDATE locais SET tem_alarme = ?, alarme_conta = ?, logradouro = ?, bairro = ?, cidade = ?, uf = ?, cep = ?, numero = ?, descricao_posicao = ?, tipo_local_id = ?, classificacao_endereco_id = ? WHERE id = ?",
-            [$fields['tem_alarme'], $fields['alarme_conta'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $localId]
+            "UPDATE locais SET tem_alarme = ?, alarme_conta = ?, logradouro = ?, bairro = ?, cidade = ?, uf = ?, cep = ?, numero = ?, descricao_posicao = ?, tipo_local_id = ?, classificacao_endereco_id = ?, regiao_id = ?, horario_funcionamento = ? WHERE id = ?",
+            [$fields['tem_alarme'], $fields['alarme_conta'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento'], $localId]
         );
     }
 

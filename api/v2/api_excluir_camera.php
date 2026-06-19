@@ -33,24 +33,11 @@ try {
 
     $db->beginTransaction();
 
-    $before = null;
-    $beforeResult = $db->query(
-        "SELECT e.*, c.mosaico, c.coordenadas, c.numero_ruas
-         FROM equipamentos e
-         LEFT JOIN equipamentos_camera c ON c.equipamento_id = e.id
-         WHERE e.id = ?",
-        [$id]
-    );
-    if ($beforeResult['status'] === 'success' && !empty($beforeResult['data'])) {
-        $before = (array)$beforeResult['data'][0];
-    }
-
     $db->query("SET @app_user_id = ?", [$_SESSION['usuario']->id ?? null]);
     $db->query("SET @app_origem = 'api'");
     $result = $db->query("UPDATE equipamentos SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL", [$id]);
 
     if ($result['status'] === 'success' && !empty($result['affected_rows']) && $result['affected_rows'] > 0) {
-        auditEvent($db, 'equipamentos', (int)$id, 'DELETE', $before, null, 'api');
         $db->commit();
         ApiResponse::success([
             'message' => 'Câmera excluída com sucesso',

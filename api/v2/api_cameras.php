@@ -45,7 +45,7 @@ try {
 
     $db = db();
 
-    $whereParts = ['e.tipo_equipamento_id = :tipo_equipamento_id'];
+    $whereParts = ['e.tipo_equipamento_id = :tipo_equipamento_id', 'e.deleted_at IS NULL'];
     $params = [':tipo_equipamento_id' => 1];
 
     if ($id > 0) {

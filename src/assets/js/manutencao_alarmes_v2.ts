@@ -74,8 +74,9 @@
         headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
       });
 
+      if (!response.ok) throw new Error('Erro ao carregar alarmes');
       const payload = await response.json() as ApiResponse<Array<Record<string, unknown>>>;
-      if (!response.ok || !payload.success) throw new Error(payload.error || 'Erro ao carregar alarmes');
+      if (!payload.success) throw new Error(payload.error || 'Erro ao carregar alarmes');
 
       const list = Array.isArray(payload.data) ? payload.data : [];
       renderAlarmes(list, selectIds);
@@ -271,13 +272,13 @@
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token, Accept: 'application/json' },
         credentials: 'same-origin', body: JSON.stringify(payload)
       });
+      if (!response.ok) throw new Error('Erro ao iniciar execução da OS.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Erro ao iniciar execução da OS.');
+      if (!result.success) throw new Error(result.error || 'Erro ao iniciar execução da OS.');
       showMessage('success', 'Ordem de serviço em execução.');
       await fetchDados();
     } catch (error) {
-      errorHandler.handle(error, 'Failed to start OS execution', 'error');
-      showMessage('danger', (error as Error).message || 'Erro ao iniciar execução da OS.');
+      handleApiError(error, 'Erro ao iniciar execução da OS.');
     } finally { hideLoading(); }
   }
 
@@ -319,8 +320,9 @@
         credentials: 'same-origin', body: JSON.stringify(payload)
       });
 
+      if (!response.ok) throw new Error('Erro ao registrar manutenção.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Erro ao registrar manutenção.');
+      if (!result.success) throw new Error(result.error || 'Erro ao registrar manutenção.');
 
       showMessage('success', 'Manutenção registrada com sucesso.');
       document.getElementById('btnSalvarManutencao')!.setAttribute('disabled', 'true');
@@ -329,8 +331,7 @@
       state.historicoPage = 1;
       await fetchDados();
     } catch (error) {
-      errorHandler.handle(error, 'Failed to save maintenance', 'error');
-      showMessage('danger', (error as Error).message || 'Erro ao salvar manutenção.');
+      handleApiError(error, 'Erro ao salvar manutenção.');
     } finally {
       btn.disabled = false;
       hideLoading();
@@ -403,8 +404,9 @@
       headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
     });
 
+    if (!response.ok) throw new Error('Falha ao carregar listas de manutenção.');
     const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-    if (!response.ok || !payload.success) throw new Error(payload.error || 'Falha ao carregar listas de manutenção.');
+    if (!payload.success) throw new Error(payload.error || 'Falha ao carregar listas de manutenção.');
 
     const data = (payload.data || {}) as Record<string, unknown>;
     if (Array.isArray(data.procedimento_options)) renderSelectOptions('procedimento_id', data.procedimento_options as Array<Record<string, unknown>>, 'Selecione...');
@@ -444,8 +446,9 @@
         credentials: 'same-origin', body: JSON.stringify(payload)
       });
 
+      if (!response.ok) throw new Error('Erro ao criar ordem de serviço.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Erro ao criar ordem de serviço.');
+      if (!result.success) throw new Error(result.error || 'Erro ao criar ordem de serviço.');
 
       showMessage('success', 'Ordem de serviço cadastrada com sucesso.');
       (document.getElementById('formCriarOs') as HTMLFormElement).reset();
@@ -454,8 +457,7 @@
       (document.getElementById('data_hora_os') as HTMLInputElement).value = toDateTimeLocalNow();
       await fetchDados();
     } catch (error) {
-      errorHandler.handle(error, 'Failed to create OS', 'error');
-      showMessage('danger', (error as Error).message || 'Erro ao criar ordem de serviço.');
+      handleApiError(error, 'Erro ao criar ordem de serviço.');
     } finally { btn.disabled = false; hideLoading(); }
   }
 
@@ -485,8 +487,9 @@
         headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
       });
 
+      if (!response.ok) throw new Error('Falha ao carregar dados de manutenção.');
       const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-      if (!response.ok || !payload.success) throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
+      if (!payload.success) throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
 
       const data = (payload.data || {}) as Record<string, unknown>;
       if (Array.isArray(data.alarme)) renderAlarmes(data.alarme as Array<Record<string, unknown>>);
@@ -533,8 +536,9 @@
     const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_alarmes&${params.toString()}`, {
       headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
     });
+    if (!response.ok) throw new Error('Falha ao carregar histórico completo.');
     const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-    if (!response.ok || !payload.success) throw new Error(payload.error || 'Falha ao carregar histórico completo.');
+    if (!payload.success) throw new Error(payload.error || 'Falha ao carregar histórico completo.');
     const data = (payload.data || {}) as Record<string, unknown>;
     return Array.isArray(data.historico) ? data.historico as Array<Record<string, unknown>> : [];
   }

@@ -93,6 +93,7 @@ getCsrfToken();
 
 require_once __DIR__ . '/../config/config.php';
 $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
+require_once __DIR__ . '/../inc/assets.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
 // Se nao estiver logado e nao for pagina de login_submit ou API, redireciona para login

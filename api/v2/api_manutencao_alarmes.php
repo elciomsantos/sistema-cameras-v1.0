@@ -20,8 +20,10 @@ function loadManutencaoPayload(
 
     if ($includeLists) {
         $alarmeResult = $db->query(
-            "SELECT a.id, a.conta, a.local, a.endereco, a.ip, a.status, m.nome AS modelo_central
+            "SELECT a.id, a.conta, a.local, a.endereco, a.ip,
+                    COALESCE(s.nome, a.status) AS status, m.nome AS modelo_central
              FROM central_alarmes a
+             LEFT JOIN status s ON a.status_id = s.id
              LEFT JOIN catalogo_modelos_alarmes m ON m.id = a.modelo_alarme_id
              ORDER BY a.local ASC, a.id ASC
              LIMIT 1000"

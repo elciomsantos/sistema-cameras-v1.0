@@ -9,29 +9,29 @@ $perPage = 50;
 $offset = ($page - 1) * $perPage;
 $search = trim($_GET['busca'] ?? '');
 
-$where = "WHERE l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'PREDIO PUBLICO')";
-$params = [];
-if ($search !== '') {
-    $where .= " AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ? OR l.cidade LIKE ?)";
-    $like = "%$search%";
-    $params = [$like, $like, $like, $like];
-}
+    $where = "WHERE l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'PREDIO PUBLICO')";
+    $params = [];
+    if ($search !== '') {
+        $where .= " AND (l.nome LIKE :busca_nome OR l.logradouro LIKE :busca_logradouro OR l.bairro LIKE :busca_bairro OR l.cidade LIKE :busca_cidade)";
+        $like = "%$search%";
+        $params = [':busca_nome' => $like, ':busca_logradouro' => $like, ':busca_bairro' => $like, ':busca_cidade' => $like];
+    }
 
-$countResult = $db->query("SELECT COUNT(*) as total FROM locais l $where", $params);
-$total = (int)($countResult['status'] === 'success' ? ($countResult['data'][0]->total ?? 0) : 0);
-$totalPages = max(1, ceil($total / $perPage));
+    $countResult = $db->query("SELECT COUNT(*) as total FROM locais l $where", $params);
+    $total = (int)($countResult['status'] === 'success' ? ($countResult['data'][0]->total ?? 0) : 0);
+    $totalPages = max(1, ceil($total / $perPage));
 
-$result = $db->query(
-    "SELECT l.id, l.nome, l.logradouro, l.bairro, l.cidade, l.uf, l.numero,
-            s.nome as secretaria, s.sigla, tl.nome as tipo_local
-     FROM locais l
-     LEFT JOIN secretarias s ON l.secretaria_id = s.id
-     LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
-     $where
-     ORDER BY l.nome
-     LIMIT $perPage OFFSET $offset",
-    $params
-);
+    $result = $db->query(
+        "SELECT l.id, l.nome, l.logradouro, l.bairro, l.cidade, l.uf, l.numero,
+                s.nome as secretaria, s.sigla, tl.nome as tipo_local
+         FROM locais l
+         LEFT JOIN secretarias s ON l.secretaria_id = s.id
+         LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+         $where
+         ORDER BY l.nome
+         LIMIT $perPage OFFSET $offset",
+        $params
+    );
 $locais = ($result['status'] === 'success') ? $result['data'] : [];
 ?>
 

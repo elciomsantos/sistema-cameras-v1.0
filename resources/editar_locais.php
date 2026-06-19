@@ -84,6 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         } elseif (empty($tipo_local_id)) {
             $mensagem_erro = 'Selecione o Tipo de Local.';
         } else {
+            $checkDup = $db->query(
+                "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ? AND id != ? LIMIT 1",
+                [$nome, $secretaria_id ? (int)$secretaria_id : null, $id_local]
+            );
+            if ($checkDup['status'] === 'success' && !empty($checkDup['data'])) {
+                $mensagem_erro = 'Ja existe um local com este nome nesta secretaria.';
+            } else {
             $sql = "UPDATE locais SET
                         tipo_local_id = :tipo_local_id,
                         nome = :nome,
@@ -139,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 exit;
             } else {
                 $mensagem_erro = 'Erro ao atualizar local.';
+            }
             }
         }
     }

@@ -12,15 +12,26 @@ window.fetchWithTimeout = function (
         controller.abort();
     }, effectiveTimeout);
 
-    const signals: AbortSignal[] = [controller.signal];
-    if (init?.signal) {
-        signals.push(init.signal);
-    }
-
     const mergedInit: RequestInit = {
         ...init,
-        signal: AbortSignal.any ? AbortSignal.any(signals) : controller.signal
     };
+
+    if (init?.signal) {
+        if (typeof AbortSignal.any === 'function') {
+            mergedInit.signal = AbortSignal.any([controller.signal, init.signal]);
+        } else {
+            const parentSignal = init.signal;
+            const onAbort = () => { if (!controller.signal.aborted) controller.abort(); };
+            if (!parentSignal.aborted) {
+                parentSignal.addEventListener('abort', onAbort, { once: true });
+            } else {
+                controller.abort();
+            }
+            mergedInit.signal = controller.signal;
+        }
+    } else {
+        mergedInit.signal = controller.signal;
+    }
 
     return window.fetch(input, mergedInit).then((response: Response) => {
         clearTimeout(timeoutId);

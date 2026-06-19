@@ -177,11 +177,17 @@ function validatePasswordPolicy(string $password, ?array &$errors = null): bool
     if (preg_match('/^\d+$/', $password)) {
         $errors[] = 'A senha nao pode conter apenas numeros.';
     }
-    if (!preg_match('/[a-zA-Z]/', $password)) {
-        $errors[] = 'A senha deve conter pelo menos uma letra.';
+    if (!preg_match('/[a-z]/', $password)) {
+        $errors[] = 'A senha deve conter pelo menos uma letra minuscula.';
+    }
+    if (!preg_match('/[A-Z]/', $password)) {
+        $errors[] = 'A senha deve conter pelo menos uma letra maiuscula.';
     }
     if (!preg_match('/\d/', $password)) {
         $errors[] = 'A senha deve conter pelo menos um numero.';
+    }
+    if (!preg_match('/[^a-zA-Z0-9]/', $password)) {
+        $errors[] = 'A senha deve conter pelo menos um caractere especial (!@#$% etc).';
     }
 
     return empty($errors);

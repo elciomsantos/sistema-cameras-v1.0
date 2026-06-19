@@ -7,6 +7,15 @@ requererAcesso('user');
 $api_url = BASE_URL . '/index.php?page=api/api_cameras';
 $canDelete = isset($_SESSION['usuario']->nivel_acesso)
     && in_array($_SESSION['usuario']->nivel_acesso, ['admin', 'supervisor'], true);
+
+$db = db();
+$statusList = [];
+$statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome");
+if ($statusResult['status'] === 'success') $statusList = $statusResult['data'];
+
+$locaisList = [];
+$locaisResult = $db->query("SELECT id, nome FROM locais ORDER BY nome");
+if ($locaisResult['status'] === 'success') $locaisList = $locaisResult['data'];
 ?>
 
 <div class="container mt-4">
@@ -41,32 +50,18 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
                             <label for="filtroStatus" class="form-label">Status</label>
                             <select class="form-select form-select-sm" id="filtroStatus">
                                 <option value="">Todos</option>
-                                <?php
-                                // Buscar status do banco
-                                require_once __DIR__ . '/../config/database.php';
-                                $db = db();
-                                $result = $db->query("SELECT id, nome FROM status ORDER BY nome");
-                                if ($result['status'] === 'success') {
-                                    foreach ($result['data'] as $status) {
-                                        echo '<option value="' . $status->id . '">' . htmlspecialchars($status->nome) . '</option>';
-                                    }
-                                }
-                                ?>
+                                <?php foreach ($statusList as $status): ?>
+                                    <option value="<?= $status->id ?>"><?= htmlspecialchars($status->nome) ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label for="filtroLocal" class="form-label">Local</label>
                             <select class="form-select form-select-sm" id="filtroLocal">
                                 <option value="">Todos</option>
-                                <?php
-                                // Buscar locais do banco
-                                $result = $db->query("SELECT id, nome FROM locais ORDER BY nome");
-                                if ($result['status'] === 'success') {
-                                    foreach ($result['data'] as $local) {
-                                        echo '<option value="' . $local->id . '">' . htmlspecialchars($local->nome) . '</option>';
-                                    }
-                                }
-                                ?>
+                                <?php foreach ($locaisList as $local): ?>
+                                    <option value="<?= $local->id ?>"><?= htmlspecialchars($local->nome) ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -172,4 +167,14 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
 </div>
 
 <div id="listarCamerasConfig" style="display:none;" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>" data-can-delete="<?= $canDelete ? '1' : '0' ?>"></div>
+<?php
+$vitePageJs = vite_asset('listar-cameras');
+$viteImports = vite_entry_imports('listar-cameras');
+if ($vitePageJs):
+    foreach ($viteImports as $imp): ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php else: ?>
 <script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/listar_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_cameras.js') ?>"></script>
+<?php endif; ?>

@@ -62,8 +62,11 @@
       cache: 'no-store'
     });
 
+    if (!response.ok) {
+      throw new Error('Falha ao carregar listas de manutenção.');
+    }
     const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-    if (!response.ok || !payload.success) {
+    if (!payload.success) {
       throw new Error(payload.error || 'Falha ao carregar listas de manutenção.');
     }
 
@@ -99,8 +102,11 @@
         credentials: 'same-origin',
         cache: 'no-store'
       });
+      if (!response.ok) {
+        throw new Error('Erro ao carregar cameras');
+      }
       const payload = await response.json() as ApiResponse<Array<Record<string, unknown>>>;
-      if (!response.ok || !payload.success) {
+      if (!payload.success) {
         throw new Error(payload.error || 'Erro ao carregar cameras');
       }
 
@@ -330,15 +336,15 @@
         credentials: 'same-origin',
         body: JSON.stringify(payload)
       });
+      if (!response.ok) throw new Error('Falha ao iniciar execução da OS.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Falha ao iniciar execução da OS.');
+      if (!result.success) throw new Error(result.error || 'Falha ao iniciar execução da OS.');
 
       showMessage('success', result.message || 'Ordem de serviço em execução.');
       state.cameraSelecionada = '';
       await fetchDados();
     } catch (error) {
-      console.error(error);
-      showMessage('danger', (error as Error).message || 'Erro ao iniciar execução da OS.');
+      handleApiError(error, 'Erro ao iniciar execução da OS.');
     }
   }
 
@@ -390,8 +396,9 @@
         cache: 'no-store'
       });
 
+      if (!response.ok) throw new Error('Falha ao carregar dados de manutenção.');
       const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-      if (!response.ok || !payload.success) throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
+      if (!payload.success) throw new Error(payload.error || 'Falha ao carregar dados de manutenção.');
 
       const data = (payload.data || {}) as Record<string, unknown>;
       if (Array.isArray(data.cameras)) renderCameras(data.cameras as Array<Record<string, unknown>>);
@@ -443,8 +450,9 @@
         credentials: 'same-origin',
         cache: 'no-store'
       });
+      if (!response.ok) throw new Error('Falha ao carregar histórico completo.');
       const payload = await response.json() as ApiResponse<Record<string, unknown>>;
-      if (!response.ok || !payload.success) throw new Error(payload.error || 'Falha ao carregar histórico completo.');
+      if (!payload.success) throw new Error(payload.error || 'Falha ao carregar histórico completo.');
       const data = (payload.data || {}) as Record<string, unknown>;
       const rows = Array.isArray(data.historico) ? data.historico as Array<Record<string, unknown>> : [];
       allRows.push(...rows);
@@ -597,8 +605,9 @@
         credentials: 'same-origin',
         body: JSON.stringify(payload)
       });
+      if (!response.ok) throw new Error('Falha ao criar ordem de serviço.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Falha ao criar ordem de serviço.');
+      if (!result.success) throw new Error(result.error || 'Falha ao criar ordem de serviço.');
 
       showMessage('success', result.message || 'Ordem de serviço cadastrada com sucesso.');
       form.reset();
@@ -607,8 +616,7 @@
       state.cameraSelecionada = '';
       await fetchDados();
     } catch (error) {
-      console.error(error);
-      showMessage('danger', (error as Error).message || 'Erro ao cadastrar ordem de serviço.');
+      handleApiError(error, 'Erro ao cadastrar ordem de serviço.');
     } finally {
       button.disabled = false;
       button.innerHTML = '<i class="fas fa-save me-1"></i>Criar Ordem de Serviço';
@@ -655,8 +663,9 @@
         credentials: 'same-origin',
         body: JSON.stringify(payload)
       });
+      if (!response.ok) throw new Error('Falha ao registrar manutenção.');
       const result = await response.json() as ApiResponse<unknown>;
-      if (!response.ok || !result.success) throw new Error(result.error || 'Falha ao registrar manutenção.');
+      if (!result.success) throw new Error(result.error || 'Falha ao registrar manutenção.');
 
       showMessage('success', result.message || 'Manutenção registrada com sucesso.');
       const manutencaoId = (document.getElementById('os_id') as HTMLInputElement).value;
@@ -676,8 +685,7 @@
       state.cameraSelecionada = '';
       await fetchDados();
     } catch (error) {
-      console.error(error);
-      showMessage('danger', (error as Error).message || 'Erro ao registrar manutenção.');
+      handleApiError(error, 'Erro ao registrar manutenção.');
     } finally {
       button.disabled = false;
       button.innerHTML = '<i class="fas fa-save me-1"></i>Registrar Manutenção';

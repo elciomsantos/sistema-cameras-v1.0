@@ -9,7 +9,7 @@ $perPage = 50;
 $offset = ($page - 1) * $perPage;
 $search = trim($_GET['busca'] ?? '');
 
-$where = "WHERE l.nome LIKE '%CMEI%'";
+$where = "WHERE l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'CMEI' LIMIT 1)";
 $params = [];
 if ($search !== '') {
     $where .= " AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ? OR l.cidade LIKE ?)";

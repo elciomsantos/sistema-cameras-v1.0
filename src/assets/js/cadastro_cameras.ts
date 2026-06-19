@@ -1,40 +1,45 @@
 class CadastroCamera {
-    form: HTMLFormElement;
-    marcaSelect: HTMLSelectElement;
-    toggleModeloExistente: HTMLInputElement;
-    loadingOverlay: HTMLElement;
-    btnSubmit: HTMLButtonElement;
-    btnFinalizar: HTMLElement;
-    btnBuscarCep: HTMLElement;
-    btnBuscarCoordenadas: HTMLElement;
-    tipoSelect: HTMLSelectElement;
-    savedEquipmentId: string | null;
+    form!: HTMLFormElement;
+    marcaSelect!: HTMLSelectElement;
+    toggleModeloExistente!: HTMLInputElement;
+    loadingOverlay!: HTMLElement;
+    btnSubmit!: HTMLButtonElement;
+    btnFinalizar!: HTMLElement;
+    btnBuscarCep!: HTMLElement;
+    btnBuscarCoordenadas!: HTMLElement;
+    tipoSelect!: HTMLSelectElement;
+    savedEquipmentId: string | null = null;
+    private modeloRequestController: AbortController | null = null;
 
     constructor() {
+        this.init();
+    }
+
+    init(): void {
         this.form = document.getElementById("formCadastroCamera") as HTMLFormElement;
+        if (!this.form) {
+            return;
+        }
         this.marcaSelect = document.getElementById("marcaSelect") as HTMLSelectElement;
+        if (!this.marcaSelect) return;
+
         this.toggleModeloExistente = document.getElementById("toggleModeloExistente") as HTMLInputElement;
+        if (!this.toggleModeloExistente) return;
+
         this.loadingOverlay = document.getElementById("loadingOverlay") as HTMLElement;
+        if (!this.loadingOverlay) return;
+
         this.btnSubmit = document.getElementById("btnSubmit") as HTMLButtonElement;
+        if (!this.btnSubmit) return;
+
         this.btnFinalizar = document.getElementById("btnFinalizar") as HTMLElement;
         this.btnBuscarCep = document.getElementById("btnBuscarCep") as HTMLElement;
         this.btnBuscarCoordenadas = document.getElementById("btnBuscarCoordenadas") as HTMLElement;
         this.tipoSelect = this.form.querySelector('[name="tipo_id"]') as HTMLSelectElement;
         this.savedEquipmentId = null;
 
-        this.init();
-    }
-
-    init(): void {
-        if (!this.form) {
-            return;
-        }
-
         this.form.addEventListener("submit", (e: Event) => this.handleSubmit(e));
-
-        if (this.marcaSelect) {
-            this.marcaSelect.addEventListener("change", () => this.handleMarcaChange());
-        }
+        this.marcaSelect.addEventListener("change", () => this.handleMarcaChange());
 
         if (this.tipoSelect) {
             this.tipoSelect.addEventListener("change", () => this.handleTipoChange());
@@ -45,10 +50,8 @@ class CadastroCamera {
             tipoCameraSelect.addEventListener("change", () => this.handleTipoChange());
         }
 
-        if (this.toggleModeloExistente) {
-            this.toggleModeloExistente.addEventListener("change", () => this.toggleTipoModelo());
-            this.toggleTipoModelo();
-        }
+        this.toggleModeloExistente.addEventListener("change", () => this.toggleTipoModelo());
+        this.toggleTipoModelo();
 
         this.initMasks();
         this.initValidation();
@@ -229,6 +232,11 @@ class CadastroCamera {
     }
 
     async carregarModelosExistentes(marcaId: string): Promise<void> {
+        if (this.modeloRequestController) {
+            this.modeloRequestController.abort();
+        }
+        this.modeloRequestController = new AbortController();
+
         const select = document.getElementById("modeloExistenteSelect") as HTMLSelectElement;
         if (!select) return;
 
@@ -246,7 +254,8 @@ class CadastroCamera {
                 credentials: 'same-origin',
                 headers: {
                     'Accept': 'application/json'
-                }
+                },
+                signal: this.modeloRequestController.signal
             });
 
             if (!response.ok) {
@@ -654,6 +663,10 @@ class CadastroCamera {
                 body: JSON.stringify(formData),
             });
 
+            if (!response.ok) {
+                throw new Error('Erro HTTP: ' + response.status);
+            }
+
             const resultado = await response.json();
 
             if (resultado.success === true) {
@@ -696,8 +709,7 @@ class CadastroCamera {
                 }
             }
         } catch (error) {
-            console.error("Erro de rede:", error);
-            window.showToast("Erro de conexão com o servidor. Verifique sua rede.", "danger");
+            handleApiError(error, 'Erro de conexão com o servidor. Verifique sua rede.');
         } finally {
             this.showLoading(false);
         }
@@ -761,12 +773,12 @@ class CadastroCamera {
                 toggle.checked = true;
                 this.toggleTipoModelo();
 
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     const select = document.getElementById("modeloExistenteSelect") as HTMLSelectElement;
                     if (select) {
                         select.value = modeloId;
                     }
-                }, 500);
+                });
             }
         }
 

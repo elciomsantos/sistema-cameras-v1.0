@@ -62,6 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     } elseif (empty($tipo_local_id)) {
         $mensagem_erro = 'Selecione o Tipo de Local.';
     } else {
+        $checkDup = $db->query(
+            "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ? LIMIT 1",
+            [$nome, $secretaria_id ? (int)$secretaria_id : null]
+        );
+        if ($checkDup['status'] === 'success' && !empty($checkDup['data'])) {
+            $mensagem_erro = 'Ja existe um local com este nome nesta secretaria.';
+        } else {
         $sql = "INSERT INTO locais (tipo_local_id, nome, regiao_id, secretaria_id, horario_funcionamento, tem_alarme, cep, uf, cidade, bairro, classificacao_endereco_id, logradouro, numero, descricao_posicao, latitude, longitude)
                 VALUES (:tipo_local_id, :nome, :regiao_id, :secretaria_id, :horario_funcionamento, :tem_alarme, :cep, :uf, :cidade, :bairro, :classificacao_endereco_id, :logradouro, :numero, :descricao_posicao, :latitude, :longitude)";
         $params = [
@@ -100,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             exit;
         } else {
             $mensagem_erro = 'Erro ao cadastrar local.';
+        }
         }
     }
 

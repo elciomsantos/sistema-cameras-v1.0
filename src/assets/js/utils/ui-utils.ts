@@ -86,7 +86,7 @@ function showConfirm(title: string, htmlContent: string, confirmText?: string): 
         if (titleEl) titleEl.textContent = title || 'Confirmar'
 
         const bodyEl = document.getElementById('appConfirmBody')
-        if (bodyEl) bodyEl.innerHTML = htmlContent || ''
+        if (bodyEl) bodyEl.innerHTML = (htmlContent || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/\son\w+\s*=\s*"[^"]*"/gi, '').replace(/\son\w+\s*=\s*'[^']*'/gi, '').replace(/href\s*=\s*"javascript:[^"]*"/gi, 'href="#"').replace(/href\s*=\s*'javascript:[^']*'/gi, "href='#'")
 
         const okBtn = document.getElementById('appConfirmOk')
         if (okBtn) okBtn.textContent = confirmText || 'Sim, excluir'
@@ -95,13 +95,16 @@ function showConfirm(title: string, htmlContent: string, confirmText?: string): 
     })
 }
 
-function escapeHtml(text: string): string {
-    if (!text) return ''
-    const d = document.createElement('div')
-    d.appendChild(document.createTextNode(text))
-    return d.innerHTML
+function handleApiError(error: unknown, fallbackMessage: string = 'Erro inesperado.'): string {
+    const message = error instanceof Error ? error.message : fallbackMessage;
+    console.error(fallbackMessage, error);
+    showToast(message, 'danger');
+    return message;
 }
 
-window.showToast = showToast
-window.showConfirm = showConfirm
+import { escapeHtml } from './html';
+
+window.showToast = showToast;
+window.showConfirm = showConfirm;
+(window as any).handleApiError = handleApiError;
 export {};

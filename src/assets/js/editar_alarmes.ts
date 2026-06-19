@@ -1,18 +1,11 @@
+import { escapeHtml } from './utils/html';
+
 (function (): void {
   let alarmes: Array<Record<string, unknown>> = [];
   let formDirty = false;
 
   function getApiBase(): string {
     return window.APP_API_BASE || '';
-  }
-
-  function escapeHtml(value: unknown): string {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
   }
 
   function formToPayload(form: HTMLFormElement): Record<string, string> {
@@ -104,8 +97,11 @@
     if (select) select.innerHTML = '<option value="">Carregando alarmes...</option>';
 
     const response = await fetchWithTimeout(`${getApiBase()}api_alarmes&per_page=100${extraParams}`, { credentials: 'same-origin' });
+    if (!response.ok) {
+      throw new Error('Erro ao carregar alarmes.');
+    }
     const payload = await response.json();
-    if (!response.ok || !payload.success) {
+    if (!payload.success) {
       throw new Error(payload.error || 'Erro ao carregar alarmes.');
     }
     alarmes = Array.isArray(payload.data) ? payload.data : [];
@@ -145,15 +141,18 @@
         credentials: 'same-origin',
         body: JSON.stringify(payload)
       });
+      if (!response.ok) {
+        throw new Error('Falha ao atualizar alarme.');
+      }
       const result = await response.json();
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.message || 'Falha ao atualizar alarme.');
       }
 
       formDirty = false;
       window.showToast(result.message || 'Alarme atualizado com sucesso.', 'success');
     } catch (error) {
-      window.showToast((error as Error).message || 'Erro ao atualizar alarme.', 'danger');
+      handleApiError(error, 'Erro ao atualizar alarme.');
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHtml;
@@ -186,7 +185,7 @@
         if (found) fillForm(found);
       }
     } catch (error) {
-      window.showToast((error as Error).message || 'Falha ao carregar alarmes.', 'danger');
+      handleApiError(error, 'Falha ao carregar alarmes.');
     }
 
     select?.addEventListener('change', () => {
@@ -211,7 +210,7 @@
           fillForm(alarmes[0]);
         }
       } catch (error) {
-        window.showToast((error as Error).message || 'Erro ao buscar alarmes.', 'danger');
+        handleApiError(error, 'Erro ao buscar alarmes.');
       }
     });
 

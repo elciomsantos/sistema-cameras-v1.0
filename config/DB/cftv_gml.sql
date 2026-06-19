@@ -605,6 +605,8 @@ FOREIGN KEY (alarme_conta) REFERENCES central_alarmes(conta) ON DELETE SET NULL;
 
 CREATE FULLTEXT INDEX ftx_locais_busca ON locais(nome, logradouro, bairro);
 
+ALTER TABLE locais ADD CONSTRAINT uq_locais_nome_secretaria UNIQUE (nome, secretaria_id);
+
 CREATE TABLE alarmes_manutencoes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     alarme_id INT NOT NULL,
@@ -1158,8 +1160,8 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     equipamento_id BIGINT UNSIGNED NULL COMMENT 'FK para equipamentos (câmeras)',
     alarme_id INT NULL COMMENT 'FK para central_alarmes',
-    manutencao_camera_id BIGINT UNSIGNED NULL COMMENT 'FK para equipamentos_manutencoes',
-    manutencao_alarme_id BIGINT UNSIGNED NULL COMMENT 'FK para alarmes_manutencoes',
+    manutencao_camera_id BIGINT NULL COMMENT 'FK para equipamentos_manutencoes',
+    manutencao_alarme_id BIGINT NULL COMMENT 'FK para alarmes_manutencoes',
     tipo VARCHAR(50) NOT NULL DEFAULT 'foto' COMMENT 'foto, documento, anexo',
     nome_original VARCHAR(255) NOT NULL,
     nome_arquivo VARCHAR(255) NOT NULL COMMENT 'Nome no disco (hash)',
@@ -1171,6 +1173,8 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_anexos_equip FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE CASCADE,
     CONSTRAINT fk_anexos_alarme FOREIGN KEY (alarme_id) REFERENCES central_alarmes(id) ON DELETE CASCADE,
+    CONSTRAINT fk_anexos_manut_camera FOREIGN KEY (manutencao_camera_id) REFERENCES equipamentos_manutencoes(id) ON DELETE SET NULL,
+    CONSTRAINT fk_anexos_manut_alarme FOREIGN KEY (manutencao_alarme_id) REFERENCES alarmes_manutencoes(id) ON DELETE SET NULL,
     CONSTRAINT fk_anexos_user FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL,
     INDEX idx_anexos_equipamento (equipamento_id),
     INDEX idx_anexos_alarme (alarme_id),

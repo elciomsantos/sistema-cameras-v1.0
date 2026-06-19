@@ -1,10 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
-
-if (!isset($_SESSION['usuario'])) {
-    header('Location: index.php?page=login');
-    exit;
-}
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('user');
 
 $api_url = BASE_URL . '/index.php?page=api/api_alarmes';
 $canDelete = isset($_SESSION['usuario']->nivel_acesso)
@@ -116,4 +113,4 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
 </div>
 
 <div id="listarAlarmesConfig" style="display:none;" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>"></div>
-<script src="<?= BASE_URL ?>/assets/js/listar_alarmes.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_alarmes.js') ?>"></script>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/listar_alarmes.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_alarmes.js') ?>"></script>

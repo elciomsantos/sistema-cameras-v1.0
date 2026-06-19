@@ -1,22 +1,11 @@
 /**
  * Service Worker para Progressive Web App (PWA)
- * v4 - HTML sempre do servidor, assets estáticos em cache, fallback offline com index.php
+ * v5 - Lê sw-assets.json pós-build para pré-cachear assets Vite com hash
  */
 
-const CACHE_NAME = 'cameras-app-v4';
-const API_CACHE = 'cameras-api-v4';
-const ASSETS_CACHE = 'cameras-assets-v4';
-
-const ASSETS_TO_CACHE = [
-  './assets/css/main.css',
-  './assets/css/theme-enhancements.css',
-  './assets/js/main.js',
-  './assets/js/utils/ui/theme-manager.js',
-  './images/favicon-32x32.png',
-  './images/favicon-16x16.png',
-  './images/apple-touch-icon.png',
-  './index.php'
-];
+const CACHE_NAME = 'cameras-app-v5';
+const API_CACHE = 'cameras-api-v5';
+const ASSETS_CACHE = 'cameras-assets-v5';
 
 let BASE_URL = '';
 
@@ -29,10 +18,21 @@ self.addEventListener('message', event => {
 self.addEventListener('install', event => {
   event.waitUntil(
     Promise.all([
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.addAll(ASSETS_TO_CACHE).catch(err => {
-          console.error('[SW] Failed to cache app assets:', err);
-        });
+      caches.open(CACHE_NAME).then(async cache => {
+        try {
+          const resp = await fetch('./sw-assets.json');
+          const urls = await resp.json();
+          await cache.addAll(urls);
+          console.log('[SW] Pré-cache de', urls.length, 'assets via sw-assets.json');
+        } catch (err) {
+          console.error('[SW] Falha ao pré-carregar sw-assets.json:', err);
+          await cache.addAll([
+            './index.php',
+            './images/favicon-32x32.png',
+            './images/favicon-16x16.png',
+            './apple-touch-icon.png'
+          ]);
+        }
       }),
       caches.open(ASSETS_CACHE).then(cache => {
         return cache.addAll([

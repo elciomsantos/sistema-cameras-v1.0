@@ -206,7 +206,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                         </div>
                     </div>
 
-                    <?php if (($_SESSION['usuario']->nivel_acesso ?? '') === 'admin'): ?>
+                    <?php if (userHasAccess('admin')): ?>
                     <div class="dashboard-card">
                         <div class="card-body text-center p-4">
                             <div class="text-secondary card-icon">

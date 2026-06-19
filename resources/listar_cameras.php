@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
-
-// Verificar se usu�rio tem acesso
-if (!isset($_SESSION['usuario'])) {
-    header('Location: index.php?page=login');
-    exit;
-}
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('user');
 
 // Configurar o caminho da API
 $api_url = BASE_URL . '/index.php?page=api/api_cameras';
@@ -176,4 +172,4 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
 </div>
 
 <div id="listarCamerasConfig" style="display:none;" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>" data-can-delete="<?= $canDelete ? '1' : '0' ?>"></div>
-<script src="<?= BASE_URL ?>/assets/js/listar_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_cameras.js') ?>"></script>
+<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/listar_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_cameras.js') ?>"></script>

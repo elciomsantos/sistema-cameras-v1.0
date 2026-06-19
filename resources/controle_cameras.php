@@ -1,15 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
-
-if (!isset($_SESSION['usuario'])) {
-    header('Location: index.php?page=login');
-    exit;
-}
-
-if (($_SESSION['usuario']->nivel_acesso ?? 'user') !== 'admin' && ($_SESSION['usuario']->nivel_acesso ?? 'user') !== 'supervisor') {
-    header('Location: index.php?page=nao_autorizado');
-    exit;
-}
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('supervisor');
 ?>
 
 <div class="container-fluid mt-4">

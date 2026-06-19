@@ -25,4 +25,12 @@ return [
     'controle_alarmes' => 'supervisor',
     'listar_alarmes' => 'supervisor',
     'listar_cameras' => 'supervisor',
+
+    'cadastro_locais' => 'supervisor',
+    'editar_locais' => 'supervisor',
+    'listar_locais' => 'supervisor',
+    'listar_escolas' => 'supervisor',
+    'listar_cmeis' => 'supervisor',
+    'listar_operadoras' => 'supervisor',
+    'listar_proprios' => 'supervisor',
 ];

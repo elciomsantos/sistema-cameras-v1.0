@@ -26,19 +26,6 @@ function getSessionClientIp(): string
         return $remoteAddr;
     }
 
-    $forwarded = trim($_SERVER['HTTP_X_FORWARDED_FOR'] ?? '');
-    if ($forwarded !== '') {
-        $firstIp = trim(explode(',', $forwarded)[0]);
-        if (filter_var($firstIp, FILTER_VALIDATE_IP)) {
-            return $firstIp;
-        }
-    }
-
-    $realIp = trim($_SERVER['HTTP_X_REAL_IP'] ?? '');
-    if ($realIp !== '' && filter_var($realIp, FILTER_VALIDATE_IP)) {
-        return $realIp;
-    }
-
     return $remoteAddr;
 }
 

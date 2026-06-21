@@ -15,7 +15,8 @@ class RateLimiter
         string $strategy = 'sliding_window',
         array $configs = []
     ) {
-        $this->storagePath = rtrim($storagePath ?? sys_get_temp_dir(), '/') . '/' . self::STORAGE_DIR;
+        $defaultPath = defined('APP_ROOT') ? APP_ROOT . '/storage/ratelimit' : sys_get_temp_dir();
+        $this->storagePath = rtrim($storagePath ?? $defaultPath, '/') . '/' . self::STORAGE_DIR;
         $this->strategy = $strategy;
         $this->configs = $configs;
 

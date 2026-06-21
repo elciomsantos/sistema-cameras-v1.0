@@ -4,35 +4,14 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
 $db = db();
+$locaisService = new LocaisService($db);
 $page = max(1, (int)($_GET['page_num'] ?? 1));
 $perPage = 50;
-$offset = ($page - 1) * $perPage;
 $search = trim($_GET['busca'] ?? '');
 
-$where = "WHERE l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'CMEI' LIMIT 1)";
-$params = [];
-if ($search !== '') {
-    $where .= " AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ? OR l.cidade LIKE ?)";
-    $like = "%$search%";
-    $params = [$like, $like, $like, $like];
-}
-
-$countResult = $db->query("SELECT COUNT(*) as total FROM locais l $where", $params);
-$total = (int)($countResult['status'] === 'success' ? ($countResult['data'][0]->total ?? 0) : 0);
+$total = $locaisService->countByTipoNome('CMEI', $search);
 $totalPages = max(1, ceil($total / $perPage));
-
-$result = $db->query(
-    "SELECT l.id, l.nome, l.logradouro, l.bairro, l.cidade, l.uf, l.numero,
-            s.nome as secretaria, s.sigla, tl.nome as tipo_local
-     FROM locais l
-     LEFT JOIN secretarias s ON l.secretaria_id = s.id
-     LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
-     $where
-     ORDER BY l.nome
-     LIMIT $perPage OFFSET $offset",
-    $params
-);
-$locais = ($result['status'] === 'success') ? $result['data'] : [];
+$locais = $locaisService->getByTipoNome('CMEI', $search, $page, $perPage);
 ?>
 
 <div class="container mt-4">

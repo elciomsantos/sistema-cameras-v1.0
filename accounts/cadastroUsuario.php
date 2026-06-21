@@ -108,6 +108,8 @@ function inserirUsuario($dbConn) {
 
             $senha_hash = hashPassword($senha);
 
+            enableAuditTriggers($dbConn, 'web');
+
             $sql = "INSERT INTO usuarios (nome, usuario, senha, nivel_acesso_id, senha_temporaria) VALUES (:nome, :usuario, :senha, :nivel_acesso_id, 1)";
             $params = [
                 ':nome' => $nome,
@@ -119,15 +121,6 @@ function inserirUsuario($dbConn) {
             $result = $dbConn->query($sql, $params);
 
             if ($result['status'] === 'success') {
-                $newId = (int)$dbConn->lastInsertId();
-                auditEvent($dbConn, 'usuarios', $newId, 'INSERT', null, [
-                    'id' => $newId,
-                    'nome' => $nome,
-                    'usuario' => $usuario,
-                    'nivel_acesso' => $nivel_acesso,
-                    'senha_temporaria' => 1
-                ], 'web');
-
                 $_SESSION["status_cadastro"] = true;
                 ob_end_clean();
                 header('Location: index.php?page=administracao');

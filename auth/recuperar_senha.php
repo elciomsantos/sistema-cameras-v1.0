@@ -37,19 +37,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                     $novaSenha = generateTemporaryPassword();
                     $senhaHash = hashPassword($novaSenha);
 
+                    enableAuditTriggers($db, 'web');
                     $update = $db->query(
                         "UPDATE usuarios SET senha = :senha, senha_temporaria = 1 WHERE id = :id",
                         [':senha' => $senhaHash, ':id' => $userData->id]
                     );
 
                     if ($update['status'] === 'success') {
-                        auditEvent($db, 'usuarios', (int)$userData->id, 'UPDATE', [
-                            'senha_temporaria' => 0
-                        ], [
-                            'senha_temporaria' => 1,
-                            'motivo' => 'recuperacao_de_senha'
-                        ], 'web');
-
                         $_SESSION['sucesso_recuperar'] = 'Senha temporaria gerada e registrada no sistema. O usuario devera usa-la para fazer login e sera forcado a criar uma nova senha.';
                         header('Location: ?page=recuperar_senha');
                         exit;

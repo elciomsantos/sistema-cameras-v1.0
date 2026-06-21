@@ -28,7 +28,8 @@
     selectedHistoricoRows: {} as Record<string, unknown>,
     currentPagination: {} as Record<string, unknown>,
     defaultProcedimentoId: '',
-    _fetching: false
+    _fetching: false,
+    _abortController: null as AbortController | null
   };
 
   function getApiBase() {
@@ -395,13 +396,19 @@
   async function ensureMaintenanceListsLoaded(force = false) {
     if (!force && hasSelectableOptions('procedimento_id') && hasSelectableOptions('status_id')) return;
 
+    if (state._abortController) {
+      state._abortController.abort();
+    }
+    state._abortController = new AbortController();
+
     const params = new URLSearchParams();
     params.set('page_num', '1');
     params.set('per_page', '10');
     params.set('include_lists', '1');
 
     const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_alarmes&${params.toString()}`, {
-      headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
+      headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store',
+      signal: state._abortController!.signal
     });
 
     if (!response.ok) throw new Error('Falha ao carregar listas de manutenção.');
@@ -466,6 +473,11 @@
     state._fetching = true;
     showLoading('Carregando dados...');
 
+    if (state._abortController) {
+      state._abortController.abort();
+    }
+    state._abortController = new AbortController();
+
     try {
       state.historicoBusca = (document.getElementById('filtroBuscaHistorico') as HTMLInputElement)?.value || '';
       state.dataInicial = (document.getElementById('dataInicialHist') as HTMLInputElement)?.value || '';
@@ -484,7 +496,8 @@
       params.set('_t', String(Date.now()));
 
       const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_alarmes&${params.toString()}`, {
-        headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store'
+        headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store',
+        signal: state._abortController!.signal
       });
 
       if (!response.ok) throw new Error('Falha ao carregar dados de manutenção.');

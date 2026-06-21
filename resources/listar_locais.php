@@ -4,6 +4,7 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
 $db = db();
+$locaisService = new LocaisService($db);
 
 // Carrega filtros
 $search = trim($_GET['busca'] ?? '');
@@ -30,9 +31,7 @@ if ($filtro_tipo !== '') {
     $params[':tipo_local_id'] = (int)$filtro_tipo;
 }
 
-// Carrega tipos para o select de filtro
-$resultTipos = $db->query("SELECT id, nome FROM tipos_locais ORDER BY nome");
-$tiposLocais = ($resultTipos['status'] === 'success') ? $resultTipos['data'] : [];
+$tiposLocais = $locaisService->getAllTiposLocais();
 
 // Filtro por camera
 if ($filtro_camera === 'sim') {

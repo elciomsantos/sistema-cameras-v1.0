@@ -6,11 +6,11 @@ requererAcesso('supervisor');
 
 try {
     $db = db();
+    $locaisService = new LocaisService($db);
     $resultStatus = $db->query("SELECT id, nome FROM status ORDER BY nome");
     $statusList = $resultStatus['status'] === 'success' ? $resultStatus['data'] : [];
 
-    $resultLocais = $db->query("SELECT id, nome FROM locais ORDER BY nome");
-    $locaisList = $resultLocais['status'] === 'success' ? $resultLocais['data'] : [];
+    $locaisList = $locaisService->getAllLocais();
 
     $resultRegioes = $db->query("SELECT id, nome FROM regioes ORDER BY nome");
     $regioesList = $resultRegioes['status'] === 'success' ? $resultRegioes['data'] : [];

@@ -193,6 +193,13 @@ function validatePasswordPolicy(string $password, ?array &$errors = null): bool
     return empty($errors);
 }
 
+function enableAuditTriggers($db, string $origem = 'web'): void
+{
+    $userId = currentUserId();
+    $db->query("SET @app_user_id = ?", [$userId]);
+    $db->query("SET @app_origem = ?", [$origem]);
+}
+
 function auditEvent($db, string $entidade, ?int $entidadeId, string $operacao, ?array $dadosAntes = null, ?array $dadosDepois = null, string $origem = 'web'): void
 {
     try {

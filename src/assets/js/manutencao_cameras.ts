@@ -21,7 +21,8 @@
     selectedHistoricoRows: {} as Record<string, unknown>,
     currentPagination: {} as Record<string, unknown>,
     defaultProcedimentoId: '',
-    _fetching: false
+    _fetching: false,
+    _abortController: null as AbortController | null
   };
 
   function getApiBase() {
@@ -51,6 +52,11 @@
       return;
     }
 
+    if (state._abortController) {
+      state._abortController.abort();
+    }
+    state._abortController = new AbortController();
+
     const params = new URLSearchParams();
     params.set('page_num', '1');
     params.set('per_page', '10');
@@ -59,7 +65,8 @@
     const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_cameras&${params.toString()}`, {
       headers: { Accept: 'application/json' },
       credentials: 'same-origin',
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: state._abortController!.signal
     });
 
     if (!response.ok) {
@@ -377,6 +384,11 @@
     if (state._fetching) return;
     state._fetching = true;
 
+    if (state._abortController) {
+      state._abortController.abort();
+    }
+    state._abortController = new AbortController();
+
     try {
       const params = new URLSearchParams();
       params.set('page_num', String(state.historicoPage));
@@ -393,7 +405,8 @@
       const response = await fetchWithTimeout(`${getApiBase()}api_manutencao_cameras&${params.toString()}`, {
         headers: { Accept: 'application/json' },
         credentials: 'same-origin',
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: state._abortController!.signal
       });
 
       if (!response.ok) throw new Error('Falha ao carregar dados de manutenção.');

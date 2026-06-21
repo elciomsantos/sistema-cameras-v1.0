@@ -97,9 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                     ];
                 }
 
+                enableAuditTriggers($db, 'web');
                 $result_update = $db->query($sql_update, $params_update);
 
                 if (($result_update['status'] ?? 'error') === 'success') {
+
                     $mensagem_sucesso = 'Usuario atualizado com sucesso.';
                     $usuario->nome = $nome;
                     $usuario->usuario = $usuario_novo;
@@ -112,14 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                         $senhaTemporariaExibida = $senhaTemporariaPlain;
                         $mensagem_sucesso .= ' Senha temporaria gerada com sucesso!';
                     }
-
-                    auditEvent($db, 'usuarios', (int)$id_usuario, 'UPDATE', $beforeAudit, [
-                        'nome' => $usuario->nome,
-                        'usuario' => $usuario->usuario,
-                        'nivel_acesso' => $usuario->nivel_acesso,
-                        'ativo' => $usuario->ativo,
-                        'senha_temporaria' => $usuario->senha_temporaria
-                    ], 'web');
                 } else {
                     $mensagem_erro = 'Erro ao atualizar usuario.';
                 }

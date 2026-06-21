@@ -9,13 +9,12 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
     && in_array($_SESSION['usuario']->nivel_acesso, ['admin', 'supervisor'], true);
 
 $db = db();
+$locaisService = new LocaisService($db);
 $statusList = [];
 $statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome");
 if ($statusResult['status'] === 'success') $statusList = $statusResult['data'];
 
-$locaisList = [];
-$locaisResult = $db->query("SELECT id, nome FROM locais ORDER BY nome");
-if ($locaisResult['status'] === 'success') $locaisList = $locaisResult['data'];
+$locaisList = $locaisService->getAllLocais();
 ?>
 
 <div class="container mt-4">

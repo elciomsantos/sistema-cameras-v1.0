@@ -78,16 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 'longitude' => $longitude !== '' ? (float)$longitude : null,
             ];
 
+            enableAuditTriggers($db, 'web');
             $newId = $locaisService->create($insertData);
             if ($newId > 0) {
-                auditEvent($db, 'locais', $newId, 'INSERT', null, [
-                    'id' => $newId,
-                    'nome' => $nome,
-                    'tipo_local_id' => $tipo_local_id,
-                    'regiao_id' => $regiao_id,
-                    'secretaria_id' => $secretaria_id,
-                    'tem_alarme' => $tem_alarme,
-                ], 'web');
                 $_SESSION['sucesso'] = 'Local cadastrado com sucesso.';
                 header('Location: index.php?page=listar_locais');
                 exit;

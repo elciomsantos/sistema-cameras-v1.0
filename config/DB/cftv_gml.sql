@@ -81,7 +81,11 @@ INSERT INTO status (nome) VALUES
 ('PARADA'),
 ('DESATIVADA'),
 ('REMOVIDA'),
-('MANUTENCAO');
+('MANUTENCAO'),
+('ATIVO'),
+('INATIVO'),
+('DESLIGADO'),
+('PENDENTE');
 
 CREATE TABLE status_os (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -305,7 +309,9 @@ INSERT INTO tipos_locais (nome) VALUES
 ('PARQUE'),
 ('TERMINAL'),
 ('AREA RURAL'),
-('OUTRO');
+('OUTRO'),
+('ESCOLA'),
+('CMEI');
 
 -- =====================================================
 -- CLASSIFICAÇÃO DE ENDEREÇOS (TIPO DE LOGRADOURO)
@@ -561,8 +567,10 @@ CREATE INDEX idx_eq_manut_procedimento ON equipamentos_manutencoes(procedimento_
 CREATE TABLE central_alarmes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     regiao VARCHAR(50),
+    regiao_id INT NULL COMMENT 'FK para regioes',
     conta INT NOT NULL UNIQUE,
     status VARCHAR(20),
+    status_id INT NULL COMMENT 'FK para status',
     local VARCHAR(255),
     endereco VARCHAR(255),
     numero VARCHAR(20),
@@ -586,11 +594,15 @@ CREATE TABLE central_alarmes (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_central_alarmes_modelo FOREIGN KEY (modelo_alarme_id) REFERENCES catalogo_modelos_alarmes(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_central_alarmes_status FOREIGN KEY (status_id) REFERENCES status(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_central_alarmes_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE RESTRICT,
     
     INDEX idx_alarmes_conta (conta),
     INDEX idx_alarmes_status (status),
     INDEX idx_alarmes_camera_gm (camera_gm),
-    INDEX idx_alarmes_data_atualizacao (data_atualizacao)
+    INDEX idx_alarmes_data_atualizacao (data_atualizacao),
+    INDEX idx_alarmes_status_id (status_id),
+    INDEX idx_alarmes_regiao_id (regiao_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX idx_alarmes_status_regiao ON central_alarmes(status, regiao);

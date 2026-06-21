@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
+
+requererAcesso('supervisor');
 ?>
 
 <div class="container-fluid mt-4">

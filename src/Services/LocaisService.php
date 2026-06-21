@@ -137,4 +137,140 @@ class LocaisService
         $result = $this->db->query("SELECT id, nome FROM locais ORDER BY nome");
         return $result['status'] === 'success' ? $result['data'] : [];
     }
+
+    public function getByTipoNome(string $tipoNome, string $search = '', int $page = 1, int $perPage = 20): array
+    {
+        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1)';
+        $params = [$tipoNome];
+
+        if ($search !== '') {
+            $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
+            $searchParam = '%' . $search . '%';
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+        }
+
+        $offset = ($page - 1) * $perPage;
+        $sql = "SELECT l.id, l.nome, l.logradouro, l.bairro, l.cidade, l.uf, l.numero,
+            s.nome as secretaria, s.sigla, tl.nome as tipo_local
+        FROM locais l
+            LEFT JOIN secretarias s ON l.secretaria_id = s.id
+            LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+        WHERE {$where}
+        ORDER BY l.nome
+        LIMIT {$perPage} OFFSET {$offset}";
+
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? $result['data'] : [];
+    }
+
+    public function countByTipoNome(string $tipoNome, string $search = ''): int
+    {
+        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1)';
+        $params = [$tipoNome];
+
+        if ($search !== '') {
+            $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
+            $searchParam = '%' . $search . '%';
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+            $params[] = $searchParam;
+        }
+
+        $sql = "SELECT COUNT(*) as total FROM locais l WHERE {$where}";
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? (int)($result['data'][0]->total ?? 0) : 0;
+    }
+
+    public function create(array $data): int
+    {
+        $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
+            'horario_funcionamento', 'tem_alarme', 'cep', 'uf', 'cidade', 'bairro',
+            'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
+            'latitude', 'longitude'];
+
+        $fields = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $fields[] = $field;
+                $placeholders[] = '?';
+                $params[] = $data[$field];
+            }
+        }
+
+        if (empty($fields)) {
+            return 0;
+        }
+
+        $sql = "INSERT INTO locais (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $result = $this->db->query($sql, $params);
+
+        if ($result['status'] === 'success') {
+            return (int)($this->db->lastInsertId() ?? 0);
+        }
+
+        return 0;
+    }
+
+    public function update(int $id, array $data): bool
+    {
+        $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
+            'horario_funcionamento', 'tem_alarme', 'cep', 'uf', 'cidade', 'bairro',
+            'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
+            'latitude', 'longitude'];
+
+        $sets = [];
+        $params = [];
+
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $sets[] = "{$field} = ?";
+                $params[] = $data[$field];
+            }
+        }
+
+        if (empty($sets)) {
+            return false;
+        }
+
+        $params[] = $id;
+        $sql = "UPDATE locais SET " . implode(', ', $sets) . " WHERE id = ?";
+        $result = $this->db->query($sql, $params);
+
+        return $result['status'] === 'success';
+    }
+
+    public function getAllLocaisExport(array $filters = []): array
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        if (!empty($filters['nome'])) {
+            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+            $params[] = '%' . $filters['nome'] . '%';
+        }
+
+        $whereClause = implode(' AND ', $where);
+
+        $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+        FROM locais l
+            LEFT JOIN secretarias s ON l.secretaria_id = s.id
+            LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+            LEFT JOIN regioes r ON l.regiao_id = r.id
+        WHERE {$whereClause}
+        ORDER BY l.nome";
+
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? $result['data'] : [];
+    }
 }

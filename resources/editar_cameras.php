@@ -1,15 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
 
-if (!isset($_SESSION['usuario'])) {
-    echo '<div class="alert alert-danger">Sessao expirada.</div>';
-    exit;
-}
-
-if (!userHasAccess('supervisor')) {
-    echo '<div class="alert alert-danger">Acesso negado. Nivel de acesso insuficiente.</div>';
-    exit;
-}
+requererAcesso('supervisor');
 
 $db = db();
 $dados = [];

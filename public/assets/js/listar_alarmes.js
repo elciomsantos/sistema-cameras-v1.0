@@ -75,7 +75,7 @@ async function carregarListaAlarmes(page = 1) {
             exibirAlarmes(todosAlarmes);
             renderPaginacao();
 
-            showToast(totalRecords + ' alarmes encontrados', 'success');
+            if (typeof window.showToast === 'function') window.showToast(totalRecords + ' alarmes encontrados', 'success');
         } else {
             throw new Error(resultado.error || 'Formato de dados invalido');
         }
@@ -304,15 +304,6 @@ function mostrarErro(mensagem) {
             ${escapeHtml(mensagem)}
         </div>
     `;
-}
-
-function showToast(message, type) {
-  var safe = String(message ?? '').replace(/[&<>"']/g, function(m) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-  });
-  if (typeof window.showToast === 'function') {
-    window.showToast(safe, type);
-  }
 }
 
 let todosAlarmes = [];

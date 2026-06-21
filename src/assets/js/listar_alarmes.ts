@@ -35,6 +35,8 @@ function buildQueryParams(page: number): URLSearchParams {
     return params;
 }
 
+let listController: AbortController | null = null;
+
 async function carregarListaAlarmes(page: number = 1): Promise<void> {
     try {
         currentPage = page;
@@ -46,8 +48,15 @@ async function carregarListaAlarmes(page: number = 1): Promise<void> {
             </div>
         `;
 
+        if (listController) {
+            listController.abort();
+        }
+        listController = new AbortController();
+
         const params = buildQueryParams(page);
-        const response = await fetchWithTimeout(`${API_URL}&${params.toString()}`);
+        const response = await fetchWithTimeout(`${API_URL}&${params.toString()}`, {
+            signal: listController.signal
+        });
 
         if (!response.ok) {
             throw new Error(`Erro HTTP: ${response.status}`);
@@ -299,15 +308,6 @@ function mostrarErro(mensagem: string): void {
             ${escapeHtml(mensagem)}
         </div>
     `;
-}
-
-function showToast(message: string, type?: string): void {
-  var safe = String(message ?? '').replace(/[&<>"']/g, function(m: string): string {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m] || '';
-  });
-  if (typeof window.showToast === 'function') {
-    window.showToast(safe, type as 'success' | 'danger' | 'warning' | 'info');
-  }
 }
 
 let todosAlarmes: Array<Record<string, unknown>> = [];

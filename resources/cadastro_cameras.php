@@ -1,11 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
 
-// Verificar permissões
-if (!in_array($_SESSION['usuario']->nivel_acesso ?? '', ['admin', 'supervisor'], true)) {
-    header('Location: index.php?page=nao_autorizado');
-    exit;
-}
+requererAcesso('supervisor');
 
 // Carregar dados para selects
 $db = db();

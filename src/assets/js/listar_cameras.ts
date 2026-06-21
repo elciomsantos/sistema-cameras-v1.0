@@ -52,7 +52,15 @@ async function carregarListaCameras(page: number = 1): Promise<void> {
         `;
 
         const params = buildQueryParams(page);
-        const response = await fetchWithTimeout(`${API_URL}&${params.toString()}`);
+
+        if (listController) {
+            listController.abort();
+        }
+        listController = new AbortController();
+
+        const response = await fetchWithTimeout(`${API_URL}&${params.toString()}`, {
+            signal: listController.signal
+        });
 
         if (!response.ok) {
             throw new Error(`Erro HTTP: ${response.status}`);
@@ -383,6 +391,7 @@ let currentCameraId: string | null = null;
 let todasCameras: Array<Record<string, unknown>> = [];
 let totalRecords: number = 0;
 let totalPages: number = 1;
+let listController: AbortController | null = null;
 
 let lastFocusedTrigger: HTMLElement | null = null;
 

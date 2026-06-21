@@ -4,19 +4,12 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
 $db = db();
+$locaisService = new LocaisService($db);
 
-// Carrega dados para os selects
-$resultTipos = $db->query("SELECT id, nome FROM tipos_locais ORDER BY nome");
-$tiposLocais = ($resultTipos['status'] === 'success') ? $resultTipos['data'] : [];
-
-$resultSec = $db->query("SELECT id, nome, sigla FROM secretarias ORDER BY nome");
-$secretarias = ($resultSec['status'] === 'success') ? $resultSec['data'] : [];
-
-$resultClass = $db->query("SELECT id, nome FROM classificacao_enderecos ORDER BY nome");
-$classificacoes = ($resultClass['status'] === 'success') ? $resultClass['data'] : [];
-
-$resultRegioes = $db->query("SELECT id, nome FROM regioes ORDER BY nome");
-$regioes = ($resultRegioes['status'] === 'success') ? $resultRegioes['data'] : [];
+$tiposLocais = $locaisService->getAllTiposLocais();
+$secretarias = $locaisService->getAllSecretarias();
+$classificacoes = $locaisService->getAllClassificacoesEnderecos();
+$regioes = $locaisService->getAllRegioes();
 
 $ufs = [
     'AC','AL','AP','AM','BA','CE','DF','ES','GO',
@@ -62,52 +55,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     } elseif (empty($tipo_local_id)) {
         $mensagem_erro = 'Selecione o Tipo de Local.';
     } else {
-        $checkDup = $db->query(
-            "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ? LIMIT 1",
-            [$nome, $secretaria_id ? (int)$secretaria_id : null]
-        );
-        if ($checkDup['status'] === 'success' && !empty($checkDup['data'])) {
+        $checkDup = $locaisService->checkDuplicado($nome, $secretaria_id ? (int)$secretaria_id : null);
+        if ($checkDup) {
             $mensagem_erro = 'Ja existe um local com este nome nesta secretaria.';
         } else {
-        $sql = "INSERT INTO locais (tipo_local_id, nome, regiao_id, secretaria_id, horario_funcionamento, tem_alarme, cep, uf, cidade, bairro, classificacao_endereco_id, logradouro, numero, descricao_posicao, latitude, longitude)
-                VALUES (:tipo_local_id, :nome, :regiao_id, :secretaria_id, :horario_funcionamento, :tem_alarme, :cep, :uf, :cidade, :bairro, :classificacao_endereco_id, :logradouro, :numero, :descricao_posicao, :latitude, :longitude)";
-        $params = [
-            ':tipo_local_id' => $tipo_local_id ? (int)$tipo_local_id : null,
-            ':nome' => $nome,
-            ':regiao_id' => $regiao_id ? (int)$regiao_id : null,
-            ':secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
-            ':horario_funcionamento' => $horario_funcionamento ?: null,
-            ':tem_alarme' => $tem_alarme,
-            ':cep' => $cep ?: null,
-            ':uf' => $uf ?: null,
-            ':cidade' => $cidade ?: null,
-            ':bairro' => $bairro ?: null,
-            ':classificacao_endereco_id' => $classificacao_endereco_id ? (int)$classificacao_endereco_id : null,
-            ':logradouro' => $logradouro ?: null,
-            ':numero' => $numero ?: null,
-            ':descricao_posicao' => $descricao_posicao ?: null,
-            ':latitude' => $latitude !== '' ? (float)$latitude : null,
-            ':longitude' => $longitude !== '' ? (float)$longitude : null,
-        ];
-
-        $result = $db->query($sql, $params);
-
-        if ($result['status'] === 'success') {
-            $newId = (int)$db->lastInsertId();
-            auditEvent($db, 'locais', $newId, 'INSERT', null, [
-                'id' => $newId,
+            $insertData = [
+                'tipo_local_id' => $tipo_local_id ? (int)$tipo_local_id : null,
                 'nome' => $nome,
-                'tipo_local_id' => $tipo_local_id,
-                'regiao_id' => $regiao_id,
-                'secretaria_id' => $secretaria_id,
+                'regiao_id' => $regiao_id ? (int)$regiao_id : null,
+                'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
+                'horario_funcionamento' => $horario_funcionamento ?: null,
                 'tem_alarme' => $tem_alarme,
-            ], 'web');
-            $_SESSION['sucesso'] = 'Local cadastrado com sucesso.';
-            header('Location: index.php?page=listar_locais');
-            exit;
-        } else {
-            $mensagem_erro = 'Erro ao cadastrar local.';
-        }
+                'cep' => $cep ?: null,
+                'uf' => $uf ?: null,
+                'cidade' => $cidade ?: null,
+                'bairro' => $bairro ?: null,
+                'classificacao_endereco_id' => $classificacao_endereco_id ? (int)$classificacao_endereco_id : null,
+                'logradouro' => $logradouro ?: null,
+                'numero' => $numero ?: null,
+                'descricao_posicao' => $descricao_posicao ?: null,
+                'latitude' => $latitude !== '' ? (float)$latitude : null,
+                'longitude' => $longitude !== '' ? (float)$longitude : null,
+            ];
+
+            $newId = $locaisService->create($insertData);
+            if ($newId > 0) {
+                auditEvent($db, 'locais', $newId, 'INSERT', null, [
+                    'id' => $newId,
+                    'nome' => $nome,
+                    'tipo_local_id' => $tipo_local_id,
+                    'regiao_id' => $regiao_id,
+                    'secretaria_id' => $secretaria_id,
+                    'tem_alarme' => $tem_alarme,
+                ], 'web');
+                $_SESSION['sucesso'] = 'Local cadastrado com sucesso.';
+                header('Location: index.php?page=listar_locais');
+                exit;
+            } else {
+                $mensagem_erro = 'Erro ao cadastrar local.';
+            }
         }
     }
 

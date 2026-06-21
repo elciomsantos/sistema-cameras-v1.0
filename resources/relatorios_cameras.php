@@ -2,6 +2,8 @@
 require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../config/database.php';
 
+requererAcesso('supervisor');
+
 try {
     $db = db();
     $resultStatus = $db->query("SELECT id, nome FROM status ORDER BY nome");
@@ -163,7 +165,6 @@ try {
     <div class="mt-3">Carregando dados...</div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
 <?php
 $vitePageJs = vite_asset('relatorios-cameras');
 $viteImports = vite_entry_imports('relatorios-cameras');

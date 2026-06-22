@@ -1197,3 +1197,54 @@ body.dark-mode .anexos-dropzone.anexos-dragover {
 body.dark-mode .anexos-progress-container .progress {
     background-color: var(--bg-tertiary);
 }
+
+/* ===== GLOBAL LOADER (LoadingManager) ===== */
+.global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal, 0.3s);
+}
+
+.global-loader.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.global-loader-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.global-loader-content {
+    background: var(--bg-secondary, #fff);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.15));
+    position: relative;
+    z-index: 1;
+}
+
+.global-loader-message {
+    margin-top: 1rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+body.dark-mode .global-loader-message {
+    color: #e9ecef;
+}

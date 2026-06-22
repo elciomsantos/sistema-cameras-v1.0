@@ -10,9 +10,8 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
 
 $db = db();
 $locaisService = new LocaisService($db);
-$statusList = [];
-$statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome");
-if ($statusResult['status'] === 'success') $statusList = $statusResult['data'];
+$lookup = new LookupService();
+$statusList = $lookup->getStatusList();
 
 $locaisList = $locaisService->getAllLocais();
 ?>
@@ -171,9 +170,7 @@ $vitePageJs = vite_asset('listar-cameras');
 $viteImports = vite_entry_imports('listar-cameras');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/listar_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/listar_cameras.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>

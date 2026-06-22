@@ -1,4 +1,5 @@
 // Entry point for cadastro_cameras page
+import '../../css/pages/cadastro_cameras.css';
 import '../utils/fetchWithTimeout';
 import '../utils/ui-utils';
 import '../utils/file-upload';

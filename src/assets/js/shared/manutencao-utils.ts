@@ -82,14 +82,11 @@ import { escapeHtml } from '../utils/html';
   };
 
   // === Scroll Sync ===
-  let _historicoScrollStyle: HTMLStyleElement | null = null;
-
   function _setHistoricoScrollWidth(width: number): void {
-    if (!_historicoScrollStyle) {
-      _historicoScrollStyle = document.createElement('style');
-      document.head.appendChild(_historicoScrollStyle);
+    const el = document.getElementById('historicoTopScrollContent');
+    if (el) {
+      el.style.width = `${width}px`;
     }
-    _historicoScrollStyle.textContent = `#historicoTopScrollContent { width: ${width}px !important; }`;
   }
 
   window.syncHistoricoTopScroll = function syncHistoricoTopScroll(): void {

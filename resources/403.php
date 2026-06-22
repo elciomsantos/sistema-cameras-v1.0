@@ -6,7 +6,7 @@
             </div>
             <h2 class="mb-3">Acesso Negado</h2>
             <p class="text-muted mb-4">Voce nao tem permissao para acessar esta pagina.</p>
-            <a href="index.php?page=home" class="btn btn-primary">
+            <a href="?page=home" class="btn btn-primary">
                 <i class="fas fa-home me-1"></i>Voltar ao Inicio
             </a>
         </div>

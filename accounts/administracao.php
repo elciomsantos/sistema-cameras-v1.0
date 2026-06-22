@@ -41,10 +41,10 @@ if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
+                    <!-- <div class="alert alert-info">
                         <h5><i class="fas fa-tools me-2"></i>Ferramentas administrativas</h5>
                         <p class="mb-0">Gerencie usuários, escolas, CMEIs, operadoras de link e próprios públicos cadastrados no sistema.</p>
-                    </div>
+                    </div> -->
 
                     <!-- Stats row -->
                     <div class="row mb-4">

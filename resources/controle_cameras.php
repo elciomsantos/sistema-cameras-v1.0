@@ -14,10 +14,10 @@ requererAcesso('supervisor');
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info">
+                    <!-- <div class="alert alert-info">
                         <h5><i class="fas fa-check-circle me-2"></i>M&oacute;dulo de c&acirc;meras habilitado</h5>
                         <p class="mb-0">Use os atalhos abaixo para cadastrar, editar, listar e registrar manuten&ccedil;&atilde;o das c&acirc;meras.</p>
-                    </div>
+                    </div> -->
 
                     <div class="row mb-4">
                         <div class="col-md-3">

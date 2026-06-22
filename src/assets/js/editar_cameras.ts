@@ -395,14 +395,6 @@ async function initCameraEditor(): Promise<void> {
         }
     };
 
-    const escapeHtml = (value: unknown): string =>
-        String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-
     const fetchCameras = async (params: Record<string, unknown> = {}): Promise<Record<string, unknown>> => {
         const qs = new URLSearchParams();
         if (params.id) {

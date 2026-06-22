@@ -32,6 +32,7 @@ declare function aplicarUppercaseUniversal(formOrSelector: string | Element | nu
 declare function loadAnexos(container: HTMLElement): void;
 declare function initAnexoSection(container: HTMLElement | null): void;
 declare function escapeHtml(text: unknown): string;
+declare function handleApiError(error: unknown, fallbackMessage?: string): string;
 declare function uploadFile(container: HTMLElement, file: File, tipo: string, descricao: string, onProgress?: (pct: number) => void): Promise<AnexoData>;
 
 // Shared maintenance utilities (bare)
@@ -84,6 +85,7 @@ interface Window {
   csvEscape: (value: unknown) => string;
   showMessage: (type: string, text: string) => void;
   clearMessage: () => void;
+  handleApiError: (error: unknown, fallbackMessage?: string) => string;
   renderSelectOptions: (selectId: string, data: Array<Record<string, unknown>> | null | undefined, includeEmptyLabel: string | false | undefined) => void;
   hasSelectableOptions: (selectId: string) => boolean;
   ensureSelectOption: (select: HTMLSelectElement | null, value: string, label: string) => void;

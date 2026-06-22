@@ -7,13 +7,10 @@ requererAcesso('supervisor');
 try {
     $db = db();
     $locaisService = new LocaisService($db);
-    $resultStatus = $db->query("SELECT id, nome FROM status ORDER BY nome");
-    $statusList = $resultStatus['status'] === 'success' ? $resultStatus['data'] : [];
-
+    $lookup = new LookupService();
+    $statusList = $lookup->getStatusList();
     $locaisList = $locaisService->getAllLocais();
-
-    $resultRegioes = $db->query("SELECT id, nome FROM regioes ORDER BY nome");
-    $regioesList = $resultRegioes['status'] === 'success' ? $resultRegioes['data'] : [];
+    $regioesList = $lookup->getRegioesList();
 } catch (Exception $e) {
     error_log("Erro ao carregar dados para relatorio de cameras: " . $e->getMessage());
     $statusList = [];
@@ -22,7 +19,7 @@ try {
 }
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/relatorios_cameras.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/relatorios_cameras.css') ?>">
+<?php vite_page_css('relatorios-cameras'); ?>
 
 <div class="container-fluid mt-4 mb-4 relatorio-cameras-page">
     <div class="row mb-4">
@@ -170,11 +167,9 @@ $vitePageJs = vite_asset('relatorios-cameras');
 $viteImports = vite_entry_imports('relatorios-cameras');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/relatorios.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/relatorios.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>
 
 

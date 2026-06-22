@@ -523,12 +523,6 @@
     } finally { hideLoading(); state._fetching = false; }
   }
 
-  function csvEscape(value: unknown): string {
-    const str = String(value ?? '');
-    if (str.includes(';') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`;
-    return str;
-  }
-
   function getSelectedOrAllHistoricoRows() {
     if (state.selectedHistoricoIds.size > 0) return state.historico.filter((item) => state.selectedHistoricoIds.has(String(item.id || '')));
     return null;

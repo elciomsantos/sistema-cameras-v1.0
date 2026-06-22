@@ -294,7 +294,6 @@ function fd(string $key): string {
     </div>
 </div>
 
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/uppercase.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/uppercase.js') ?>"></script>
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 document.addEventListener('DOMContentLoaded', function() {
     aplicarUppercaseUniversal(document.querySelector('form'));
@@ -440,3 +439,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<?php
+$vitePageJs = vite_asset('cadastro-locais');
+if ($vitePageJs):
+    $viteImports = vite_entry_imports('cadastro-locais');
+    foreach ($viteImports as $imp): ?>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+<?php endif; ?>

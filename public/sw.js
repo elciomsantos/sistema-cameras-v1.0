@@ -3,9 +3,9 @@
  * v5 - Lê sw-assets.json pós-build para pré-cachear assets Vite com hash
  */
 
-const CACHE_NAME = 'cameras-app-v5';
-const API_CACHE = 'cameras-api-v5';
-const ASSETS_CACHE = 'cameras-assets-v5';
+const CACHE_NAME = 'cameras-app-v6';
+const API_CACHE = 'cameras-api-v6';
+const ASSETS_CACHE = 'cameras-assets-v6';
 
 let BASE_URL = '';
 
@@ -90,20 +90,18 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets estáticos (css, js, imagens) - Cache first
+  // Assets estáticos (css, js, imagens) - Network first, cache only se 200
   event.respondWith(
-    caches.match(request).then(response => {
-      if (response) return response;
-
-      return fetch(request).then(response => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
-        return response;
-      }).catch(() => caches.match('./index.php'));
-    })
+    fetch(request).then(response => {
+      if (!response || response.status !== 200 || response.type !== 'basic') {
+        return response; // so passa adiante respostas validas 200
+      }
+      const responseToCache = response.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
+      return response;
+    }).catch(() =>
+      caches.match(request).then(cached => cached || caches.match('./index.php'))
+    )
   );
 });
 

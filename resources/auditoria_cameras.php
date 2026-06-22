@@ -3,7 +3,7 @@ require_once __DIR__ . '/../inc/navbar.php';
 requererAcesso('admin');
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/auditoria_cameras.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/auditoria_cameras.css') ?>">
+<?php vite_page_css('auditoria-cameras'); ?>
 
 <div class="container-fluid mt-4 mb-4 auditoria-page">
     <div class="row mb-3">
@@ -91,10 +91,8 @@ $vitePageJs = vite_asset('auditoria-cameras');
 $viteImports = vite_entry_imports('auditoria-cameras');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/auditoria-cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/auditoria-cameras.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>
 

@@ -14,10 +14,10 @@ requererAcesso('supervisor');
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-success">
+                    <!-- <div class="alert alert-success">
                         <h5><i class="fas fa-check-circle me-2"></i>Modulo de alarmes habilitado</h5>
                         <p class="mb-0">Use os atalhos abaixo para cadastrar, editar e registrar manutencao dos alarmes.</p>
-                    </div>
+                    </div> -->
 
                     <div class="row mb-4">
                         <div class="col-md-3">

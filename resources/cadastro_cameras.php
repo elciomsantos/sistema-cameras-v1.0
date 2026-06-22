@@ -4,31 +4,11 @@ require_once __DIR__ . '/../inc/navbar.php';
 requererAcesso('supervisor');
 
 // Carregar dados para selects
-$db = db();
+$lookup = new LookupService();
 $dados = [];
 
 try {
-    $tabelas = [
-        'status' => 'status',
-        'procedimentos' => 'procedimentos',
-        'regioes' => 'regioes',
-        'tipos_equipamento' => 'tipos_equipamento',
-        'tipo_cameras' => 'tipo_cameras',
-        'transmissoes' => 'transmissoes',
-        'origem_links' => 'origem_link',
-        'marcas' => 'marcas',
-        'locais' => 'locais',
-        'tipos_locais' => 'tipos_locais',
-        'secretarias' => 'secretarias',
-    ];
-
-    $allowedTables = array_flip(['status', 'procedimentos', 'regioes', 'tipos_equipamento', 'tipo_cameras', 'transmissoes', 'origem_link', 'marcas', 'locais', 'tipos_locais', 'secretarias']);
-    foreach ($tabelas as $key => $tabela) {
-        if (!isset($allowedTables[$tabela])) continue;
-        $order = $tabela === 'transmissoes' ? 'tipo' : 'nome';
-        $result = $db->query("SELECT * FROM $tabela ORDER BY $order");
-        $dados[$key] = $result['status'] === 'success' ? $result['data'] : [];
-    }
+    $dados = $lookup->getDadosCadastroCamera();
 } catch(Exception $e) {
     error_log('Erro ao carregar dados cadastro_cameras: ' . $e->getMessage());
     echo '<div class="alert alert-danger">Erro ao carregar dados do formulario.</div>';
@@ -39,7 +19,7 @@ $formData = $_SESSION['form_data'] ?? [];
 unset($_SESSION['form_data']);
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/cadastro_cameras.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/cadastro_cameras.css') ?: 0 ?>">
+<?php vite_page_css('cadastro-cameras'); ?>
 
 <div class="container mt-4 mb-5 camera-cadastro-page">
     <div class="row mb-3">
@@ -632,14 +612,9 @@ $vitePageJs = vite_asset('cadastro-cameras');
 $viteImports = vite_entry_imports('cadastro-cameras');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/uppercase.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/uppercase.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui-utils.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui-utils.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/file-upload.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/file-upload.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/cadastro_cameras.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/cadastro_cameras.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>
 
 

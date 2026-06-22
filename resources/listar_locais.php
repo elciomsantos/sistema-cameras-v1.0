@@ -3,54 +3,18 @@ require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
-$db = db();
-$locaisService = new LocaisService($db);
+$locaisService = new LocaisService();
 
 // Carrega filtros
-$search = trim($_GET['busca'] ?? '');
-$filtro_tipo = $_GET['tipo_local_id'] ?? '';
-$filtro_camera = $_GET['camera'] ?? '';
+$filters = [
+    'search' => trim($_GET['busca'] ?? ''),
+    'tipo_local_id' => $_GET['tipo_local_id'] ?? '',
+    'camera' => $_GET['camera'] ?? '',
+];
 $page = max(1, (int)($_GET['page_num'] ?? 1));
 $perPage = 50;
-$offset = ($page - 1) * $perPage;
-
-$where = "WHERE 1=1";
-$params = [];
-
-if ($search !== '') {
-    $where .= " AND (l.nome LIKE :busca OR l.logradouro LIKE :busca2 OR l.bairro LIKE :busca3 OR l.cidade LIKE :busca4)";
-    $like = "%$search%";
-    $params[':busca'] = $like;
-    $params[':busca2'] = $like;
-    $params[':busca3'] = $like;
-    $params[':busca4'] = $like;
-}
-
-if ($filtro_tipo !== '') {
-    $where .= " AND l.tipo_local_id = :tipo_local_id";
-    $params[':tipo_local_id'] = (int)$filtro_tipo;
-}
 
 $tiposLocais = $locaisService->getAllTiposLocais();
-
-// Filtro por camera
-if ($filtro_camera === 'sim') {
-    $where .= " AND (SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0";
-} elseif ($filtro_camera === 'nao') {
-    $where .= " AND (SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0";
-}
-
-$selectColumns = "l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
-    (SELECT COUNT(*) FROM equipamentos e
-        WHERE e.local_id = l.id AND e.deleted_at IS NULL
-        AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
-    (SELECT COUNT(*) FROM equipamentos e
-        WHERE e.local_id = l.id AND e.deleted_at IS NULL
-        AND e.tipo_equipamento_id IN (3,4)) as total_outros";
-$fromClause = "FROM locais l
-    LEFT JOIN secretarias s ON l.secretaria_id = s.id
-    LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
-    LEFT JOIN regioes r ON l.regiao_id = r.id";
 
 // Export CSV
 if (isset($_GET['export']) && $_GET['export'] === 'csv') {
@@ -60,8 +24,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
         echo json_encode(['success' => false, 'error' => 'Token CSRF inválido.']);
         exit;
     }
-    $allResult = $db->query("SELECT $selectColumns $fromClause $where ORDER BY l.nome", $params);
-    $allLocais = ($allResult['status'] === 'success') ? $allResult['data'] : [];
+    $allLocais = $locaisService->searchAll($filters);
 
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="locais_' . date('Y-m-d') . '.csv"');
@@ -90,14 +53,9 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     exit;
 }
 
-$countQuery = "SELECT COUNT(*) as total FROM locais l $where";
-$countResult = $db->query($countQuery, $params);
-$total = (int)($countResult['status'] === 'success' ? ($countResult['data'][0]->total ?? 0) : 0);
+$total = $locaisService->countSearch($filters);
 $totalPages = max(1, ceil($total / $perPage));
-
-$dataQuery = "SELECT $selectColumns $fromClause $where ORDER BY l.nome LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
-$result = $db->query($dataQuery, $params);
-$locais = ($result['status'] === 'success') ? $result['data'] : [];
+$locais = $locaisService->search($filters, $page, $perPage);
 ?>
 
 <div class="container mt-4">
@@ -134,13 +92,13 @@ $locais = ($result['status'] === 'success') ? $result['data'] : [];
                 <div class="col-md-3">
                     <input type="text" name="busca" class="form-control form-control-sm"
                         placeholder="Buscar por nome, logradouro, bairro..."
-                        value="<?= htmlspecialchars($search) ?>">
+                        value="<?= htmlspecialchars($filters['search']) ?>">
                 </div>
                 <div class="col-md-2">
                     <select name="tipo_local_id" class="form-select form-select-sm">
                         <option value="">Todos os tipos</option>
                         <?php foreach ($tiposLocais as $t): ?>
-                        <option value="<?= (int)$t->id ?>" <?= $filtro_tipo !== '' && (int)$filtro_tipo === (int)$t->id ? 'selected' : '' ?>>
+                        <option value="<?= (int)$t->id ?>" <?= $filters['tipo_local_id'] !== '' && (int)$filters['tipo_local_id'] === (int)$t->id ? 'selected' : '' ?>>
                             <?= htmlspecialchars($t->nome, ENT_QUOTES, 'UTF-8') ?>
                         </option>
                         <?php endforeach; ?>
@@ -149,8 +107,8 @@ $locais = ($result['status'] === 'success') ? $result['data'] : [];
                 <div class="col-md-2">
                     <select name="camera" class="form-select form-select-sm">
                         <option value="">Todas</option>
-                        <option value="sim" <?= $filtro_camera === 'sim' ? 'selected' : '' ?>>Com camera</option>
-                        <option value="nao" <?= $filtro_camera === 'nao' ? 'selected' : '' ?>>Sem camera</option>
+                        <option value="sim" <?= $filters['camera'] === 'sim' ? 'selected' : '' ?>>Com camera</option>
+                        <option value="nao" <?= $filters['camera'] === 'nao' ? 'selected' : '' ?>>Sem camera</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -164,7 +122,7 @@ $locais = ($result['status'] === 'success') ? $result['data'] : [];
                     </a>
                 </div>
                 <div class="col-md-2">
-                    <a href="?page=listar_locais&export=csv&csrf_token=<?= urlencode(getCsrfToken()) ?><?= $search ? '&busca=' . urlencode($search) : '' ?><?= $filtro_tipo !== '' ? '&tipo_local_id=' . urlencode($filtro_tipo) : '' ?><?= $filtro_camera !== '' ? '&camera=' . urlencode($filtro_camera) : '' ?>"
+                    <a href="?page=listar_locais&export=csv&csrf_token=<?= urlencode(getCsrfToken()) ?><?= $filters['search'] ? '&busca=' . urlencode($filters['search']) : '' ?><?= $filters['tipo_local_id'] !== '' ? '&tipo_local_id=' . urlencode($filters['tipo_local_id']) : '' ?><?= $filters['camera'] !== '' ? '&camera=' . urlencode($filters['camera']) : '' ?>"
                        class="btn btn-success btn-sm w-100">
                         <i class="fas fa-file-csv me-1"></i>Exportar CSV
                     </a>
@@ -232,15 +190,15 @@ $locais = ($result['status'] === 'success') ? $result['data'] : [];
             <nav>
                 <ul class="pagination pagination-sm justify-content-center">
                     <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page - 1 ?>&busca=<?= urlencode($search) ?>&tipo_local_id=<?= urlencode($filtro_tipo) ?>&camera=<?= urlencode($filtro_camera) ?>">Anterior</a>
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page - 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Anterior</a>
                     </li>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                        <a class="page-link" href="?page=listar_locais&page_num=<?= $i ?>&busca=<?= urlencode($search) ?>&tipo_local_id=<?= urlencode($filtro_tipo) ?>&camera=<?= urlencode($filtro_camera) ?>"><?= $i ?></a>
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $i ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>"><?= $i ?></a>
                     </li>
                     <?php endfor; ?>
                     <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page + 1 ?>&busca=<?= urlencode($search) ?>&tipo_local_id=<?= urlencode($filtro_tipo) ?>&camera=<?= urlencode($filtro_camera) ?>">Proximo</a>
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page + 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Proximo</a>
                     </li>
                 </ul>
             </nav>

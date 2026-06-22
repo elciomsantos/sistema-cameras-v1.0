@@ -1,3 +1,4 @@
+import '../../css/pages/editar_alarmes.css';
 import '../utils/fetchWithTimeout';
 import '../utils/ui-utils';
 import '../utils/file-upload';

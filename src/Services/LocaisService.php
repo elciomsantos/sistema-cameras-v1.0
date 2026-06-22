@@ -244,6 +244,128 @@ class LocaisService
         return $result['status'] === 'success';
     }
 
+    public function search(array $filters = [], int $page = 1, int $perPage = 20): array
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
+            $like = '%' . $filters['search'] . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        if (!empty($filters['tipo_local_id'])) {
+            $where[] = 'l.tipo_local_id = ?';
+            $params[] = (int)$filters['tipo_local_id'];
+        }
+        if (!empty($filters['camera'])) {
+            if ($filters['camera'] === 'sim') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
+            } elseif ($filters['camera'] === 'nao') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
+            }
+        }
+
+        $offset = ($page - 1) * $perPage;
+        $whereClause = implode(' AND ', $where);
+
+        $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+        FROM locais l
+            LEFT JOIN secretarias s ON l.secretaria_id = s.id
+            LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+            LEFT JOIN regioes r ON l.regiao_id = r.id
+        WHERE {$whereClause}
+        ORDER BY l.nome
+        LIMIT {$perPage} OFFSET {$offset}";
+
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? $result['data'] : [];
+    }
+
+    public function countSearch(array $filters = []): int
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
+            $like = '%' . $filters['search'] . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        if (!empty($filters['tipo_local_id'])) {
+            $where[] = 'l.tipo_local_id = ?';
+            $params[] = (int)$filters['tipo_local_id'];
+        }
+        if (!empty($filters['camera'])) {
+            if ($filters['camera'] === 'sim') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
+            } elseif ($filters['camera'] === 'nao') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
+            }
+        }
+
+        $whereClause = implode(' AND ', $where);
+        $sql = "SELECT COUNT(*) as total FROM locais l WHERE {$whereClause}";
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? (int)($result['data'][0]->total ?? 0) : 0;
+    }
+
+    public function searchAll(array $filters = []): array
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
+            $like = '%' . $filters['search'] . '%';
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+        }
+        if (!empty($filters['tipo_local_id'])) {
+            $where[] = 'l.tipo_local_id = ?';
+            $params[] = (int)$filters['tipo_local_id'];
+        }
+        if (!empty($filters['camera'])) {
+            if ($filters['camera'] === 'sim') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
+            } elseif ($filters['camera'] === 'nao') {
+                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
+            }
+        }
+
+        $whereClause = implode(' AND ', $where);
+        $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
+            (SELECT COUNT(*) FROM equipamentos e
+                WHERE e.local_id = l.id AND e.deleted_at IS NULL
+                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+        FROM locais l
+            LEFT JOIN secretarias s ON l.secretaria_id = s.id
+            LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+            LEFT JOIN regioes r ON l.regiao_id = r.id
+        WHERE {$whereClause}
+        ORDER BY l.nome";
+
+        $result = $this->db->query($sql, $params);
+        return $result['status'] === 'success' ? $result['data'] : [];
+    }
+
     public function getAllLocaisExport(array $filters = []): array
     {
         $where = ['1=1'];

@@ -1,23 +1,24 @@
 Options -Indexes
+
 RewriteEngine On
 
-# Bloquear acesso a arquivos sensiveis
-<FilesMatch "\.(env|sql|md|log|yml|yaml|json|lock)$">
-    Require all denied
-</FilesMatch>
+# Bloquear acesso a arquivos-sensiveis (exceto sw-assets.json para PWA)
+<If "! %{REQUEST_URI} =~ m#sw-assets\.json$#">
+    <FilesMatch "\.(env|sql|md|log|yml|yaml|json|lock)$">
+        Require all denied
+    </FilesMatch>
+</If>
 
-<IfModule mod_rewrite.c>
-    # Bloquear acesso direto a pastas internas
-    RewriteRule ^(\.env|config/|inc/|src/|accounts/|auth/|api/|scripts/) - [F,L]
-</IfModule>
+# Bloquear acesso direto a pastas internas
+RewriteRule ^(\.env|config/|inc/|src/|accounts/|auth/|api/|scripts/) - [F,L]
 
-# Se o arquivo existir, NÃO reescreve
-RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^ - [L]
+# Servir assets do Vite (js/css) diretamente, sem rewrite
+RewriteRule ^assets/ - [L]
 
-# Se a pasta existir, NÃO reescreve
+# Servir direto qq arquivo existente (imagens, js, css, etc.)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Caso contrário, envia para index.php
+# Caso contrario, envia para index.php
 RewriteRule ^ index.php [QSA,L]

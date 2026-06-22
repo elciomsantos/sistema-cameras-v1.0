@@ -1,4 +1,5 @@
 // Entry point for editar_cameras page
+import '../../css/pages/editar_cameras.css';
 import '../utils/fetchWithTimeout';
 import '../utils/ui-utils';
 import '../utils/file-upload';

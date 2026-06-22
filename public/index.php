@@ -18,6 +18,9 @@ require_once __DIR__ . '/../inc/security.php';
 require_once __DIR__ . '/../inc/assets.php';
 require_once __DIR__ . '/../inc/single_session.php';
 require_once __DIR__ . '/../src/ErrorHandler.php';
+require_once __DIR__ . '/../src/Services/LocaisService.php';
+require_once __DIR__ . '/../src/Services/LookupService.php';
+require_once __DIR__ . '/../src/Services/AlarmeService.php';
 require_once __DIR__ . '/../inc/session_handler.php';
 registerGlobalErrorHandlers('web');
 header('Content-Type: text/html; charset=UTF-8');
@@ -94,7 +97,6 @@ getCsrfToken();
 
 require_once __DIR__ . '/../config/config.php';
 $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
-require_once __DIR__ . '/../inc/assets.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
 // Se nao estiver logado e nao for pagina de login_submit ou API, redireciona para login

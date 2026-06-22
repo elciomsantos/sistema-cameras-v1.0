@@ -67,12 +67,7 @@ const distCss = join(DIST_ASSETS, 'css');
 if (existsSync(distCss)) {
     copyFlatFiles(distCss, PUBLIC_ASSETS, ['.css']);
 } else {
-    for (const entry of readdirSync(DIST_ASSETS, { withFileTypes: true })) {
-        if (entry.isDirectory()) continue;
-        if (entry.name.startsWith('style-') && entry.name.endsWith('.css') && !entry.name.endsWith('.gz')) {
-            copyFileSync(join(DIST_ASSETS, entry.name), join(PUBLIC_ASSETS, entry.name));
-        }
-    }
+    copyFlatFiles(DIST_ASSETS, PUBLIC_ASSETS, ['.css']);
 }
 
 const jsFiles = readdirSync(JS_DIR);

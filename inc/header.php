@@ -18,9 +18,6 @@
     $viteCss = vite_css();
     if ($viteCss): ?>
     <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteCss ?>">
-<?php else: ?>
-    <link rel="stylesheet" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/css/main.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/css/theme-enhancements.css">
 <?php endif; ?>
     <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
         const BASE_URL = '<?= htmlspecialchars(rtrim($APP_PUBLIC_PATH ?? '/public', '/') . '/', ENT_QUOTES, 'UTF-8') ?>';
@@ -47,12 +44,12 @@
 </script>
 <?php
     $viteMainJs = vite_asset('main');
-    if ($viteMainJs): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteMainJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/fetchWithTimeout.js"></script>
-<script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/main.js') ?: 0 ?>"></script>
-<script src="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui/theme-manager.js"></script>
+    $viteMainImports = vite_entry_imports('main');
+    if ($viteMainJs):
+        foreach ($viteMainImports as $imp): ?>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<?php endforeach; ?>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteMainJs ?>"></script>
 <?php endif; ?>
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
   // Registrar Service Worker para PWA support

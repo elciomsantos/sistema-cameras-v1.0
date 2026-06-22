@@ -3,14 +3,12 @@ require_once __DIR__ . '/../inc/navbar.php';
 requererAcesso('supervisor');
 require_once __DIR__ . '/../config/database.php';
 
-$db = db();
-$statusOptions = $db->query("SELECT id, nome FROM status ORDER BY nome ASC");
-$statusList = $statusOptions['status'] === 'success' ? array_map(fn($r) => (array)$r, $statusOptions['data']) : [];
-$regiaoOptions = $db->query("SELECT id, nome FROM regioes ORDER BY nome ASC");
-$regiaoList = $regiaoOptions['status'] === 'success' ? array_map(fn($r) => (array)$r, $regiaoOptions['data']) : [];
+$lookup = new LookupService();
+$statusList = array_map(fn($r) => (array)$r, $lookup->getStatusList());
+$regiaoList = array_map(fn($r) => (array)$r, $lookup->getRegioesList());
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/editar_alarmes.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/editar_alarmes.css') ?>">
+<?php vite_page_css('editar-alarmes'); ?>
 
 <div class="container mt-4 mb-4">
     <div class="editar-alarme-wrapper">
@@ -168,12 +166,9 @@ $regiaoList = $regiaoOptions['status'] === 'success' ? array_map(fn($r) => (arra
                                 <select name="modelo_alarme_id" class="form-select">
                                     <option value="">Selecione um modelo...</option>
                                     <?php
-                                    $dbModels = db();
-                                    $modelosResult = $dbModels->query("SELECT id, nome FROM catalogo_modelos_alarmes ORDER BY nome ASC");
-                                    if ($modelosResult['status'] === 'success') {
-                                        foreach ($modelosResult['data'] as $m) {
-                                            echo '<option value="' . $m->id . '">' . htmlspecialchars($m->nome, ENT_QUOTES, 'UTF-8') . '</option>';
-                                        }
+                                    $modelosList = $lookup->getModelosAlarmes();
+                                    foreach ($modelosList as $m) {
+                                        echo '<option value="' . $m->id . '">' . htmlspecialchars($m->nome, ENT_QUOTES, 'UTF-8') . '</option>';
                                     }
                                     ?>
                                 </select>
@@ -247,12 +242,7 @@ $vitePageJs = vite_asset('editar-alarmes');
 $viteImports = vite_entry_imports('editar-alarmes');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/uppercase.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/uppercase.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/ui-utils.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/ui-utils.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/utils/file-upload.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/utils/file-upload.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/editar_alarmes.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/editar_alarmes.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>

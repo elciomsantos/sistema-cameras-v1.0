@@ -17,7 +17,7 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
     copyPublicDir: false,
-    cssCodeSplit: false,
+    cssCodeSplit: true,
     manifest: true,
     rollupOptions: {
       input: {
@@ -34,6 +34,8 @@ export default defineConfig({
         'auditoria-cameras': './assets/js/entries/auditoria-cameras.ts',
         'cadastro-alarmes': './assets/js/entries/cadastro-alarmes.ts',
         'editar-alarmes': './assets/js/entries/editar-alarmes.ts',
+        'cadastro-locais': './assets/js/entries/cadastro-locais.ts',
+        'editar-locais': './assets/js/entries/editar-locais.ts',
       },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',

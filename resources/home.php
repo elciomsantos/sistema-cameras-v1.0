@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../inc/navbar.php';
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/home.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/home.css') ?>">
+<?php vite_page_css('home-dashboard'); ?>
 
 <div class="container-fluid mt-3">
     <!-- Boas-vindas do usuario -->
@@ -246,12 +246,7 @@ $vitePageJs = vite_asset('home-dashboard');
 $viteImports = vite_entry_imports('home-dashboard');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" integrity="sha384-FcQlsUOd0TJjROrBxhJdUhXTUgNJQxTMcxZe6nHbaEfFL1zjQ+bq/uRoBQxb0KMo" crossorigin="anonymous"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/core/dashboard-core.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/core/dashboard-core.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/modules/dashboard-charts.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/modules/dashboard-charts.js') ?>"></script>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/pages/home-dashboard.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/pages/home-dashboard.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>

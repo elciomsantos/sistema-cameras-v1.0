@@ -5,16 +5,15 @@ require_once __DIR__ . '/../config/database.php';
 requererAcesso('supervisor');
 
 try {
-    $db = db();
-    $resultRegioes = $db->query("SELECT id, nome FROM regioes ORDER BY nome");
-    $regioesList = $resultRegioes['status'] === 'success' ? $resultRegioes['data'] : [];
+    $lookup = new LookupService();
+    $regioesList = $lookup->getRegioesList();
 } catch (Exception $e) {
     error_log("Erro ao carregar regioes para relatorio de alarmes: " . $e->getMessage());
     $regioesList = [];
 }
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/css/pages/relatorios_alarmes.css?v=<?= filemtime(__DIR__ . '/../public/assets/css/pages/relatorios_alarmes.css') ?>">
+<?php vite_page_css('relatorios-alarmes'); ?>
 
 <div class="container-fluid mt-4 mb-4 relatorio-alarmes-page">
     <div class="row mb-4">
@@ -148,11 +147,9 @@ $vitePageJs = vite_asset('relatorios-alarmes');
 $viteImports = vite_entry_imports('relatorios-alarmes');
 if ($vitePageJs):
     foreach ($viteImports as $imp): ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
 <?php endforeach; ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php else: ?>
-<script src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/assets/js/relatorios_alarmes.js?v=<?= filemtime(__DIR__ . '/../public/assets/js/relatorios_alarmes.js') ?>"></script>
+<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>
 
 

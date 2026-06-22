@@ -17,13 +17,6 @@ import { escapeHtml } from './utils/html';
     return 'bg-secondary';
   }
 
-  function toBrDate(value: unknown): string {
-    if (!value) return '-';
-    const d = new Date(String(value).replace(' ', 'T'));
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleString('pt-BR');
-  }
-
   function buildQuery(): string {
     const form = document.getElementById('formAuditoria') as HTMLFormElement;
     if (!form) return '';

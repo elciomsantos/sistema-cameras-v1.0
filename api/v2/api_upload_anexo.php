@@ -77,6 +77,7 @@ try {
     }
 
     $file = $_FILES['file'];
+    $nomeOriginalSanitizado = basename($file['name']);
 
     $maxSize = 10 * 1024 * 1024;
     if ($file['size'] > $maxSize) {
@@ -142,7 +143,7 @@ try {
             'manutencao_camera_id' => $manutencaoCameraId,
             'manutencao_alarme_id' => $manutencaoAlarmeId,
             'tipo' => $tipo,
-            'nome_original' => $file['name'],
+            'nome_original' => $nomeOriginalSanitizado,
             'nome_arquivo' => $nomeArquivo,
             'caminho' => $caminhoRelativo,
             'mime_type' => $detectedMime,
@@ -170,7 +171,7 @@ try {
         'message' => 'Arquivo enviado com sucesso.',
         'anexo' => [
             'id' => $anexoId,
-            'nome_original' => $file['name'],
+            'nome_original' => $nomeOriginalSanitizado,
             'nome_arquivo' => $nomeArquivo,
             'url' => $baseUrl . '/' . $caminhoRelativo,
             'tamanho' => $file['size'],

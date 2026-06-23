@@ -128,7 +128,8 @@ function executeApiRequest(?string $endpointOverride = null): void
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
     header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'");
-    if (isHttpsRequest()) {
+    // HSTS - Em produção, sempre enviar se configurado (mesmo atrás de proxy)
+    if (isProduction() || isHttpsRequest()) {
         header('Strict-Transport-Security: max-age=63072000; includeSubDomains; preload');
     }
 
@@ -139,15 +140,21 @@ function executeApiRequest(?string $endpointOverride = null): void
             $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
             $isSameOrigin = in_array($allowedOrigin, $configuredOrigins, true);
         } else {
-            $serverScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-            $serverPort = $_SERVER['SERVER_PORT'] ?? '80';
-            $serverName = $_SERVER['SERVER_NAME'] ?? '';
-            if ($serverName !== '') {
-                $defaultPort = ($serverScheme === 'https') ? '443' : '80';
-                $expectedOrigin = ($serverPort === $defaultPort)
-                    ? "{$serverScheme}://{$serverName}"
-                    : "{$serverScheme}://{$serverName}:{$serverPort}";
-                $isSameOrigin = $allowedOrigin === $expectedOrigin;
+            if (isProduction()) {
+                // Em produção, NÃO tentar adivinhar a origem - exigir configuração explícita
+                $isSameOrigin = false;
+            } else {
+                // Em desenvolvimento, aceitar fallback baseado no Host header (menos seguro)
+                $serverScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $serverPort = $_SERVER['SERVER_PORT'] ?? '80';
+                $serverName = $_SERVER['SERVER_NAME'] ?? '';
+                if ($serverName !== '') {
+                    $defaultPort = ($serverScheme === 'https') ? '443' : '80';
+                    $expectedOrigin = ($serverPort === $defaultPort)
+                        ? "{$serverScheme}://{$serverName}"
+                        : "{$serverScheme}://{$serverName}:{$serverPort}";
+                    $isSameOrigin = $allowedOrigin === $expectedOrigin;
+                }
             }
         }
     }

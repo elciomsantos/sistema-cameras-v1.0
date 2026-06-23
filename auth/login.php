@@ -70,11 +70,11 @@ unset($_SESSION['error']);
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <div class="mb-3">
                 <label for="text_usuario">Usuario</label>
-                <input type="text" name="text_usuario" class="form-control login-input" required>
+                <input type="text" id="text_usuario" name="text_usuario" class="form-control login-input" required>
             </div>
             <div class="mb-3">
                 <label for="text_senha">Senha</label>
-                <input type="password" name="text_senha" class="form-control login-input" required>
+                <input type="password" id="text_senha" name="text_senha" class="form-control login-input" required>
             </div>
             <div class="d-grid gap-2">
                 <input type="submit" name="submit" value="Entrar" class="btn login-btn w-100">

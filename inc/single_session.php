@@ -65,11 +65,17 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
     ensureUserSessionsTable($db);
 
     $pdo = $db->getConnection();
-    $pdo->beginTransaction();
+    $lockName = 'user_session_' . $usuarioId;
+    $lockAcquired = false;
+
     try {
-        $pdo->prepare(
-            "SELECT usuario_id FROM user_sessions WHERE usuario_id = ? FOR UPDATE"
-        )->execute([$usuarioId]);
+        // Acquire application-level lock to prevent race conditions
+        $result = $db->query("SELECT GET_LOCK(:lock_name, 10)", ['lock_name' => $lockName]);
+        $row = $result->fetch(PDO::FETCH_NUM);
+        if (!$row || (int)$row[0] !== 1) {
+            throw new RuntimeException('Não foi possível obter lock de sessão.');
+        }
+        $lockAcquired = true;
 
         $db->query(
             "INSERT INTO user_sessions (usuario_id, session_token_hash, session_id, ip_address, user_agent, active, last_seen)
@@ -90,10 +96,13 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
                 ':user_agent' => getSessionUserAgent(),
             ]
         );
-        $pdo->commit();
+
     } catch (Throwable $e) {
-        $pdo->rollBack();
         throw $e;
+    } finally {
+        if ($lockAcquired) {
+            $db->query("SELECT RELEASE_LOCK(:lock_name)", ['lock_name' => $lockName]);
+        }
     }
 }
 

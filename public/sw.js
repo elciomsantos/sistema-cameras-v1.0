@@ -85,7 +85,11 @@ self.addEventListener('fetch', event => {
   // Navegação (HTML) - SEMPRE do servidor, nunca do cache
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('./index.php'))
+      fetch(request).catch(() =>
+        caches.match('./index.php').then(cached =>
+          cached || new Response('Sem conexão. Tente novamente.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } })
+        )
+      )
     );
     return;
   }
@@ -94,13 +98,18 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(request).then(response => {
       if (!response || response.status !== 200 || response.type !== 'basic') {
-        return response; // so passa adiante respostas validas 200
+        return response;
       }
       const responseToCache = response.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
       return response;
     }).catch(() =>
-      caches.match(request).then(cached => cached || caches.match('./index.php'))
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return caches.match('./index.php').then(cached =>
+          cached || new Response('Sem conexão.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } })
+        );
+      })
     )
   );
 });

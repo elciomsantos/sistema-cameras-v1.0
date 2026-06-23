@@ -15,6 +15,9 @@ try {
     if ($nomeLocal === '') {
         ApiResponse::error('VALIDATION_ERROR', 'Informe o nome/local da câmera.');
     }
+    if (strlen($nomeLocal) > 255) {
+        ApiResponse::error('VALIDATION_ERROR', 'Nome do local muito longo (máx. 255 caracteres).');
+    }
 
     $tipoLocalId = max(1, (int)($data['tipo_local_id'] ?? 0));
     $checkTipoLocal = db()->query("SELECT id FROM tipos_locais WHERE id = ? LIMIT 1", [$tipoLocalId]);

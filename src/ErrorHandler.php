@@ -58,9 +58,21 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             return;
         }
 
-        $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+        $fatalTypes = [
+            E_ERROR,
+            E_PARSE,
+            E_CORE_ERROR,
+            E_COMPILE_ERROR,
+            E_USER_ERROR,
+            E_RECOVERABLE_ERROR
+        ];
         if (!in_array($error['type'] ?? 0, $fatalTypes, true)) {
             return;
+        }
+
+        // Clear any existing output buffers to avoid corrupting JSON response
+        if (ob_get_level() > 0) {
+            ob_end_clean();
         }
 
         error_log(sprintf(

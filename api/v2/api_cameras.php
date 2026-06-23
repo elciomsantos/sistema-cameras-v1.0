@@ -60,8 +60,13 @@ try {
         $isIp = filter_var($busca, FILTER_VALIDATE_IP);
 
         if ($isIp) {
-            $buscaParts[] = 'INET_ATON(e.ip) = INET_ATON(:busca_ip)';
-            $params[':busca_ip'] = $busca;
+            if (filter_var($busca, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                $buscaParts[] = 'INET_ATON(e.ip) = INET_ATON(:busca_ip)';
+                $params[':busca_ip'] = $busca;
+            } else {
+                $buscaParts[] = 'e.ip = :busca_ip';
+                $params[':busca_ip'] = $busca;
+            }
         } else {
             $buscaParts[] = '(e.ip LIKE :busca_ip_like OR e.numero_serie LIKE :busca_serie)';
             $params[':busca_ip_like'] = $buscaParam;

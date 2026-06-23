@@ -73,6 +73,10 @@ function loadConfiguration(): void
 {
     $envPath = getEnvPath();
     if (!loadEnvFile($envPath)) {
+        error_log('[CONFIG] Arquivo de configuração não encontrado: ' . $envPath);
+        if (isProduction()) {
+            throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
+        }
         $samplePath = dirname(__DIR__) . '/.env.example';
         $msg = sprintf(
             "Arquivo de configuração não encontrado.\n\n" .
@@ -81,7 +85,6 @@ function loadConfiguration(): void
             "Documentação: https://github.com/seu-projeto/docs/SETUP.md",
             $envPath
         );
-        error_log('[CONFIG] Arquivo de configuração não encontrado: ' . $envPath);
         throw new RuntimeException($msg);
     }
 }

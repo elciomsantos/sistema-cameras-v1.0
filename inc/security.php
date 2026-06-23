@@ -273,7 +273,11 @@ function generateTemporaryPassword(int $length = 12): string
 // Funções centralizadas de segurança de senha
 function hashPassword(string $password): string
 {
-    return password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+    $cost = (int)(getenv('BCRYPT_COST') ?: 12);
+    if ($cost < 8 || $cost > 14) {
+        $cost = 12;
+    }
+    return password_hash($password, PASSWORD_BCRYPT, ['cost' => $cost]);
 }
 
 function verifyPassword(string $password, string $hash): bool

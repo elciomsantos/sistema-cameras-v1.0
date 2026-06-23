@@ -204,6 +204,7 @@ CREATE TABLE secretarias (
 ) ENGINE=InnoDB COMMENT='Secretarias e órgãos';
 
 CREATE INDEX idx_secretarias_tipo ON secretarias(tipo_id);
+CREATE FULLTEXT INDEX ftx_secretarias_nome ON secretarias(nome);
 
 INSERT INTO secretarias (nome, sigla, tipo_id) VALUES
 -- Secretarias
@@ -235,6 +236,8 @@ CREATE TABLE catalogo_modelos (
 ) ENGINE=InnoDB COMMENT='Catálogo de modelos por tipo e marca';
 
 CREATE INDEX idx_catalogo_marca ON catalogo_modelos(marca_id);
+CREATE INDEX idx_catalogo_tipo_marca ON catalogo_modelos(tipo_equipamento_id, marca_id);
+CREATE FULLTEXT INDEX ftx_catalogo_modelo_nome ON catalogo_modelos(nome);
 
 -- =====================================================
 -- CATALOGO DE MODELOS DE ALARMES
@@ -560,6 +563,9 @@ CREATE INDEX idx_eq_manut_executado_por ON equipamentos_manutencoes(executado_po
 CREATE INDEX idx_eq_manut_tecnico ON equipamentos_manutencoes(tecnico_id);
 CREATE INDEX idx_eq_manut_secretaria ON equipamentos_manutencoes(secretaria_id);
 CREATE INDEX idx_eq_manut_procedimento ON equipamentos_manutencoes(procedimento_id);
+CREATE INDEX idx_eq_manut_os_status_equip ON equipamentos_manutencoes(os_status_id, equipamento_id);
+CREATE INDEX idx_eq_manut_historico ON equipamentos_manutencoes(os_status_id, data_execucao, data_hora, created_at);
+CREATE INDEX idx_eq_manut_status ON equipamentos_manutencoes(status_id);
 
 -- =====================================================
 -- TABELA CENTRAL DE ALARMES (integração externa)

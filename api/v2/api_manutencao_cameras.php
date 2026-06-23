@@ -272,6 +272,8 @@ try {
         ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
     }
 
+    requireApiCsrf(false);
+
     $db = db();
 
     if ($method === 'GET') {
@@ -319,6 +321,10 @@ try {
 
             if (strlen($problemas) < 5) {
                 ApiResponse::error('VALIDATION_ERROR', 'Descreva os problemas da ordem de serviço.');
+            }
+
+            if ($numeroOs !== null && (strlen($numeroOs) > 50 || !preg_match('/^[A-Za-z0-9\-_\/]+$/', $numeroOs))) {
+                ApiResponse::error('VALIDATION_ERROR', 'Número da OS inválido. Use apenas letras, números, -, _ ou / (máx. 50 chars).');
             }
 
             $equipResult = $db->query(

@@ -53,13 +53,13 @@ class EquipamentoService
             'logradouro' => trim((string)($data['logradouro'] ?? '')) ?: null,
             'bairro' => trim((string)($data['bairro'] ?? '')) ?: null,
             'cidade' => trim((string)($data['cidade'] ?? '')) ?: null,
-            'uf' => trim((string)($data['uf'] ?? '')) ?: null,
-            'cep' => trim((string)($data['cep'] ?? '')) ?: null,
+            'uf' => $this->validateUf($data['uf'] ?? null),
+            'cep' => $this->validateCep($data['cep'] ?? null),
             'numero' => trim((string)($data['numero'] ?? '')) ?: null,
             'tem_alarme' => !empty($data['tem_alarme']) ? 1 : 0,
             'alarme_conta' => !empty($data['alarme_conta']) ? (int)$data['alarme_conta'] : null,
-            'patrimonio' => !empty($data['patrimonio']) ? strtoupper(trim($data['patrimonio'])) : null,
-            'numero_serie' => !empty($data['serie_mac']) ? strtoupper(trim($data['serie_mac'])) : null,
+            'patrimonio' => $this->validateStringLength($data['patrimonio'] ?? null, 150),
+            'numero_serie' => $this->validateStringLength($data['serie_mac'] ?? null, 150),
             'observacao' => !empty($data['observacao']) ? trim($data['observacao']) : null,
             'mosaico' => trim((string)($data['mosaico'] ?? '')) ?: null,
             'coordenadas' => trim((string)($data['coordenadas'] ?? '')) ?: null,
@@ -85,6 +85,42 @@ class EquipamentoService
         }
         $value = str_replace(',', '.', $value);
         return is_numeric($value) ? (float)$value : null;
+    }
+
+    private function validateStringLength(?string $value, int $maxLength): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $value = strtoupper(trim($value));
+        if (strlen($value) > $maxLength) {
+            $value = substr($value, 0, $maxLength);
+        }
+        return $value;
+    }
+
+    private function validateUf(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $value = strtoupper(trim($value));
+        if (strlen($value) !== 2) {
+            return null;
+        }
+        return $value;
+    }
+
+    private function validateCep(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $value = preg_replace('/\D+/', '', $value);
+        if (strlen($value) !== 8) {
+            return null;
+        }
+        return $value;
     }
 
     public function validateRequiredIds(array $data): void

@@ -19,6 +19,27 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'CEP inválido.');
     }
 
+    $cacheDir = sys_get_temp_dir() . '/cep_cache/';
+    $cacheFile = $cacheDir . md5($cep) . '.json';
+    $cacheTtl = 86400;
+
+    if (is_file($cacheFile) && filemtime($cacheFile) > (time() - $cacheTtl)) {
+        $cached = file_get_contents($cacheFile);
+        if ($cached) {
+            $data = json_decode($cached, true);
+            if (is_array($data)) {
+                ApiResponse::success([
+                    'cep' => $data['cep'] ?? null,
+                    'logradouro' => $data['logradouro'] ?? null,
+                    'complemento' => $data['complemento'] ?? null,
+                    'bairro' => $data['bairro'] ?? null,
+                    'cidade' => $data['localidade'] ?? null,
+                    'uf' => $data['uf'] ?? null,
+                ]);
+            }
+        }
+    }
+
     $url = 'https://viacep.com.br/ws/' . $cep . '/json/';
 
     $raw = null;
@@ -61,6 +82,11 @@ try {
 
     if (!empty($data['erro'])) {
         ApiResponse::notFound('CEP');
+    }
+
+    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {
+    } else {
+        @file_put_contents($cacheFile, $raw, LOCK_EX);
     }
 
     ApiResponse::success([

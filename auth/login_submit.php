@@ -5,6 +5,8 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+session_regenerate_id(true);
+
 $csrfToken = $_POST['csrf_token'] ?? null;
 if (!validateCsrfToken($csrfToken)) {
     $_SESSION['error'] = 'Falha de validacao CSRF.';
@@ -152,7 +154,6 @@ if ((int)($usuarioDb->ativo ?? 1) !== 1) {
     exit;
 }
 
-session_regenerate_id(true);
 clearLoginAttempt($db, (string)$usuario, $ip);
 
 // Buscar o nível de acesso do usuário e adicioná-lo ao objeto

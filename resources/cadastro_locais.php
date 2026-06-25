@@ -1,15 +1,18 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../inc/check_access.php';
+require_once __DIR__ . '/../src/Services/LookupService.php';
 requererAcesso('supervisor');
 
 $db = db();
 $locaisService = new LocaisService($db);
+$lookupService = new LookupService($db);
 
 $tiposLocais = $locaisService->getAllTiposLocais();
 $secretarias = $locaisService->getAllSecretarias();
 $classificacoes = $locaisService->getAllClassificacoesEnderecos();
 $regioes = $locaisService->getAllRegioes();
+$contasAlarmes = $lookupService->getContasAlarmes();
 
 $ufs = [
     'AC','AL','AP','AM','BA','CE','DF','ES','GO',
@@ -38,7 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $regiao_id = $_POST['regiao_id'] ?? null;
     $secretaria_id = $_POST['secretaria_id'] ?? null;
     $horario_funcionamento = mb_strtoupper(trim($_POST['horario_funcionamento'] ?? ''));
+    $telefone = trim($_POST['telefone'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $tem_alarme = isset($_POST['tem_alarme']) ? 1 : 0;
+    $alarme_conta = $tem_alarme ? ((int)($_POST['alarme_conta'] ?? 0) ?: null) : null;
     $cep = preg_replace('/\D+/', '', (string)($_POST['cep'] ?? ''));
     $uf = strtoupper(trim($_POST['uf'] ?? ''));
     $cidade = mb_strtoupper(trim($_POST['cidade'] ?? ''));
@@ -65,7 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 'regiao_id' => $regiao_id ? (int)$regiao_id : null,
                 'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
                 'horario_funcionamento' => $horario_funcionamento ?: null,
+                'telefone' => $telefone ?: null,
+                'email' => $email ?: null,
                 'tem_alarme' => $tem_alarme,
+                'alarme_conta' => $alarme_conta,
                 'cep' => $cep ?: null,
                 'uf' => $uf ?: null,
                 'cidade' => $cidade ?: null,
@@ -90,18 +99,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
     }
 
-    if ($mensagem_erro) {
-        $_SESSION['mensagem_erro_cadastro_local'] = $mensagem_erro;
-        $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
-            'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-            'horario_funcionamento', 'tem_alarme', 'cep', 'uf',
-            'cidade', 'bairro', 'classificacao_endereco_id',
-            'logradouro', 'numero', 'descricao_posicao',
-            'latitude', 'longitude',
-        ]));
-        header('Location: index.php?page=cadastro_locais');
-        exit;
-    }
+        if ($mensagem_erro) {
+            $_SESSION['mensagem_erro_cadastro_local'] = $mensagem_erro;
+            $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
+                'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
+                'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'cep', 'uf',
+                'cidade', 'bairro', 'classificacao_endereco_id',
+                'logradouro', 'numero', 'descricao_posicao',
+                'latitude', 'longitude',
+            ]));
+            header('Location: index.php?page=cadastro_locais');
+            exit;
+        }
 }
 
 // Helper: get form value from flash or empty
@@ -126,6 +135,13 @@ function fd(string $key): string {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             <?= htmlspecialchars($mensagem_erro, ENT_QUOTES, 'UTF-8') ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($mensagem_sucesso): ?>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <?= htmlspecialchars($mensagem_sucesso, ENT_QUOTES, 'UTF-8') ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     <?php endif; ?>
@@ -172,6 +188,17 @@ function fd(string $key): string {
                                     </label>
                                 </div>
                             </div>
+                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= (isset($formData['tem_alarme'])) ? 'block' : 'none' ?>;">
+                                <label for="alarme_conta" class="form-label">Conta do Alarme</label>
+                                <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
+                                    <option value="">Selecione...</option>
+                                    <?php foreach ($contasAlarmes as $c): ?>
+                                    <option value="<?= (int)$c->conta ?>" <?= (isset($formData['alarme_conta']) && (int)$formData['alarme_conta'] === (int)$c->conta) ? 'selected' : '' ?>>
+                                        <?= (int)$c->conta ?> - <?= htmlspecialchars($c->local, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <div class="col-md-6">
                                 <label for="secretaria_id" class="form-label">Secretaria</label>
                                 <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id">
@@ -188,6 +215,18 @@ function fd(string $key): string {
                                 <input type="text" class="form-control form-control-sm" id="horario_funcionamento" name="horario_funcionamento"
                                     value="<?= fd('horario_funcionamento') ?>"
                                     placeholder="Ex: Seg a Sex 08:00-18:00">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control form-control-sm" id="telefone" name="telefone"
+                                    value="<?= fd('telefone') ?>"
+                                    placeholder="Ex: (43) 3375-0112 ramal 50112">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                    value="<?= fd('email') ?>"
+                                    placeholder="exemplo@dominio.com">
                             </div>
                         </div>
 
@@ -299,6 +338,16 @@ document.addEventListener('DOMContentLoaded', function() {
     aplicarUppercaseUniversal(document.querySelector('form'));
 
     var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
+
+    var temAlarmeCheckbox = document.getElementById('tem_alarme');
+    var alarmeContaWrapper = document.getElementById('alarmeContaWrapper');
+    if (temAlarmeCheckbox && alarmeContaWrapper) {
+        temAlarmeCheckbox.addEventListener('change', function() {
+            alarmeContaWrapper.style.display = this.checked ? 'block' : 'none';
+            var select = alarmeContaWrapper.querySelector('select');
+            if (select) select.required = this.checked;
+        });
+    }
 
     // --- Helper: set select option by text ---
     function setSelectByText(selectId, text) {

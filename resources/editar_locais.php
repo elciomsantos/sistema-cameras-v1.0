@@ -1,10 +1,12 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../inc/check_access.php';
+require_once __DIR__ . '/../src/Services/LookupService.php';
 requererAcesso('supervisor');
 
 $db = db();
 $locaisService = new LocaisService($db);
+$lookupService = new LookupService($db);
 
 // PRG: flash success from session (cleared after redirect)
 $mensagem_sucesso = $_SESSION['mensagem_sucesso_editar_local'] ?? '';
@@ -35,6 +37,8 @@ $ufs = [
     'RJ','RN','RS','RO','RR','SC','SP','SE','TO'
 ];
 
+$contasAlarmes = $lookupService->getContasAlarmes();
+
 $beforeAudit = [
     'nome' => $local->nome ?? null,
     'tipo_local_id' => $local->tipo_local_id ?? null,
@@ -57,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $secretaria_id = $_POST['secretaria_id'] ?? null;
         $horario_funcionamento = mb_strtoupper(trim($_POST['horario_funcionamento'] ?? ''));
         $tem_alarme = isset($_POST['tem_alarme']) ? 1 : 0;
+        $alarme_conta = $tem_alarme ? ((int)($_POST['alarme_conta'] ?? 0) ?: null) : null;
         $cep = preg_replace('/\D+/', '', (string)($_POST['cep'] ?? ''));
         $uf = strtoupper(trim($_POST['uf'] ?? ''));
         $cidade = mb_strtoupper(trim($_POST['cidade'] ?? ''));
@@ -84,6 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
                 'horario_funcionamento' => $horario_funcionamento ?: null,
                 'tem_alarme' => $tem_alarme,
+                'alarme_conta' => $alarme_conta,
                 'cep' => $cep ?: null,
                 'uf' => $uf ?: null,
                 'cidade' => $cidade ?: null,
@@ -118,6 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $local->secretaria_id = $secretaria_id;
         $local->horario_funcionamento = $horario_funcionamento;
         $local->tem_alarme = $tem_alarme;
+        $local->alarme_conta = $alarme_conta;
         $local->cep = $cep;
         $local->uf = $uf;
         $local->cidade = $cidade;
@@ -202,6 +209,17 @@ require_once __DIR__ . '/../inc/navbar.php';
                                         Local possui alarme
                                     </label>
                                 </div>
+                            </div>
+                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= ($local->tem_alarme ?? 0) ? 'block' : 'none' ?>;">
+                                <label for="alarme_conta" class="form-label">Conta do Alarme</label>
+                                <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
+                                    <option value="">Selecione...</option>
+                                    <?php foreach ($contasAlarmes as $c): ?>
+                                    <option value="<?= (int)$c->conta ?>" <?= (($local->alarme_conta ?? 0) === (int)$c->conta) ? 'selected' : '' ?>>
+                                        <?= (int)$c->conta ?> - <?= htmlspecialchars($c->local, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label for="secretaria_id" class="form-label">Secretaria</label>
@@ -330,6 +348,16 @@ document.addEventListener('DOMContentLoaded', function() {
     aplicarUppercaseUniversal(document.querySelector('form'));
 
     var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
+
+    var temAlarmeCheckbox = document.getElementById('tem_alarme');
+    var alarmeContaWrapper = document.getElementById('alarmeContaWrapper');
+    if (temAlarmeCheckbox && alarmeContaWrapper) {
+        temAlarmeCheckbox.addEventListener('change', function() {
+            alarmeContaWrapper.style.display = this.checked ? 'block' : 'none';
+            var select = alarmeContaWrapper.querySelector('select');
+            if (select) select.required = this.checked;
+        });
+    }
 
     // --- Helper: set select option by text ---
     function setSelectByText(selectId, text) {

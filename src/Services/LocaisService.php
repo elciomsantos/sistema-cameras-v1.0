@@ -190,7 +190,7 @@ class LocaisService
     public function create(array $data): int
     {
         $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-            'horario_funcionamento', 'tem_alarme', 'cep', 'uf', 'cidade', 'bairro',
+            'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'cep', 'uf', 'cidade', 'bairro',
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
 
@@ -223,7 +223,7 @@ class LocaisService
     public function update(int $id, array $data): bool
     {
         $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-            'horario_funcionamento', 'tem_alarme', 'cep', 'uf', 'cidade', 'bairro',
+            'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'cep', 'uf', 'cidade', 'bairro',
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
 

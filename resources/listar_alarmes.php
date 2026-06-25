@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('user');
+requererAcesso('supervisor');
 
 $api_url = BASE_URL . '/index.php?page=api/api_alarmes';
 $canDelete = isset($_SESSION['usuario']->nivel_acesso)

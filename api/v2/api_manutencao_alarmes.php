@@ -222,8 +222,8 @@ function loadManutencaoPayload(
         LEFT JOIN usuarios u ON u.id = COALESCE(m.executado_por, m.created_by)
         WHERE (m.os_status_id = 3 OR m.os_status_id IS NULL) {$historicoWhereSql}
         {$orderSql}
-        LIMIT {$perPage} OFFSET {$offset}",
-        $historicoParams
+        LIMIT ? OFFSET ?",
+        [...$historicoParams, $perPage, $offset]
     );
     $historico = $historyResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $historyResult['data']) : [];
 

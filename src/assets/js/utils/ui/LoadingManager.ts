@@ -1,3 +1,5 @@
+import { escapeHtml } from '../html';
+
 interface LoadingManagerOptions {
     defaultTimeout?: number;
     showSpinner?: boolean;
@@ -170,7 +172,7 @@ class LoadingManager {
             '<div class="spinner-border spinner-border-sm text-primary" role="status">',
             '<span class="visually-hidden">Carregando...</span>',
             '</div>',
-            message ? '<div class="element-loader-message">' + message + '</div>' : '',
+            message ? '<div class="element-loader-message">' + escapeHtml(message) + '</div>' : '',
             '</div>'
         ].join('');
 

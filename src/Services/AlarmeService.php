@@ -6,11 +6,18 @@ class AlarmeService
 {
     private $db;
 
-    private const STATUS_PERMITIDOS = ['Ativo', 'Inativo', 'Desligado', 'Manutenção', 'Pendente'];
-
     public function __construct($db = null)
     {
         $this->db = $db ?? db();
+    }
+
+    private function getStatusPermitidos(): array
+    {
+        $result = $this->db->query("SELECT nome FROM status ORDER BY nome ASC");
+        if ($result['status'] === 'success' && !empty($result['data'])) {
+            return array_map(fn($row) => (string)$row->nome, $result['data']);
+        }
+        return ['Ativo', 'Inativo', 'Desligado', 'Manutenção', 'Pendente'];
     }
 
     public static function requireAccess(): void
@@ -56,8 +63,9 @@ class AlarmeService
         }
 
         $status = trim((string)($data['status'] ?? ''));
-        if (!in_array($status, self::STATUS_PERMITIDOS, true)) {
-            ApiResponse::error('VALIDATION_ERROR', 'Status inválido. Use: ' . implode(', ', self::STATUS_PERMITIDOS));
+        $permitidos = $this->getStatusPermitidos();
+        if (!in_array($status, $permitidos, true)) {
+            ApiResponse::error('VALIDATION_ERROR', 'Status inválido. Use: ' . implode(', ', $permitidos));
         }
 
         $statusLookup = $this->db->query(
@@ -128,9 +136,19 @@ class AlarmeService
 
     public function cadastrar(array $params): int
     {
+        $check = $this->db->query(
+            "SELECT id FROM central_alarmes WHERE conta = ? LIMIT 1",
+            [$params['conta']]
+        );
+        if ($check['status'] === 'success' && !empty($check['data'])) {
+            ApiResponse::error('VALIDATION_ERROR', 'Já existe um alarme cadastrado com a conta ' . $params['conta'] . '.');
+        }
+
         $this->db->beginTransaction();
 
         try {
+            enableAuditTriggers($this->db, 'api');
+
             $sql = "INSERT INTO central_alarmes (
                 regiao, regiao_id, conta, status, status_id, local, endereco, numero, pgm1, pgm2, mac, ip,
                 integracao, camera_gm, quant_camera_gm, ip_dvr, cameras_dvr, modelo_alarme_id,
@@ -149,9 +167,6 @@ class AlarmeService
             }
 
             $id = (int)$this->db->lastInsertId();
-            $auditAfter = $params;
-            $auditAfter['id'] = $id;
-            auditEvent($this->db, 'alarmes', $id, 'INSERT', null, $auditAfter, 'api');
 
             $this->db->commit();
             return $id;
@@ -168,11 +183,7 @@ class AlarmeService
         $this->db->beginTransaction();
 
         try {
-            $before = null;
-            $beforeResult = $this->db->query("SELECT * FROM central_alarmes WHERE id = ?", [$id]);
-            if ($beforeResult['status'] === 'success' && !empty($beforeResult['data'])) {
-                $before = (array)$beforeResult['data'][0];
-            }
+            enableAuditTriggers($this->db, 'api');
 
             $params['id'] = $id;
             $sql = "UPDATE central_alarmes SET
@@ -192,10 +203,6 @@ class AlarmeService
             if (!$result || $result['status'] !== 'success') {
                 throw new RuntimeException('Falha ao atualizar alarme.');
             }
-
-            $auditAfter = $params;
-            $auditAfter['id'] = $id;
-            auditEvent($this->db, 'alarmes', $id, 'UPDATE', $before, $auditAfter, 'api');
 
             $this->db->commit();
         } catch (Throwable $e) {

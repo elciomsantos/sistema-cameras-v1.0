@@ -142,9 +142,11 @@ try {
             ca.conta AS alarme_conta
         {$baseFrom}
         ORDER BY e.data_instalacao DESC
-        LIMIT {$perPage} OFFSET {$offset}
+        LIMIT :limit_relatorio OFFSET :offset_relatorio
     ";
 
+    $params[':limit_relatorio'] = $perPage;
+    $params[':offset_relatorio'] = $offset;
     $result = $db->query($query, $params);
     if (!$result || $result['status'] !== 'success') {
         ApiResponse::internalError('Erro na consulta.');

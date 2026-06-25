@@ -18,8 +18,11 @@ try {
     }
 
     $rawBody = file_get_contents('php://input');
-    $body = json_decode($rawBody, true) ?? [];
-    $id = (int)($body['id'] ?? ($_POST['id'] ?? 0));
+    $body = json_decode($rawBody, true);
+    if (!is_array($body)) {
+        ApiResponse::error('BAD_REQUEST', 'Corpo da requisição deve ser JSON.');
+    }
+    $id = (int)($body['id'] ?? 0);
     if (!$id) {
         ApiResponse::error('VALIDATION_ERROR', 'ID não informado.');
     }
@@ -43,8 +46,10 @@ try {
             'message' => 'Câmera excluída com sucesso',
             'affected_rows' => $result['affected_rows'],
         ]);
+        exit;
     }
 
+    $db->rollback();
     ApiResponse::error('NOT_FOUND', 'Câmera já foi excluída ou não encontrada.');
 
 } catch (Throwable $e) {

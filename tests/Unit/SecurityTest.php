@@ -119,7 +119,7 @@ class SecurityTest extends TestCase
 
     public function testGenerateCsrfToken(): void
     {
-        $_SESSION['csrf_token'] = null;
+        $_SESSION['csrf_tokens'] = [];
         
         $token = getCsrfToken();
 
@@ -129,7 +129,7 @@ class SecurityTest extends TestCase
 
     public function testValidateCsrfTokenCorrect(): void
     {
-        $_SESSION['csrf_token'] = null;
+        $_SESSION['csrf_tokens'] = [];
         
         $token = getCsrfToken();
         $valid = validateCsrfToken($token);
@@ -139,7 +139,7 @@ class SecurityTest extends TestCase
 
     public function testValidateCsrfTokenIncorrect(): void
     {
-        $_SESSION['csrf_token'] = 'valid_token_123456789012345678901234567890123456789012345';
+        $_SESSION['csrf_tokens'] = ['valid_token_123456789012345678901234567890123456789012345'];
         
         $valid = validateCsrfToken('invalid_token_123456789012345678901234567890123456789012');
 

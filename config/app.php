@@ -29,6 +29,11 @@ if (!defined('ENVIRONMENT')) {
 
 function isHttpsRequest(): bool
 {
+    $force = appEnv('CAMERAS_FORCE_HTTPS_SESSION');
+    if ($force !== null) {
+        return (bool)(int)$force;
+    }
+
     if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
         return true;
     }

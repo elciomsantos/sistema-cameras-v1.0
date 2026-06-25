@@ -1,10 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../inc/check_access.php';
 
-if (!isset($_SESSION['usuario']) || $_SESSION['usuario']->nivel_acesso !== 'admin') {
-    header('Location: index.php?page=nao_autorizado');
-    exit;
-}
+requererAcesso('admin');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['erro'] = 'Metodo invalido para exclusao de usuario.';
     header('Location: index.php?page=listarUsuario');

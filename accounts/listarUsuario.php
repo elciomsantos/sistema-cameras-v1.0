@@ -2,12 +2,9 @@
 // Include necessary files
 require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../inc/check_access.php';
 
-// ⭐⭐ VERIFICAÇÃO DE ACESSO ADMIN ⭐⭐
-if (!isset($_SESSION['usuario']) || $_SESSION['usuario']->nivel_acesso !== 'admin') {
-    header('Location: index.php?page=nao_autorizado');
-    exit;
-}
+requererAcesso('admin');
 
 // Inicializa a conexão com o banco usando a classe database
 $db = db();

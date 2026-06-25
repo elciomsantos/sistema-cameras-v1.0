@@ -1,3 +1,5 @@
+import { escapeHtml } from '../html';
+
 interface ErrorHandlerOptions {
     maxLogSize?: number;
     enableConsole?: boolean;
@@ -180,8 +182,8 @@ class ErrorHandler {
             '<button class="btn-close ms-2" type="button"></button>',
             '</div>',
             '<div class="error-notification-body">',
-            '<div class="error-message">' + this.formatErrorMessage(error) + '</div>',
-            '<div class="error-context text-muted small">' + context + '</div>',
+            '<div class="error-message">' + escapeHtml(this.formatErrorMessage(error)) + '</div>',
+            '<div class="error-context text-muted small">' + escapeHtml(context) + '</div>',
             '<div class="error-timestamp text-muted small">' + new Date(timestamp).toLocaleString() + '</div>',
             '</div>',
             '</div>'

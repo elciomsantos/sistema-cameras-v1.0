@@ -44,6 +44,7 @@ function loadManutencaoPayload(
             LEFT JOIN catalogo_modelos cm ON cm.id = e.modelo_id
             LEFT JOIN tipos_equipamento te ON te.id = COALESCE(e.tipo_equipamento_id, cm.tipo_equipamento_id)
             LEFT JOIN status s ON s.id = e.status_id
+            WHERE e.deleted_at IS NULL
             ORDER BY descricao ASC, e.id ASC
         ";
         $camerasResult = $db->query($camerasQuery);
@@ -126,7 +127,7 @@ function loadManutencaoPayload(
         LEFT JOIN catalogo_modelos cm ON cm.id = e.modelo_id
         LEFT JOIN tipos_equipamento te ON te.id = COALESCE(e.tipo_equipamento_id, cm.tipo_equipamento_id)
         LEFT JOIN usuarios u ON u.id = m.created_by
-        WHERE m.os_status_id = 1 {$whereSql}
+        WHERE m.os_status_id = 1 AND e.deleted_at IS NULL {$whereSql}
         ORDER BY m.created_at DESC
         LIMIT 200
     ";
@@ -156,7 +157,7 @@ function loadManutencaoPayload(
         LEFT JOIN catalogo_modelos cm ON cm.id = e.modelo_id
         LEFT JOIN tipos_equipamento te ON te.id = COALESCE(e.tipo_equipamento_id, cm.tipo_equipamento_id)
         LEFT JOIN usuarios u ON u.id = m.created_by
-        WHERE m.os_status_id = 2 {$whereSql}
+        WHERE m.os_status_id = 2 AND e.deleted_at IS NULL {$whereSql}
         ORDER BY m.updated_at DESC, m.created_at DESC
         LIMIT 200
     ";
@@ -173,7 +174,7 @@ function loadManutencaoPayload(
         LEFT JOIN status s ON s.id = m.status_id
         LEFT JOIN procedimentos p ON p.id = m.procedimento_id
         LEFT JOIN usuarios u ON u.id = m.created_by
-        WHERE (m.os_status_id = 3 OR m.os_status_id IS NULL) {$historicoWhereSql}
+        WHERE (m.os_status_id = 3 OR m.os_status_id IS NULL) AND e.deleted_at IS NULL {$historicoWhereSql}
     ";
     $countResult = $db->query($countQuery, $historicoParams);
     $total = 0;
@@ -225,10 +226,12 @@ function loadManutencaoPayload(
         LEFT JOIN status s ON s.id = m.status_id
         LEFT JOIN procedimentos p ON p.id = m.procedimento_id
         LEFT JOIN usuarios u ON u.id = m.created_by
-        WHERE (m.os_status_id = 3 OR m.os_status_id IS NULL) {$historicoWhereSql}
+        WHERE (m.os_status_id = 3 OR m.os_status_id IS NULL) AND e.deleted_at IS NULL {$historicoWhereSql}
         {$orderSql}
-        LIMIT {$perPage} OFFSET {$offset}
+        LIMIT ? OFFSET ?
     ";
+    $historicoParams[] = $perPage;
+    $historicoParams[] = $offset;
     $historyResult = $db->query($historyQuery, $historicoParams);
     $historico = $historyResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $historyResult['data']) : [];
 
@@ -271,8 +274,6 @@ try {
     if (!userHasAccess('supervisor')) {
         ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
     }
-
-    requireApiCsrf(false);
 
     $db = db();
 

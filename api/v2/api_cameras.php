@@ -13,6 +13,9 @@ try {
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }
+    if (!userHasAccess('supervisor')) {
+        ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
+    }
 
     $validator = new RequestValidator($_GET);
     $validator->validate([
@@ -37,7 +40,7 @@ try {
     $modeloId = (int)($_GET['modelo_id'] ?? 0);
     $localId = (int)($_GET['local_id'] ?? 0);
     $excluirManutencao = !empty($_GET['excluir_manutencao']);
-    $page = max(1, (int)($_GET['page'] ?? $_GET['page_num'] ?? 1));
+    $page = max(1, (int)($_GET['page_num'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 50);
     if ($perPage < 1) $perPage = 50;
     if ($perPage > 200) $perPage = 200;

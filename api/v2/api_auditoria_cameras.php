@@ -165,8 +165,10 @@ try {
         LEFT JOIN equipamentos e ON e.id = a.entidade_id
         WHERE {$whereSql}
         ORDER BY a.created_at DESC, a.id DESC
-        LIMIT {$perPage} OFFSET {$offset}
+        LIMIT :limit_auditoria OFFSET :offset_auditoria
     ";
+    $params[':limit_auditoria'] = $perPage;
+    $params[':offset_auditoria'] = $offset;
     $result = $db->query($sql, $params);
 
     $rows = [];

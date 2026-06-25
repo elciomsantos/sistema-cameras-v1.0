@@ -77,15 +77,11 @@ function loadConfiguration(): void
         if (isProduction()) {
             throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
         }
-        $samplePath = dirname(__DIR__) . '/.env.example';
-        $msg = sprintf(
+        throw new RuntimeException(
             "Arquivo de configuração não encontrado.\n\n" .
-            "Crie o arquivo de configuração em:\n  %s\n\n" .
-            "Copie o conteúdo de .env.example para começar.\n\n" .
-            "Documentação: https://github.com/seu-projeto/docs/SETUP.md",
-            $envPath
+            "Copie o arquivo .env.example para .env na raiz do projeto e configure as credenciais.\n\n" .
+            "Consulte a documentação do sistema para mais detalhes."
         );
-        throw new RuntimeException($msg);
     }
 }
 

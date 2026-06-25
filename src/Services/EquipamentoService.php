@@ -395,12 +395,14 @@ class EquipamentoService
     {
         $fields = $this->extractCommonData($data);
 
-        $insertCamera = $this->db->query(
-            "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas) VALUES (?, ?, ?, ?)",
-            [$equipId, $fields['mosaico'], $fields['coordenadas'], $fields['numero_ruas']]
-        );
-        if ($insertCamera['status'] !== 'success') {
-            throw new Exception('Erro ao salvar detalhes da câmera.');
+        if ($tipoId === 1) {
+            $insertCamera = $this->db->query(
+                "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas) VALUES (?, ?, ?, ?)",
+                [$equipId, $fields['mosaico'], $fields['coordenadas'], $fields['numero_ruas']]
+            );
+            if ($insertCamera['status'] !== 'success') {
+                throw new Exception('Erro ao salvar detalhes da câmera.');
+            }
         }
 
         if ($tipoId === 3) {
@@ -434,15 +436,17 @@ class EquipamentoService
     {
         $fields = $this->extractCommonData($data);
 
-        $this->db->query(
-            "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas)
-             VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE
-                mosaico = VALUES(mosaico),
-                coordenadas = VALUES(coordenadas),
-                numero_ruas = VALUES(numero_ruas)",
-            [$equipId, $fields['mosaico'], $fields['coordenadas'], $fields['numero_ruas']]
-        );
+        if ($tipoId === 1) {
+            $this->db->query(
+                "INSERT INTO equipamentos_camera (equipamento_id, mosaico, coordenadas, numero_ruas)
+                 VALUES (?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    mosaico = VALUES(mosaico),
+                    coordenadas = VALUES(coordenadas),
+                    numero_ruas = VALUES(numero_ruas)",
+                [$equipId, $fields['mosaico'], $fields['coordenadas'], $fields['numero_ruas']]
+            );
+        }
 
         if ($tipoId === 3) {
             $this->db->query(

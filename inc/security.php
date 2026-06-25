@@ -16,23 +16,31 @@ define('LOGIN_MAX_ATTEMPTS', 5);
 define('LOGIN_WINDOW_SECONDS', 900);
 define('LOGIN_LOCK_SECONDS', 900);
 
+define('CSRF_TOKEN_WINDOW_SIZE', 3);
+
 function getCsrfToken(): string
 {
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    $current = $tokens[array_key_last($tokens)] ?? null;
+    if (!$current) {
+        $current = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+        $_SESSION['csrf_tokens'] = [$current];
     }
 
-    return $_SESSION['csrf_token'];
+    return $current;
 }
 
 function validateCsrfToken(?string $token): bool
 {
-    if (!$token || empty($_SESSION['csrf_token'])) {
+    if (!$token) {
         return false;
     }
 
-    if (hash_equals($_SESSION['csrf_token'], $token)) {
-        return true;
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    foreach ($tokens as $t) {
+        if (hash_equals($t, $token)) {
+            return true;
+        }
     }
 
     return false;
@@ -40,7 +48,13 @@ function validateCsrfToken(?string $token): bool
 
 function rotateCsrfToken(): void
 {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    $newToken = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+    $tokens[] = $newToken;
+    if (count($tokens) > CSRF_TOKEN_WINDOW_SIZE) {
+        array_shift($tokens);
+    }
+    $_SESSION['csrf_tokens'] = array_values($tokens);
 }
 
 function requireApiCsrf(bool $rotate = true): void
@@ -72,7 +86,9 @@ function requireApiCsrf(bool $rotate = true): void
         rotateCsrfToken();
     }
 
-    header('X-CSRF-Token: ' . ($_SESSION['csrf_token'] ?? ''));
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    $current = $tokens[array_key_last($tokens)] ?? '';
+    header('X-CSRF-Token: ' . $current);
 }
 
 function currentUserId(): ?int
@@ -121,10 +137,11 @@ function mapAccessIdToName($id): ?string
         return null;
     }
 
+    // DB: admin=1, supervisor=2, user=3
     $map = [
-        ACCESS_LEVEL_ADMIN => 'admin',
-        ACCESS_LEVEL_SUPERVISOR => 'supervisor',
-        ACCESS_LEVEL_USER => 'user',
+        1 => 'admin',
+        2 => 'supervisor',
+        3 => 'user',
     ];
 
     $intId = (int) $id;
@@ -260,11 +277,19 @@ function generateTemporaryPassword(int $length = 12): string
 {
     $length = max(PASSWORD_MIN_LENGTH, $length);
     $chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&';
+    $charsLen = strlen($chars);
+    $max = 256 - (256 % $charsLen);
 
     $password = '';
-    $bytes = random_bytes($length);
-    for ($i = 0; $i < $length; $i++) {
-        $password .= $chars[ord($bytes[$i]) % strlen($chars)];
+    while (strlen($password) < $length) {
+        $bytes = random_bytes($length);
+        for ($i = 0; $i < $length; $i++) {
+            $byte = ord($bytes[$i]);
+            if ($byte < $max) {
+                $password .= $chars[$byte % $charsLen];
+                if (strlen($password) >= $length) break;
+            }
+        }
     }
 
     return $password;

@@ -70,8 +70,10 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
 
     try {
         // Acquire application-level lock to prevent race conditions
-        $result = $db->query("SELECT GET_LOCK(:lock_name, 10)", ['lock_name' => $lockName]);
-        $row = $result->fetch(PDO::FETCH_NUM);
+        $stmt = $pdo->prepare("SELECT GET_LOCK(:lock_name, 10)");
+        $stmt->bindValue(':lock_name', $lockName, \PDO::PARAM_STR);
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_NUM);
         if (!$row || (int)$row[0] !== 1) {
             throw new RuntimeException('Não foi possível obter lock de sessão.');
         }

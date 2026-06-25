@@ -54,7 +54,8 @@ try {
         registerUniqueSession($db, $usuarioId, $sessionToken);
     }
 
-    $newCsrfToken = $_SESSION['csrf_token'] ?? null;
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    $newCsrfToken = $tokens[array_key_last($tokens)] ?? null;
 
     ApiResponse::success([
         'message' => 'Sessão renovada',

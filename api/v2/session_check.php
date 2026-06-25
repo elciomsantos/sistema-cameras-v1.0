@@ -19,6 +19,22 @@ try {
     $usuarioId = currentUserId();
     $sessionToken = $_SESSION['session_token'] ?? null;
 
+    if ($sessionToken !== null && $usuarioId > 0) {
+        $sessionCheck = $db->query(
+            "SELECT active FROM user_sessions
+             WHERE usuario_id = :uid AND session_token_hash = :hash
+             LIMIT 1",
+            [':uid' => $usuarioId, ':hash' => hashSessionToken($sessionToken)]
+        );
+        $isActive = $sessionCheck['status'] === 'success'
+            && !empty($sessionCheck['data'])
+            && !empty($sessionCheck['data'][0]->active);
+        if (!$isActive) {
+            clearLocalSessionState();
+            ApiResponse::error('UNAUTHORIZED', 'Sessão invalidada.', ['status' => 'expired', 'reason' => 'invalidated']);
+        }
+    }
+
     $tempo_maximo = defined('SESSION_TIMEOUT') ? SESSION_TIMEOUT : 3600;
     $now = time();
 

@@ -86,7 +86,7 @@ function showConfirm(title: string, htmlContent: string, confirmText?: string): 
         if (titleEl) titleEl.textContent = title || 'Confirmar'
 
         const bodyEl = document.getElementById('appConfirmBody')
-        if (bodyEl) bodyEl.innerHTML = (htmlContent || '').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/\son\w+\s*=\s*"[^"]*"/gi, '').replace(/\son\w+\s*=\s*'[^']*'/gi, '').replace(/href\s*=\s*"javascript:[^"]*"/gi, 'href="#"').replace(/href\s*=\s*'javascript:[^']*'/gi, "href='#'")
+        if (bodyEl) bodyEl.innerHTML = sanitizeHtml(htmlContent || '')
 
         const okBtn = document.getElementById('appConfirmOk')
         if (okBtn) okBtn.textContent = confirmText || 'Sim, excluir'
@@ -102,7 +102,7 @@ function handleApiError(error: unknown, fallbackMessage: string = 'Erro inespera
     return message;
 }
 
-import { escapeHtml } from './html';
+import { escapeHtml, sanitizeHtml } from './html';
 
 window.showToast = showToast;
 window.showConfirm = showConfirm;

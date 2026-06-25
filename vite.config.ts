@@ -41,9 +41,14 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash][extname]',
         entryFileNames: 'assets/js/[name]-[hash].js',
         chunkFileNames: 'assets/js/[name]-[hash].js',
+        manualChunks(id: string) {
+          if (id.includes('ui-utils') || id.includes('ErrorHandler') || id.includes('LoadingManager') || id.includes('html.ts')) return 'vendor-ui';
+          if (id.includes('file-upload')) return 'vendor-upload';
+          if (id.includes('fetchWithTimeout')) return 'vendor-fetch';
+        },
       },
     },
-    sourcemap: false,
+    sourcemap: 'hidden',
     minify: 'esbuild',
   },
   server: {

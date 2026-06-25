@@ -47,8 +47,10 @@ class LocaisService
             LEFT JOIN regioes r ON l.regiao_id = r.id
         WHERE {$whereClause}
         ORDER BY l.nome
-        LIMIT {$perPage} OFFSET {$offset}";
+        LIMIT ? OFFSET ?";
 
+        $params[] = $perPage;
+        $params[] = $offset;
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];
     }
@@ -159,8 +161,10 @@ class LocaisService
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
         WHERE {$where}
         ORDER BY l.nome
-        LIMIT {$perPage} OFFSET {$offset}";
+        LIMIT ? OFFSET ?";
 
+        $params[] = $perPage;
+        $params[] = $offset;
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];
     }
@@ -285,8 +289,10 @@ class LocaisService
             LEFT JOIN regioes r ON l.regiao_id = r.id
         WHERE {$whereClause}
         ORDER BY l.nome
-        LIMIT {$perPage} OFFSET {$offset}";
+        LIMIT ? OFFSET ?";
 
+        $params[] = $perPage;
+        $params[] = $offset;
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];
     }

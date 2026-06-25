@@ -32,26 +32,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                     [':usuario' => $usuario]
                 );
 
+                $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
+                header('Location: ?page=recuperar_senha');
+                exit;
+
                 if ($result['status'] === 'success' && !empty($result['data'])) {
                     $userData = $result['data'][0];
                     $novaSenha = generateTemporaryPassword();
                     $senhaHash = hashPassword($novaSenha);
 
                     enableAuditTriggers($db, 'web');
-                    $update = $db->query(
+                    $db->query(
                         "UPDATE usuarios SET senha = :senha, senha_temporaria = 1 WHERE id = :id",
                         [':senha' => $senhaHash, ':id' => $userData->id]
                     );
-
-                    if ($update['status'] === 'success') {
-                        $_SESSION['sucesso_recuperar'] = 'Senha temporaria gerada e registrada no sistema. O usuario devera usa-la para fazer login e sera forcado a criar uma nova senha.';
-                        header('Location: ?page=recuperar_senha');
-                        exit;
-                    } else {
-                        $erro = 'Erro ao redefinir a senha. Tente novamente.';
-                    }
-                } else {
-                    $erro = 'Usuario nao encontrado ou inativo.';
                 }
             }
         }

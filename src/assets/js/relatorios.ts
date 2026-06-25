@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
   const itensPorPagina: number = 50;
   let paginaAtual: number = 1;
   let totalItens: number = 0;
+  let _resizeObserver: ResizeObserver | null = null;
   let dadosAtuais: Array<Record<string, unknown>> = [];
 
   function mostrarLoading(mostrar: boolean): void {
@@ -104,8 +105,6 @@ document.addEventListener('DOMContentLoaded', function (): void {
         atualizarTotalRegistros(totalItens);
         renderizarTabela(dadosAtuais);
         renderizarPaginacao();
-
-        (document.getElementById('pesquisa') as HTMLInputElement).value = '';
       } else {
         throw new Error((data && (data.message as string || data.error as string)) || 'Erro desconhecido');
       }
@@ -437,9 +436,10 @@ document.addEventListener('DOMContentLoaded', function (): void {
       wrapper.scrollLeft = this.scrollLeft;
     });
 
-    const observer = new ResizeObserver(syncWidth);
+    if (_resizeObserver) _resizeObserver.disconnect();
+    _resizeObserver = new ResizeObserver(syncWidth);
     const tableEl = container.querySelector('table');
-    if (tableEl) observer.observe(tableEl);
+    if (tableEl) _resizeObserver.observe(tableEl);
   }
 
   const CAMPO_POR_HEADER: Record<string, (d: Record<string, unknown>) => string> = {

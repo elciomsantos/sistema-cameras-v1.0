@@ -37,6 +37,7 @@
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="?page=controle_alarmes"><i class="fas fa-gauge-high me-2"></i>Painel de Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=cadastro_alarmes"><i class="fas fa-plus me-2"></i>Cadastro de Alarmes</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_alarmes"><i class="fas fa-list me-2"></i>Listar Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=editar_alarmes"><i class="fas fa-pen-to-square me-2"></i>Editar Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=manutencao_alarmes"><i class="fas fa-tools me-2"></i>Manutencao de Alarmes</a></li>
                     </ul>

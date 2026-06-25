@@ -98,6 +98,18 @@ INSERT INTO status_os (nome) VALUES
 ('REALIZADA'),
 ('CANCELADA');
 
+-- Cache de geocodificação (usado por api/v2/api_geocode.php)
+CREATE TABLE geocode_cache (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    query_hash CHAR(32) NOT NULL COMMENT 'MD5 hash da query normalizada',
+    query TEXT NOT NULL COMMENT 'Query original do usuário',
+    response JSON NOT NULL COMMENT 'Resposta parseada do geocodificador (lat, lon, display_name)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_geocode_cache_query_hash (query_hash),
+    INDEX idx_geocode_cache_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cache de geocodificação (Nominatim/Photon)';
+
 CREATE TABLE procedimentos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL UNIQUE
@@ -356,9 +368,12 @@ CREATE TABLE locais (
     latitude DECIMAL(10,8) NULL,
     longitude DECIMAL(11,8) NULL,
     alarme_conta INT NULL COMMENT 'Conta do alarme',
+    regiao_id INT NULL COMMENT 'FK para regioes',
+    horario_funcionamento VARCHAR(255) NULL COMMENT 'Horario de funcionamento do local',
     secretaria_id INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_locais_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_tipo_local FOREIGN KEY (tipo_local_id) REFERENCES tipos_locais(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_classif_endereco FOREIGN KEY (classificacao_endereco_id) REFERENCES classificacao_enderecos(id) ON DELETE SET NULL,
@@ -366,6 +381,7 @@ CREATE TABLE locais (
     CONSTRAINT ck_locais_longitude CHECK (longitude IS NULL OR (longitude BETWEEN -180 AND 180))
 ) ENGINE=InnoDB;
 
+CREATE INDEX idx_locais_regiao ON locais(regiao_id);
 CREATE INDEX idx_locais_secretaria ON locais(secretaria_id);
 CREATE INDEX idx_locais_tipo_local ON locais(tipo_local_id);
 CREATE INDEX idx_locais_classif_endereco ON locais(classificacao_endereco_id);
@@ -599,6 +615,7 @@ CREATE TABLE central_alarmes (
     observacao TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL COMMENT 'Data de exclusao logica (soft delete)',
     CONSTRAINT fk_central_alarmes_modelo FOREIGN KEY (modelo_alarme_id) REFERENCES catalogo_modelos_alarmes(id) ON DELETE RESTRICT,
     CONSTRAINT fk_central_alarmes_status FOREIGN KEY (status_id) REFERENCES status(id) ON DELETE RESTRICT,
     CONSTRAINT fk_central_alarmes_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE RESTRICT,
@@ -608,7 +625,9 @@ CREATE TABLE central_alarmes (
     INDEX idx_alarmes_camera_gm (camera_gm),
     INDEX idx_alarmes_data_atualizacao (data_atualizacao),
     INDEX idx_alarmes_status_id (status_id),
-    INDEX idx_alarmes_regiao_id (regiao_id)
+    INDEX idx_alarmes_regiao_id (regiao_id),
+    INDEX idx_alarmes_deleted (deleted_at),
+    INDEX idx_alarmes_deleted_id (deleted_at, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX idx_alarmes_status_regiao ON central_alarmes(status, regiao);
@@ -1013,6 +1032,156 @@ BEGIN
     VALUES ('locais', OLD.id, 3,
         JSON_OBJECT('id', OLD.id, 'nome', OLD.nome, 'logradouro', OLD.logradouro, 'bairro', OLD.bairro, 'cidade', OLD.cidade, 'uf', OLD.uf, 'cep', OLD.cep, 'numero', OLD.numero, 'descricao_posicao', OLD.descricao_posicao, 'secretaria_id', OLD.secretaria_id, 'alarme_conta', OLD.alarme_conta),
         NULL, @app_user_id, @app_origem);
+END$$
+
+-- =====================================================
+-- TRIGGERS DE AUDITORIA (CENTRAL DE ALARME)
+-- =====================================================
+CREATE TRIGGER trg_central_alarmes_ai
+AFTER INSERT ON central_alarmes
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_eventos (
+        entidade, entidade_id, operacao_id, dados_antes, dados_depois, changed_by, origem
+    ) VALUES (
+        'central_alarmes', NEW.id, 1, NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'regiao', NEW.regiao,
+            'regiao_id', NEW.regiao_id,
+            'conta', NEW.conta,
+            'status', NEW.status,
+            'status_id', NEW.status_id,
+            'local', NEW.local,
+            'endereco', NEW.endereco,
+            'numero', NEW.numero,
+            'pgm1', NEW.pgm1,
+            'pgm2', NEW.pgm2,
+            'mac', NEW.mac,
+            'ip', NEW.ip,
+            'integracao', NEW.integracao,
+            'camera_gm', NEW.camera_gm,
+            'quant_camera_gm', NEW.quant_camera_gm,
+            'ip_dvr', NEW.ip_dvr,
+            'cameras_dvr', NEW.cameras_dvr,
+            'modelo_alarme_id', NEW.modelo_alarme_id,
+            'quant_repetidor', NEW.quant_repetidor,
+            'qtde_sensores', NEW.qtde_sensores,
+            'documentacao', NEW.documentacao,
+            'monitorada', NEW.monitorada,
+            'numero_sei', NEW.numero_sei,
+            'data_atualizacao', NEW.data_atualizacao,
+            'observacao', NEW.observacao
+        ),
+        @app_user_id, @app_origem
+    );
+END$$
+
+CREATE TRIGGER trg_central_alarmes_au
+AFTER UPDATE ON central_alarmes
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_eventos (
+        entidade, entidade_id, operacao_id, dados_antes, dados_depois, changed_by, origem
+    ) VALUES (
+        'central_alarmes', NEW.id, 2,
+        JSON_OBJECT(
+            'regiao', OLD.regiao,
+            'regiao_id', OLD.regiao_id,
+            'conta', OLD.conta,
+            'status', OLD.status,
+            'status_id', OLD.status_id,
+            'local', OLD.local,
+            'endereco', OLD.endereco,
+            'numero', OLD.numero,
+            'pgm1', OLD.pgm1,
+            'pgm2', OLD.pgm2,
+            'mac', OLD.mac,
+            'ip', OLD.ip,
+            'integracao', OLD.integracao,
+            'camera_gm', OLD.camera_gm,
+            'quant_camera_gm', OLD.quant_camera_gm,
+            'ip_dvr', OLD.ip_dvr,
+            'cameras_dvr', OLD.cameras_dvr,
+            'modelo_alarme_id', OLD.modelo_alarme_id,
+            'quant_repetidor', OLD.quant_repetidor,
+            'qtde_sensores', OLD.qtde_sensores,
+            'documentacao', OLD.documentacao,
+            'monitorada', OLD.monitorada,
+            'numero_sei', OLD.numero_sei,
+            'data_atualizacao', OLD.data_atualizacao,
+            'observacao', OLD.observacao
+        ),
+        JSON_OBJECT(
+            'regiao', NEW.regiao,
+            'regiao_id', NEW.regiao_id,
+            'conta', NEW.conta,
+            'status', NEW.status,
+            'status_id', NEW.status_id,
+            'local', NEW.local,
+            'endereco', NEW.endereco,
+            'numero', NEW.numero,
+            'pgm1', NEW.pgm1,
+            'pgm2', NEW.pgm2,
+            'mac', NEW.mac,
+            'ip', NEW.ip,
+            'integracao', NEW.integracao,
+            'camera_gm', NEW.camera_gm,
+            'quant_camera_gm', NEW.quant_camera_gm,
+            'ip_dvr', NEW.ip_dvr,
+            'cameras_dvr', NEW.cameras_dvr,
+            'modelo_alarme_id', NEW.modelo_alarme_id,
+            'quant_repetidor', NEW.quant_repetidor,
+            'qtde_sensores', NEW.qtde_sensores,
+            'documentacao', NEW.documentacao,
+            'monitorada', NEW.monitorada,
+            'numero_sei', NEW.numero_sei,
+            'data_atualizacao', NEW.data_atualizacao,
+            'observacao', NEW.observacao
+        ),
+        @app_user_id, @app_origem
+    );
+END$$
+
+CREATE TRIGGER trg_central_alarmes_bd
+BEFORE DELETE ON central_alarmes
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_eventos (
+        entidade, entidade_id, operacao_id, dados_antes, dados_depois, changed_by, origem
+    ) VALUES (
+        'central_alarmes', OLD.id, 3,
+        JSON_OBJECT(
+            'id', OLD.id,
+            'regiao', OLD.regiao,
+            'regiao_id', OLD.regiao_id,
+            'conta', OLD.conta,
+            'status', OLD.status,
+            'status_id', OLD.status_id,
+            'local', OLD.local,
+            'endereco', OLD.endereco,
+            'numero', OLD.numero,
+            'pgm1', OLD.pgm1,
+            'pgm2', OLD.pgm2,
+            'mac', OLD.mac,
+            'ip', OLD.ip,
+            'integracao', OLD.integracao,
+            'camera_gm', OLD.camera_gm,
+            'quant_camera_gm', OLD.quant_camera_gm,
+            'ip_dvr', OLD.ip_dvr,
+            'cameras_dvr', OLD.cameras_dvr,
+            'modelo_alarme_id', OLD.modelo_alarme_id,
+            'quant_repetidor', OLD.quant_repetidor,
+            'qtde_sensores', OLD.qtde_sensores,
+            'documentacao', OLD.documentacao,
+            'monitorada', OLD.monitorada,
+            'numero_sei', OLD.numero_sei,
+            'data_atualizacao', OLD.data_atualizacao,
+            'observacao', OLD.observacao
+        ),
+        NULL,
+        @app_user_id, @app_origem
+    );
 END$$
 
 -- =====================================================

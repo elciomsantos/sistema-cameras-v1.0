@@ -60,7 +60,10 @@ function loadAnexos(container: HTMLElement): void {
     const emptyMsg = listEl.getAttribute('data-empty-msg') || 'Nenhum anexo cadastrado.'
 
     if (!equipamentoId && !alarmeId && !manutencaoCameraId && !manutencaoAlarmeId) {
-        listEl.innerHTML = '<p class="text-muted text-center mb-0">' + emptyMsg + '</p>'
+        const p = document.createElement('p')
+        p.className = 'text-muted text-center mb-0'
+        p.textContent = emptyMsg
+        listEl.appendChild(p)
         return
     }
 

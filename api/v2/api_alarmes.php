@@ -13,6 +13,9 @@ try {
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }
+    if (!userHasAccess('supervisor')) {
+        ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
+    }
 
     $validator = new RequestValidator($_GET);
     $validator->validate([
@@ -92,15 +95,13 @@ try {
                        a.observacao LIKE :busca3 OR
                        a.numero_sei LIKE :busca4 OR
                        a.ip LIKE :busca5 OR
-                       a.ip_dvr LIKE :busca6 OR
-                       CAST(a.conta AS CHAR) LIKE :busca7)';
+                       a.ip_dvr LIKE :busca6)';
             $params[':busca1'] = $paramVal;
             $params[':busca2'] = $paramVal;
             $params[':busca3'] = $paramVal;
             $params[':busca4'] = $paramVal;
             $params[':busca5'] = $paramVal;
             $params[':busca6'] = $paramVal;
-            $params[':busca7'] = $paramVal;
         }
     }
 
@@ -154,9 +155,11 @@ try {
         LEFT JOIN catalogo_modelos_alarmes m ON m.id = a.modelo_alarme_id
         {$whereSql}
         ORDER BY a.data_atualizacao DESC, a.id DESC
-        LIMIT {$perPage} OFFSET {$offset}
+        LIMIT ? OFFSET ?
     ";
 
+    $params[] = $perPage;
+    $params[] = $offset;
     $result = $db->query($sql, $params);
 
     $queryTime = microtime(true) - $startTime;

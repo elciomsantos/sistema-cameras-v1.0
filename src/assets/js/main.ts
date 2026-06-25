@@ -26,6 +26,4 @@ import './utils/showSuccessModal';
 // Dashboard modules
 import './modules/dashboard-charts';
 
-// Log to confirm Vite is working
-console.log('Vite build system initialized');
-console.log('Build date:', new Date().toISOString());
+// Build initialized

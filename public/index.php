@@ -46,7 +46,7 @@ $CSP_NONCE = $cspNonce;
 $inlineStylePolicy = (defined('CSP_ALLOW_INLINE_STYLES') && CSP_ALLOW_INLINE_STYLES) ? " 'unsafe-inline'" : '';
 $cspPolicy = "default-src 'self'; "
     . "script-src 'self' 'nonce-{$cspNonce}'{$scriptEvalPolicy} https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
-    . "style-src 'self' 'nonce-{$cspNonce}'{$inlineStylePolicy} https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+    . "style-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
     . "style-src-elem 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
     . "style-src-attr{$inlineStylePolicy}; "
     . "img-src 'self' data: blob:; "

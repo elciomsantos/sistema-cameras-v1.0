@@ -83,7 +83,7 @@ async function carregarListaCameras(page: number = 1): Promise<void> {
             exibirCameras(todasCameras);
             renderPaginacao();
 
-            showToast(totalRecords + ' câmeras encontradas', 'success');
+            window.showToast(totalRecords + ' câmeras encontradas', 'success');
         } else {
             throw new Error(resultado.error || 'Formato de dados inválido');
         }
@@ -330,7 +330,7 @@ function abrirModalExclusao(cameraId: string, cameraDescricao: string): void {
 
 async function excluirCamera(): Promise<void> {
     if (!CAN_DELETE) {
-        showToast('Permissao insuficiente para excluir camera.', 'warning');
+        window.showToast('Permissao insuficiente para excluir camera.', 'warning');
         return;
     }
 
@@ -361,7 +361,7 @@ async function excluirCamera(): Promise<void> {
         const resultado = await response.json();
 
         if (resultado.success === true) {
-            showToast('Câmera excluída com sucesso!', 'success');
+            window.showToast('Câmera excluída com sucesso!', 'success');
             carregarListaCameras(currentPage);
         } else {
             throw new Error(resultado.message || 'Erro ao excluir');
@@ -369,7 +369,7 @@ async function excluirCamera(): Promise<void> {
 
     } catch (error) {
         console.error('Erro ao excluir câmera:', error);
-        showToast('Erro ao excluir câmera: ' + (error as Error).message, 'danger');
+        window.showToast('Erro ao excluir câmera: ' + (error as Error).message, 'danger');
     } finally {
         const btnConfirmar = document.getElementById('btnConfirmarExclusao') as HTMLButtonElement;
         btnConfirmar.innerHTML = '<i class="fas fa-trash me-1"></i>Excluir';

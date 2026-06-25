@@ -17,12 +17,21 @@ $perPage = 50;
 $tiposLocais = $locaisService->getAllTiposLocais();
 
 // Export CSV
-if (isset($_GET['export']) && $_GET['export'] === 'csv') {
-    if (!isset($_GET['csrf_token']) || !validateCsrfToken($_GET['csrf_token'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['export'] ?? '') === 'csv') {
+    if (!isset($_POST['csrf_token']) || !validateCsrfToken($_POST['csrf_token'])) {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Token CSRF inválido.']);
         exit;
+    }
+    $exportFilters = [];
+    if (!empty($_POST['filters'])) {
+        parse_str($_POST['filters'], $exportFilters);
+        $filters = [
+            'search' => trim($exportFilters['busca'] ?? ''),
+            'tipo_local_id' => $exportFilters['tipo_local_id'] ?? '',
+            'camera' => $exportFilters['camera'] ?? '',
+        ];
     }
     $allLocais = $locaisService->searchAll($filters);
 
@@ -87,7 +96,7 @@ $locais = $locaisService->search($filters, $page, $perPage);
                 </div>
             <?php endif; ?>
 
-            <form method="get" class="row g-2 mb-3">
+            <form method="get" id="formFiltrosLocais" class="row g-2 mb-3">
                 <input type="hidden" name="page" value="listar_locais">
                 <div class="col-md-3">
                     <input type="text" name="busca" class="form-control form-control-sm"
@@ -122,12 +131,37 @@ $locais = $locaisService->search($filters, $page, $perPage);
                     </a>
                 </div>
                 <div class="col-md-2">
-                    <a href="?page=listar_locais&export=csv&csrf_token=<?= urlencode(getCsrfToken()) ?><?= $filters['search'] ? '&busca=' . urlencode($filters['search']) : '' ?><?= $filters['tipo_local_id'] !== '' ? '&tipo_local_id=' . urlencode($filters['tipo_local_id']) : '' ?><?= $filters['camera'] !== '' ? '&camera=' . urlencode($filters['camera']) : '' ?>"
-                       class="btn btn-success btn-sm w-100">
+                    <button type="button" onclick="exportCsv()" class="btn btn-success btn-sm w-100">
                         <i class="fas fa-file-csv me-1"></i>Exportar CSV
-                    </a>
+                    </button>
                 </div>
             </form>
+            <script>
+            function exportCsv() {
+                var f = document.getElementById('formFiltrosLocais');
+                var q = new URLSearchParams(new FormData(f)).toString();
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '?page=listar_locais';
+                var h = document.createElement('input');
+                h.type = 'hidden';
+                h.name = 'export';
+                h.value = 'csv';
+                form.appendChild(h);
+                var t = document.createElement('input');
+                t.type = 'hidden';
+                t.name = 'csrf_token';
+                t.value = '<?= getCsrfToken() ?>';
+                form.appendChild(t);
+                var d = document.createElement('input');
+                d.type = 'hidden';
+                d.name = 'filters';
+                d.value = q;
+                form.appendChild(d);
+                document.body.appendChild(form);
+                form.submit();
+            }
+            </script>
 
             <p class="text-muted small">Total: <strong><?= $total ?></strong> locais encontrados</p>
 

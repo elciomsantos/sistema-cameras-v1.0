@@ -736,6 +736,7 @@ class CadastroCamera {
         const anexosSection = document.getElementById('anexosSection');
         if (anexosSection) {
             anexosSection.classList.remove('anexos-section-visible');
+            anexosSection.removeAttribute('data-anexos-init');
             const list = anexosSection.querySelector('.anexos-list');
             if (list) {
                 list.removeAttribute('data-equipamento-id');

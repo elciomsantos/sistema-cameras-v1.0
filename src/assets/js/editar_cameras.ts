@@ -6,6 +6,12 @@ class EditarCamera {
     btnSubmit!: HTMLButtonElement;
     tipoSelect!: HTMLSelectElement;
     private modeloRequestController: AbortController | null = null;
+    private _modelosResolve: (() => void) | null = null;
+    private _aguardandoModelos: Promise<void> = Promise.resolve();
+
+    aguardarModelos(): Promise<void> {
+        return this._aguardandoModelos;
+    }
 
     constructor() {
         this.init();
@@ -161,9 +167,10 @@ class EditarCamera {
             this.modeloRequestController.abort();
         }
         this.modeloRequestController = new AbortController();
+        this._aguardandoModelos = new Promise<void>(resolve => { this._modelosResolve = resolve; });
 
         const select = document.getElementById("modeloExistenteSelect") as HTMLSelectElement;
-        if (!select) return;
+        if (!select) { this._modelosResolve?.(); return; }
 
         try {
             select.disabled = true;
@@ -199,10 +206,12 @@ class EditarCamera {
                 select.innerHTML = '<option value="">Nenhum modelo encontrado</option>';
                 window.showToast("Nenhum modelo cadastrado para esta marca. Use a opção 'novo modelo'.", "warning");
             }
+            this._modelosResolve?.();
 
         } catch (error) {
             console.error("Erro ao carregar modelos:", error);
             select.innerHTML = '<option value="">Erro ao carregar modelos</option>';
+            this._modelosResolve?.();
         }
     }
 
@@ -371,8 +380,10 @@ class EditarCamera {
     }
 }
 
+let editarCameraInstance: EditarCamera;
+
 function onReady(): void {
-    new EditarCamera();
+    editarCameraInstance = new EditarCamera();
     initCameraEditor();
 }
 
@@ -530,17 +541,14 @@ async function initCameraEditor(): Promise<void> {
         if (marcaSelect && camera.marca_id) {
             marcaSelect.value = String(camera.marca_id);
             marcaSelect.dispatchEvent(new Event('change'));
-            const applyModelWhenReady = (tries = 0): void => {
-                const modeloSelect = document.getElementById('modeloExistenteSelect') as HTMLSelectElement;
-                if (modeloSelect && modeloSelect.options.length > 1) {
-                    modeloSelect.value = String(camera.modelo_id ?? '');
-                    return;
-                }
-                if (tries < 8) {
-                    setTimeout(() => applyModelWhenReady(tries + 1), 120);
-                }
-            };
-            applyModelWhenReady();
+            if (editarCameraInstance) {
+                editarCameraInstance.aguardarModelos().then(() => {
+                    const modeloSelect = document.getElementById('modeloExistenteSelect') as HTMLSelectElement;
+                    if (modeloSelect && modeloSelect.options.length > 1) {
+                        modeloSelect.value = String(camera.modelo_id ?? '');
+                    }
+                });
+            }
         }
     };
 

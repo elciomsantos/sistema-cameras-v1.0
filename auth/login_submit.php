@@ -5,8 +5,6 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-session_regenerate_id(true);
-
 $csrfToken = $_POST['csrf_token'] ?? null;
 if (!validateCsrfToken($csrfToken)) {
     $_SESSION['error'] = 'Falha de validacao CSRF.';
@@ -30,9 +28,14 @@ if (defined('PROXY_TRUSTED_IPS') && PROXY_TRUSTED_IPS !== '') {
     if (in_array($remoteAddr, $trustedProxies, true)) {
         $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
         if ($forwarded !== '') {
-            $ips = explode(',', $forwarded);
-            $last = trim(end($ips));
-            $ip = filter_var($last, FILTER_VALIDATE_IP) ? $last : $remoteAddr;
+            $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
+            $ip = $remoteAddr;
+            foreach ($ips as $forwardedIp) {
+                if (!in_array($forwardedIp, $trustedProxies, true) && filter_var($forwardedIp, FILTER_VALIDATE_IP)) {
+                    $ip = $forwardedIp;
+                    break;
+                }
+            }
         } else {
             $ip = $remoteAddr;
         }
@@ -73,8 +76,8 @@ function persistLoginAttempt(database $db, string $username, string $ip, array $
         "INSERT INTO login_attempts (username, ip_address, attempt_count, first_attempt_at, locked_until)
          VALUES (:username, :ip_address, :attempt_count, :first_attempt_at, :locked_until)
          ON DUPLICATE KEY UPDATE
-            attempt_count = VALUES(attempt_count),
-            first_attempt_at = VALUES(first_attempt_at),
+            attempt_count = attempt_count + 1,
+            first_attempt_at = COALESCE(first_attempt_at, VALUES(first_attempt_at)),
             locked_until = VALUES(locked_until)",
         [
             ':username' => $username,
@@ -111,7 +114,9 @@ try {
         }
     }
 } catch (Throwable $e) {
-    // Fallback: permitir tentativa se DB estiver indisponível
+    $_SESSION['error'] = 'Erro interno. Tente novamente.';
+    header('Location: index.php?page=login');
+    exit;
 }
 
 if (($now - (int)$attempt['first_at']) > $windowSeconds) {
@@ -126,7 +131,7 @@ if($result['status'] === 'error') {
     header('Location: index.php?page=404');
     exit;
 }
-if(count($result['data']) === 0) {
+if(!isset($result['data']) || count($result['data']) === 0) {
     $attempt['count']++;
     if ($attempt['count'] >= $maxAttempts) {
         $attempt['locked_until'] = $now + $lockSeconds;
@@ -168,6 +173,7 @@ if ($nivelAcessoQuery['status'] === 'success' && !empty($nivelAcessoQuery['data'
     $usuarioDb->nivel_acesso = 'user';
 }
 
+session_regenerate_id(true);
 $_SESSION['ultimo_acesso'] = time();
 $_SESSION['session_started_at'] = $now;
 

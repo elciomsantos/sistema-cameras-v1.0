@@ -32,7 +32,7 @@ if ($id === (int)$_SESSION['usuario']->id) {
 
 enableAuditTriggers($db, 'web');
 
-$sql = "DELETE FROM usuarios WHERE id = :id";
+$sql = "UPDATE usuarios SET deleted_at = NOW(), ativo = 0 WHERE id = :id AND deleted_at IS NULL";
 $params = [':id' => $id];
 $result = $db->query($sql, $params);
 

@@ -85,4 +85,10 @@ class LookupService
         $result = $this->db->query("SELECT id, nome FROM catalogo_modelos_alarmes ORDER BY nome ASC");
         return $result['status'] === 'success' ? $result['data'] : [];
     }
+
+    public function getContasAlarmes(): array
+    {
+        $result = $this->db->query("SELECT conta, local FROM central_alarmes WHERE deleted_at IS NULL ORDER BY conta");
+        return $result['status'] === 'success' ? $result['data'] : [];
+    }
 }

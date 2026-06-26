@@ -69,8 +69,8 @@ class AlarmeService
         }
 
         $statusLookup = $this->db->query(
-            "SELECT id FROM status WHERE nome = ? LIMIT 1",
-            [strtoupper($status)]
+            "SELECT id FROM status WHERE UPPER(nome) = UPPER(?) LIMIT 1",
+            [$status]
         );
         $statusId = ($statusLookup['status'] === 'success' && !empty($statusLookup['data']))
             ? (int)$statusLookup['data'][0]->id
@@ -80,8 +80,8 @@ class AlarmeService
         $regiaoId = null;
         if ($regiaoText !== null) {
             $regiaoLookup = $this->db->query(
-                "SELECT id FROM regioes WHERE nome = ? LIMIT 1",
-                [strtoupper($regiaoText)]
+                "SELECT id FROM regioes WHERE UPPER(nome) = UPPER(?) LIMIT 1",
+                [$regiaoText]
             );
             $regiaoId = ($regiaoLookup['status'] === 'success' && !empty($regiaoLookup['data']))
                 ? (int)$regiaoLookup['data'][0]->id

@@ -57,7 +57,8 @@ try {
     }
 
     if ($busca !== '') {
-        $buscaParam = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $buscaParam = '%' . $likeSafe . '%';
 
         $buscaParts = [];
         $isIp = filter_var($busca, FILTER_VALIDATE_IP);

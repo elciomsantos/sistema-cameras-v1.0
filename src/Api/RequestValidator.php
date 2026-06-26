@@ -325,7 +325,8 @@ class RequestValidator
      */
     private function validateIn(string $field, $value, array $params = []): bool
     {
-        return in_array($value, $params, true);
+        $value = is_scalar($value) ? (string)$value : $value;
+        return in_array((string)$value, $params, true);
     }
 
     /**

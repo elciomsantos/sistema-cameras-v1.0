@@ -32,10 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                     [':usuario' => $usuario]
                 );
 
-                $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
-                header('Location: ?page=recuperar_senha');
-                exit;
-
                 if ($result['status'] === 'success' && !empty($result['data'])) {
                     $userData = $result['data'][0];
                     $novaSenha = generateTemporaryPassword();
@@ -47,6 +43,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                         [':senha' => $senhaHash, ':id' => $userData->id]
                     );
                 }
+
+                $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
+                header('Location: ?page=recuperar_senha');
+                exit;
             }
         }
     }

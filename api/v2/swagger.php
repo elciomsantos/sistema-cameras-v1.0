@@ -69,7 +69,7 @@ if ($isSwaggerSpec || $isSwaggerJson) {
     <title>API Swagger UI - Sistema de Câmeras</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui.css">
+    <link rel="stylesheet" type="text/css" href="<?= rtrim((defined('BASE_URL') ? BASE_URL : '/'), '/') ?>/assets/swagger/swagger-ui.css">
     <style>
         body {
             margin: 0;
@@ -112,7 +112,7 @@ if ($isSwaggerSpec || $isSwaggerJson) {
     
     <div id="swagger-ui"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+    <script src="<?= rtrim((defined('BASE_URL') ? BASE_URL : '/'), '/') ?>/assets/swagger/swagger-ui-bundle.js"></script>
     <script>
         window.onload = function() {
             SwaggerUIBundle({

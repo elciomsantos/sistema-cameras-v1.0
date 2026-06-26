@@ -2,6 +2,25 @@
 ob_start();
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../inc/check_access.php';
+
+requererAcesso('user');
+
+$db = db();
+$sessionToken = $_SESSION['session_token'] ?? null;
+$usuarioId = currentUserId();
+if ($usuarioId && $sessionToken) {
+    try {
+        $dbCheck = db();
+        if (!isUniqueSessionValid($dbCheck, $usuarioId, $sessionToken)) {
+            clearLocalSessionState();
+            header('Location: index.php?page=login&concurrent=1');
+            exit;
+        }
+    } catch (Throwable $e) {
+        error_log('Erro ao validar sessao unica em trocar_senha: ' . $e->getMessage());
+    }
+}
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario'])) {

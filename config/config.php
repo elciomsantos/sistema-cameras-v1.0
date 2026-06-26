@@ -116,7 +116,7 @@ if ($envDbName === false || $envDbName === '') {
 if ($envDbUser === false || $envDbUser === '') {
     $missingVars[] = 'DB_USER';
 }
-if ($envDbPass === false || $envDbPass === '') {
+if ($envDbPass === false) {
     $missingVars[] = 'DB_PASS';
 }
 

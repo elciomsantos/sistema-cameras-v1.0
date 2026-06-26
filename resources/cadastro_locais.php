@@ -56,6 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     $latitude = trim($_POST['latitude'] ?? '');
     $longitude = trim($_POST['longitude'] ?? '');
 
+    if ($uf !== '' && !in_array($uf, $ufs, true)) {
+        $mensagem_erro = 'UF inválida.';
+    } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $mensagem_erro = 'E-mail inválido.';
+    } elseif ($latitude !== '' && !is_numeric($latitude)) {
+        $mensagem_erro = 'Latitude deve ser numérica.';
+    } elseif ($longitude !== '' && !is_numeric($longitude)) {
+        $mensagem_erro = 'Longitude deve ser numérica.';
+    }
+
     if (empty($nome)) {
         $mensagem_erro = 'O campo Nome do Local e obrigatorio.';
     } elseif (empty($tipo_local_id)) {

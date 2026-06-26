@@ -64,7 +64,8 @@ function loadManutencaoPayload(
         $params[':equipamento_id'] = $equipamentoId;
     }
     if ($busca !== '') {
-        $paramVal = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $paramVal = '%' . $likeSafe . '%';
         $whereParts[] = '(m.local_servico LIKE :bc1 OR m.endereco_servico LIKE :bc2 OR e.ip LIKE :bc3)';
         $params[':bc1'] = $paramVal;
         $params[':bc2'] = $paramVal;
@@ -79,7 +80,8 @@ function loadManutencaoPayload(
         $historicoParts = array_values(array_filter($historicoParts, function ($p) {
             return strpos($p, ':bc1') === false && strpos($p, ':bc2') === false && strpos($p, ':bc3') === false;
         }));
-        $paramVal = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $paramVal = '%' . $likeSafe . '%';
         $historicoParts[] = '(m.local_servico LIKE :bh01 OR m.endereco_servico LIKE :bh02 OR e.ip LIKE :bh03 OR m.descricao LIKE :bh04 OR m.tecnico LIKE :bh05 OR m.numero_os LIKE :bh06 OR m.pecas_previstas LIKE :bh07 OR COALESCE(l.nome, e.codigo_publico, CONCAT(\'EQUIPAMENTO \', e.id)) LIKE :bh08 OR cm.nome LIKE :bh09 OR p.nome LIKE :bh10 OR u.nome LIKE :bh11)';
         $historicoParams[':bh01'] = $paramVal;
         $historicoParams[':bh02'] = $paramVal;
@@ -316,12 +318,18 @@ try {
             $equipamentoId = max(1, (int)($payload['equipamento_id'] ?? 0));
             $problemas = trim((string)($payload['problemas'] ?? ''));
             $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
+            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
+                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            }
             $numeroOs = trim((string)($payload['numero_os'] ?? '')) ?: null;
             $localServico = trim((string)($payload['local_servico'] ?? '')) ?: null;
             $enderecoServico = trim((string)($payload['endereco_servico'] ?? '')) ?: null;
 
             if (strlen($problemas) < 5) {
                 ApiResponse::error('VALIDATION_ERROR', 'Descreva os problemas da ordem de serviço.');
+            }
+            if (strlen($problemas) > 1000) {
+                ApiResponse::error('VALIDATION_ERROR', 'Problemas não pode exceder 1000 caracteres.');
             }
 
             if ($numeroOs !== null && (strlen($numeroOs) > 50 || !preg_match('/^[A-Za-z0-9\-_\/]+$/', $numeroOs))) {
@@ -407,6 +415,9 @@ try {
             $equipamentoId = max(1, (int)($payload['equipamento_id'] ?? 0));
             $descricao = trim((string)($payload['descricao'] ?? ''));
             $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
+            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
+                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            }
             $procedimentoId = max(0, (int)($payload['procedimento_id'] ?? 0)) ?: null;
             $statusId = max(0, (int)($payload['status_id'] ?? 0)) ?: null;
             $numeroOs = trim((string)($payload['numero_os'] ?? '')) ?: null;
@@ -417,6 +428,21 @@ try {
 
             if (strlen($descricao) < 5) {
                 ApiResponse::error('VALIDATION_ERROR', 'Descrição deve ter ao menos 5 caracteres.');
+            }
+            if (strlen($descricao) > 2000) {
+                ApiResponse::error('VALIDATION_ERROR', 'Descrição não pode exceder 2000 caracteres.');
+            }
+            if ($tecnico !== null && strlen($tecnico) > 100) {
+                ApiResponse::error('VALIDATION_ERROR', 'Técnico não pode exceder 100 caracteres.');
+            }
+            if ($localServico !== null && strlen($localServico) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Local de serviço não pode exceder 255 caracteres.');
+            }
+            if ($enderecoServico !== null && strlen($enderecoServico) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Endereço de serviço não pode exceder 255 caracteres.');
+            }
+            if ($pecasPrevistas !== null && strlen($pecasPrevistas) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Peças previstas não pode exceder 255 caracteres.');
             }
 
             $osResult = $db->query(

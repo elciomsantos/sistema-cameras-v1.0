@@ -127,7 +127,8 @@ try {
 
     if ($busca !== '') {
         $where[] = '(e.codigo_publico LIKE :busca OR e.numero_serie LIKE :busca OR e.ip LIKE :busca OR u.nome LIKE :busca OR u.usuario LIKE :busca)';
-        $params[':busca'] = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $params[':busca'] = '%' . $likeSafe . '%';
     }
 
     $whereSql = implode(' AND ', $where);

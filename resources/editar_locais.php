@@ -60,6 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $regiao_id = $_POST['regiao_id'] ?? null;
         $secretaria_id = $_POST['secretaria_id'] ?? null;
         $horario_funcionamento = mb_strtoupper(trim($_POST['horario_funcionamento'] ?? ''));
+        $telefone = trim($_POST['telefone'] ?? '');
+        $email = trim($_POST['email'] ?? '');
         $tem_alarme = isset($_POST['tem_alarme']) ? 1 : 0;
         $alarme_conta = $tem_alarme ? ((int)($_POST['alarme_conta'] ?? 0) ?: null) : null;
         $cep = preg_replace('/\D+/', '', (string)($_POST['cep'] ?? ''));
@@ -88,6 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 'regiao_id' => $regiao_id ? (int)$regiao_id : null,
                 'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
                 'horario_funcionamento' => $horario_funcionamento ?: null,
+                'telefone' => $telefone ?: null,
+                'email' => $email ?: null,
                 'tem_alarme' => $tem_alarme,
                 'alarme_conta' => $alarme_conta,
                 'cep' => $cep ?: null,
@@ -116,25 +120,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         }
     }
 
-    // Se houve erro, sobrescreve $local com os dados submetidos para exibir no formulario
+    // Se houve erro, popula $formData com os dados submetidos para exibir no formulario
     if ($mensagem_erro) {
-        $local->tipo_local_id = $tipo_local_id;
-        $local->nome = $nome;
-        $local->regiao_id = $regiao_id;
-        $local->secretaria_id = $secretaria_id;
-        $local->horario_funcionamento = $horario_funcionamento;
-        $local->tem_alarme = $tem_alarme;
-        $local->alarme_conta = $alarme_conta;
-        $local->cep = $cep;
-        $local->uf = $uf;
-        $local->cidade = $cidade;
-        $local->bairro = $bairro;
-        $local->classificacao_endereco_id = $classificacao_endereco_id;
-        $local->logradouro = $logradouro;
-        $local->numero = $numero;
-        $local->descricao_posicao = $descricao_posicao;
-        $local->latitude = $latitude;
-        $local->longitude = $longitude;
+        $formData = [
+            'tipo_local_id' => $tipo_local_id,
+            'nome' => $nome,
+            'regiao_id' => $regiao_id,
+            'secretaria_id' => $secretaria_id,
+            'horario_funcionamento' => $horario_funcionamento,
+            'tem_alarme' => $tem_alarme,
+            'alarme_conta' => $alarme_conta,
+            'cep' => $cep,
+            'uf' => $uf,
+            'cidade' => $cidade,
+            'bairro' => $bairro,
+            'classificacao_endereco_id' => $classificacao_endereco_id,
+            'logradouro' => $logradouro,
+            'numero' => $numero,
+            'descricao_posicao' => $descricao_posicao,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ];
     }
 }
 

@@ -117,6 +117,10 @@ class RateLimiter
 
     private function consumeSlidingWindow(string $key, int $limit, int $window): bool
     {
+        if (!$this->canUseDatabase()) {
+            return $this->fileConsumeSlidingWindow($key, $limit, $window);
+        }
+
         $data = $this->read($key);
         $now = time();
         $cutoff = $now - $window;
@@ -125,20 +129,50 @@ class RateLimiter
         $timestamps = array_values(array_filter($timestamps, fn($ts) => $ts > $cutoff));
 
         if (count($timestamps) >= $limit) {
-            $data['timestamps'] = $timestamps;
+            $data['timestamps'] = array_slice($timestamps, -($limit * 2));
             $this->write($key, $data);
             return false;
         }
 
         $timestamps[] = $now;
-        $data['timestamps'] = $timestamps;
+        $data['timestamps'] = array_slice($timestamps, -($limit * 2));
         $data['updated_at'] = $now;
         $this->write($key, $data);
         return true;
     }
 
+    private function fileConsumeSlidingWindow(string $key, int $limit, int $window): bool
+    {
+        $now = time();
+        $cutoff = $now - $window;
+        $result = false;
+
+        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $cutoff, $now, &$result): ?array {
+            $timestamps = $data['timestamps'] ?? [];
+            $timestamps = array_values(array_filter($timestamps, fn($ts) => $ts > $cutoff));
+
+            if (count($timestamps) >= $limit) {
+                $data['timestamps'] = $timestamps;
+                $result = false;
+                return $data;
+            }
+
+            $timestamps[] = $now;
+            $data['timestamps'] = $timestamps;
+            $data['updated_at'] = $now;
+            $result = true;
+            return $data;
+        });
+
+        return $result;
+    }
+
     private function consumeTokenBucket(string $key, int $limit, int $window): bool
     {
+        if (!$this->canUseDatabase()) {
+            return $this->fileConsumeTokenBucket($key, $limit, $window);
+        }
+
         $data = $this->read($key) ?? [];
         $now = time();
         $tokens = $this->refillTokens($data, $limit, $window);
@@ -154,6 +188,31 @@ class RateLimiter
         $data['updated_at'] = $now;
         $this->write($key, $data);
         return true;
+    }
+
+    private function fileConsumeTokenBucket(string $key, int $limit, int $window): bool
+    {
+        $now = time();
+        $result = false;
+
+        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $window, $now, &$result): ?array {
+            $data = $data ?? [];
+            $tokens = $this->refillTokens($data, $limit, $window);
+
+            if ($tokens < 1) {
+                $data['tokens'] = $tokens;
+                $data['updated_at'] = $now;
+                $result = false;
+                return $data;
+            }
+
+            $data['tokens'] = $tokens - 1;
+            $data['updated_at'] = $now;
+            $result = true;
+            return $data;
+        });
+
+        return $result;
     }
 
     private function refillTokens(array $data, int $limit, int $window): float
@@ -342,6 +401,44 @@ class RateLimiter
         rewind($fp);
         fwrite($fp, $content);
         fflush($fp);
+        flock($fp, LOCK_UN);
+        fclose($fp);
+    }
+
+    private function fileReadModifyWrite(string $key, callable $callback): void
+    {
+        $file = $this->getFilePath($key);
+        $fp = @fopen($file, 'c+');
+        if (!$fp) {
+            $this->storageFailed = true;
+            return;
+        }
+
+        if (!flock($fp, LOCK_EX)) {
+            $this->storageFailed = true;
+            fclose($fp);
+            return;
+        }
+
+        $content = stream_get_contents($fp);
+        $data = null;
+        if ($content !== false) {
+            $data = json_decode($content, true);
+        }
+        $data = is_array($data) ? $data : null;
+
+        $data = $callback($data);
+
+        if ($data !== null) {
+            $newContent = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($newContent !== false) {
+                ftruncate($fp, 0);
+                rewind($fp);
+                fwrite($fp, $newContent);
+                fflush($fp);
+            }
+        }
+
         flock($fp, LOCK_UN);
         fclose($fp);
     }

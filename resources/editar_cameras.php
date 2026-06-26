@@ -5,6 +5,7 @@ requererAcesso('supervisor');
 
 $lookup = new LookupService();
 $dados = [];
+$formData = [];
 
 try {
     $dados = $lookup->getDadosEditarCamera();
@@ -53,6 +54,7 @@ try {
 
 
                     <form id="formEditarCamera" novalidate>
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="id" id="camera_id">
 
                         <!-- Dados da Camera -->
@@ -68,7 +70,7 @@ try {
                                 <select name="status_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['status'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -77,7 +79,7 @@ try {
                                 <select name="procedimento_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['procedimentos'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -86,7 +88,7 @@ try {
                                 <select name="regiao_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['regioes'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -95,7 +97,7 @@ try {
                                 <select name="tipo_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['tipos_equipamento'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -104,7 +106,7 @@ try {
                                 <select name="tipo_camera" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['tipo_cameras'] as $tc): ?>
-                                        <option value="<?= $tc->id ?>"><?= htmlspecialchars($tc->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$tc->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($tc->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -132,7 +134,7 @@ try {
                                 <select name="marca_id" class="form-select" id="marcaSelect" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['marcas'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -255,7 +257,7 @@ try {
                                 <select name="local_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['locais'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -264,7 +266,7 @@ try {
                                 <select name="secretaria_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['secretarias'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -273,7 +275,7 @@ try {
                                 <select name="transmissao_id" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['transmissoes'] as $item): ?>
-                                        <option value="<?= $item->id ?>"><?= htmlspecialchars($item->tipo ?? $item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->tipo ?? $item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -282,7 +284,7 @@ try {
                                 <select name="origem_link_id" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['origem_links'] as $item): ?>
-                                        <option value="<?= $item->id ?>" data-inscricao="<?= htmlspecialchars($item->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>" data-inscricao="<?= htmlspecialchars($item->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>

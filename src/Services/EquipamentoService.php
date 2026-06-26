@@ -36,13 +36,13 @@ class EquipamentoService
     public function extractCommonData(array $data): array
     {
         return [
-            'status_id' => max(1, (int)($data['status_id'] ?? 0)),
-            'procedimento_id' => max(1, (int)($data['procedimento_id'] ?? 0)),
-            'regiao_id' => max(1, (int)($data['regiao_id'] ?? 0)),
-            'tipo_id' => max(1, (int)($data['tipo_id'] ?? 0)),
+            'status_id' => max(0, (int)($data['status_id'] ?? 0)),
+            'procedimento_id' => max(0, (int)($data['procedimento_id'] ?? 0)),
+            'regiao_id' => max(0, (int)($data['regiao_id'] ?? 0)),
+            'tipo_id' => max(0, (int)($data['tipo_id'] ?? 0)),
             'tipo_camera_id' => max(0, (int)($data['tipo_camera'] ?? 0)) ?: null,
-            'secretaria_id' => max(1, (int)($data['secretaria_id'] ?? 0)),
-            'marca_id' => max(1, (int)($data['marca_id'] ?? 0)),
+            'secretaria_id' => max(0, (int)($data['secretaria_id'] ?? 0)),
+            'marca_id' => max(0, (int)($data['marca_id'] ?? 0)),
             'transmissao_id' => max(0, (int)($data['transmissao_id'] ?? 0)) ?: null,
             'origem_link_id' => max(0, (int)($data['origem_link_id'] ?? 0)) ?: null,
             'inscricao_link' => trim((string)($data['inscricao'] ?? '')) ?: null,
@@ -173,9 +173,11 @@ class EquipamentoService
     private function createLocation(array $data, int $secretariaId, string $nomeLocal): int
     {
         $fields = $this->extractCommonData($data);
+        $nomeUpper = strtoupper($nomeLocal);
         $insertLocal = $this->db->query(
-            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id, regiao_id, horario_funcionamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            [strtoupper($nomeLocal), $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $secretariaId, $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento']]
+            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id, regiao_id, horario_funcionamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
+            [$nomeUpper, $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $secretariaId, $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento']]
         );
         if ($insertLocal['status'] !== 'success') {
             throw new Exception('Erro ao criar local da câmera.');
@@ -255,10 +257,18 @@ class EquipamentoService
             }
 
             $insertModelo = $this->db->query(
-                "INSERT INTO catalogo_modelos (tipo_equipamento_id, marca_id, nome) VALUES (?, ?, ?)",
+                "INSERT INTO catalogo_modelos (tipo_equipamento_id, marca_id, nome) VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
                 [$tipoId, $marcaId, $novoModelo]
             );
             if ($insertModelo['status'] !== 'success') {
+                $recheck = $this->db->query(
+                    "SELECT id FROM catalogo_modelos WHERE tipo_equipamento_id = ? AND marca_id = ? AND UPPER(nome) = UPPER(?)",
+                    [$tipoId, $marcaId, $novoModelo]
+                );
+                if ($recheck['status'] === 'success' && !empty($recheck['data'])) {
+                    return (int)$recheck['data'][0]->id;
+                }
                 throw new Exception('Erro ao criar modelo.');
             }
             return (int)$this->db->lastInsertId();
@@ -549,7 +559,9 @@ class EquipamentoService
             if ($this->db->getConnection()->inTransaction()) {
                 $this->db->rollback();
             }
-        } catch (Exception $ignored) {}
+        } catch (Exception $e) {
+            error_log('[EquipamentoService] rollback error: ' . $e->getMessage());
+        }
     }
 
     public function handleException(Throwable $e, string $logPrefix): void

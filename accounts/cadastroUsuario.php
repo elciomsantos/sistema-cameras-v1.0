@@ -52,7 +52,7 @@ function inserirUsuario($dbConn) {
             $csrfToken = $_POST['csrf_token'] ?? null;
             if (!validateCsrfToken($csrfToken)) {
                 $_SESSION['erro_cadastro'] = 'Falha de validacao CSRF.';
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
@@ -75,7 +75,7 @@ function inserirUsuario($dbConn) {
 
             if (empty($nome) || empty($usuario) || empty($senha)) {
                 $_SESSION['erro_cadastro'] = 'Todos os campos sao obrigatorios!';
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
@@ -83,19 +83,19 @@ function inserirUsuario($dbConn) {
             $passwordErrors = [];
             if (!validatePasswordPolicy($senha, $passwordErrors)) {
                 $_SESSION['erro_cadastro'] = implode(' ', $passwordErrors);
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
 
             if (verifica_usuario($dbConn, $usuario)) {
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
 
             if (verifica_nome($dbConn, $nome)) {
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
@@ -116,19 +116,19 @@ function inserirUsuario($dbConn) {
 
             if ($result['status'] === 'success') {
                 $_SESSION["status_cadastro"] = true;
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             } else {
                 $_SESSION['erro_cadastro'] = 'Erro ao cadastrar usuario!';
-                ob_end_clean();
+                if (ob_get_level() > 0) { ob_end_clean(); }
                 header('Location: index.php?page=administracao');
                 exit;
             }
         }
     } catch (Exception $ex) {
         $_SESSION['erro_cadastro'] = 'Erro ao cadastrar usuario!';
-        ob_end_clean();
+        if (ob_get_level() > 0) { ob_end_clean(); }
         header('Location: index.php?page=administracao');
         exit;
     }

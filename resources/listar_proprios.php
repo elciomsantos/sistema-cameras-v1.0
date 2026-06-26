@@ -5,13 +5,13 @@ requererAcesso('supervisor');
 
 $db = db();
 $locaisService = new LocaisService($db);
-$page = max(1, (int)($_GET['page_num'] ?? 1));
+$pageNum = max(1, (int)($_GET['page_num'] ?? 1));
 $perPage = 50;
 $search = trim($_GET['busca'] ?? '');
 
 $total = $locaisService->countByTipoNome('PREDIO PUBLICO', $search);
 $totalPages = max(1, ceil($total / $perPage));
-$result = $locaisService->getByTipoNome('PREDIO PUBLICO', $search, $page, $perPage);
+$result = $locaisService->getByTipoNome('PREDIO PUBLICO', $search, $pageNum, $perPage);
 $locais = $result;
 ?>
 
@@ -76,16 +76,16 @@ $locais = $result;
             <?php if ($totalPages > 1): ?>
             <nav>
                 <ul class="pagination pagination-sm justify-content-center">
-                    <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_proprios&page_num=<?= $page - 1 ?>&busca=<?= urlencode($search) ?>">Anterior</a>
+                    <li class="page-item <?= $pageNum <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_proprios&page_num=<?= $pageNum - 1 ?>&busca=<?= urlencode($search) ?>">Anterior</a>
                     </li>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                    <li class="page-item <?= $i === $pageNum ? 'active' : '' ?>">
                         <a class="page-link" href="?page=listar_proprios&page_num=<?= $i ?>&busca=<?= urlencode($search) ?>"><?= $i ?></a>
                     </li>
                     <?php endfor; ?>
-                    <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_proprios&page_num=<?= $page + 1 ?>&busca=<?= urlencode($search) ?>">Próximo</a>
+                    <li class="page-item <?= $pageNum >= $totalPages ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_proprios&page_num=<?= $pageNum + 1 ?>&busca=<?= urlencode($search) ?>">Próximo</a>
                     </li>
                 </ul>
             </nav>

@@ -115,7 +115,7 @@ function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
         exit;
     }
 
-    $_SESSION['ultimo_acesso'] = time();
+    $_SESSION['ultimo_acesso'] = $now;
 
     return max(0, $time_left);
 }
@@ -151,8 +151,8 @@ function enforceUniqueSession(bool $isApi = false): void
         $db = getRequestDatabase();
         $valid = isUniqueSessionValid($db, $usuarioId, $sessionToken);
     } catch (Throwable $e) {
-        error_log('Erro ao validar sessao unica (fallback: aceitando sessao): ' . $e->getMessage());
-        $valid = true;
+        error_log('Erro ao validar sessao unica (fallback: rejeitando sessao): ' . $e->getMessage());
+        $valid = false;
     }
 
     if ($valid) {

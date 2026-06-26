@@ -49,8 +49,13 @@ try {
     $_SESSION['ultimo_acesso'] = $now;
 
     if (!isset($_SESSION['last_regenerate']) || ($now - (int)$_SESSION['last_regenerate']) >= 300) {
-        session_regenerate_id(true);
+        $oldSessionId = session_id();
+        session_regenerate_id(false);
+        $newSessionId = session_id();
         $_SESSION['last_regenerate'] = $now;
+
+        $sessionToken = createSessionToken();
+        $_SESSION['session_token'] = $sessionToken;
         registerUniqueSession($db, $usuarioId, $sessionToken);
     }
 

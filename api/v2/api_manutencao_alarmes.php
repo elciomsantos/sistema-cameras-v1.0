@@ -44,7 +44,8 @@ function loadManutencaoPayload(
         $params[':alarme_id'] = $alarmeId;
     }
     if ($busca !== '') {
-        $paramVal = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $paramVal = '%' . $likeSafe . '%';
         if (ctype_digit($busca)) {
             $buscaParts = [
                 'm.local_servico = :busca_conta',
@@ -93,7 +94,8 @@ function loadManutencaoPayload(
                    strpos($p, ':busca5') === false;
         }));
 
-        $paramVal = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $paramVal = '%' . $likeSafe . '%';
         $historicBuscaParts = [
             'm.local_servico LIKE :bh01',
             'm.endereco_servico LIKE :bh02',
@@ -264,9 +266,7 @@ try {
         ApiResponse::unauthorized();
     }
 
-    $userRole = $_SESSION['usuario']->nivel_acesso ?? ($_SESSION['usuario']->nivel ?? ($_SESSION['usuario']->role ?? ''));
-    $allowedRoles = ['supervisor', 'admin'];
-    if (!in_array($userRole, $allowedRoles)) {
+    if (!userHasAccess('supervisor')) {
         ApiResponse::unauthorized();
     }
 
@@ -311,10 +311,16 @@ try {
             $alarmeId = max(1, (int)($payload['alarme_id'] ?? $payload['equipamento_id'] ?? 0));
             $problemas = trim((string)($payload['problemas'] ?? ''));
             $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
+            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
+                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            }
             $numeroOs = trim((string)($payload['numero_os'] ?? '')) ?: null;
 
             if (strlen($problemas) < 5) {
                 ApiResponse::error('VALIDATION_ERROR', 'Descreva os problemas da ordem de serviço.');
+            }
+            if (strlen($problemas) > 1000) {
+                ApiResponse::error('VALIDATION_ERROR', 'Problemas não pode exceder 1000 caracteres.');
             }
 
             $alarmeCheck = $db->query(
@@ -388,6 +394,9 @@ try {
             $alarmeId = max(1, (int)($payload['alarme_id'] ?? $payload['equipamento_id'] ?? 0));
             $descricao = trim((string)($payload['descricao'] ?? ''));
             $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
+            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
+                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            }
             $procedimentoId = max(0, (int)($payload['procedimento_id'] ?? 0)) ?: null;
             $statusId = max(0, (int)($payload['status_id'] ?? 0)) ?: null;
             $numeroOs = trim((string)($payload['numero_os'] ?? '')) ?: null;
@@ -398,6 +407,21 @@ try {
 
             if (strlen($descricao) < 5) {
                 ApiResponse::error('VALIDATION_ERROR', 'Descrição deve ter ao menos 5 caracteres.');
+            }
+            if (strlen($descricao) > 2000) {
+                ApiResponse::error('VALIDATION_ERROR', 'Descrição não pode exceder 2000 caracteres.');
+            }
+            if ($tecnico !== null && strlen($tecnico) > 100) {
+                ApiResponse::error('VALIDATION_ERROR', 'Técnico não pode exceder 100 caracteres.');
+            }
+            if ($localServico !== null && strlen($localServico) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Local de serviço não pode exceder 255 caracteres.');
+            }
+            if ($enderecoServico !== null && strlen($enderecoServico) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Endereço de serviço não pode exceder 255 caracteres.');
+            }
+            if ($pecasPrevistas !== null && strlen($pecasPrevistas) > 255) {
+                ApiResponse::error('VALIDATION_ERROR', 'Peças previstas não pode exceder 255 caracteres.');
             }
 
             $osResult = $db->query(

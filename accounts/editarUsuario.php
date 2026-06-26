@@ -55,7 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
         $ativo = isset($_POST['ativo']) ? 1 : 0;
         $redefinir_senha = isset($_POST['redefinir_senha']);
 
-        if ($nome === '' || $usuario_novo === '') {
+        if ((int)$id_usuario === (int)$_SESSION['usuario']->id && $ativo === 0) {
+            $mensagem_erro = 'Voce nao pode desativar seu proprio usuario.';
+        } elseif ($nome === '' || $usuario_novo === '') {
             $mensagem_erro = 'Nome e usuario sao obrigatorios.';
         } else {
             $sql_verifica = "SELECT id FROM usuarios WHERE usuario = :usuario AND id != :id";
@@ -99,6 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 $result_update = $db->query($sql_update, $params_update);
 
                 if (($result_update['status'] ?? 'error') === 'success') {
+                    $afterAudit = [
+                        'nome' => $nome,
+                        'usuario' => $usuario_novo,
+                        'nivel_acesso' => $nivel_acesso,
+                        'ativo' => $ativo,
+                        'senha_temporaria' => $redefinir_senha ? 1 : ($usuario->senha_temporaria ?? 0)
+                    ];
+                    auditEvent($db, 'usuarios', $id_usuario, 'UPDATE', $beforeAudit, $afterAudit, 'web');
 
                     $mensagem_sucesso = 'Usuario atualizado com sucesso.';
                     $usuario->nome = $nome;
@@ -120,6 +130,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     }
 }
 
+if ($senhaTemporariaExibida !== null) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+}
 require_once __DIR__ . '/../inc/navbar.php';
 ?>
 <div class="container mt-4">

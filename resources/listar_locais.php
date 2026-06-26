@@ -11,7 +11,7 @@ $filters = [
     'tipo_local_id' => $_GET['tipo_local_id'] ?? '',
     'camera' => $_GET['camera'] ?? '',
 ];
-$page = max(1, (int)($_GET['page_num'] ?? 1));
+$pageNum = max(1, (int)($_GET['page_num'] ?? 1));
 $perPage = 50;
 
 $tiposLocais = $locaisService->getAllTiposLocais();
@@ -26,11 +26,17 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['export'] ?? '')
     }
     $exportFilters = [];
     if (!empty($_POST['filters'])) {
-        parse_str($_POST['filters'], $exportFilters);
+        $parsed = [];
+        parse_str($_POST['filters'], $parsed);
+        $exportFilters = [
+            'busca' => $parsed['busca'] ?? '',
+            'tipo_local_id' => $parsed['tipo_local_id'] ?? '',
+            'camera' => $parsed['camera'] ?? '',
+        ];
         $filters = [
-            'search' => trim($exportFilters['busca'] ?? ''),
-            'tipo_local_id' => $exportFilters['tipo_local_id'] ?? '',
-            'camera' => $exportFilters['camera'] ?? '',
+            'search' => trim($exportFilters['busca']),
+            'tipo_local_id' => $exportFilters['tipo_local_id'],
+            'camera' => $exportFilters['camera'],
         ];
     }
     $allLocais = $locaisService->searchAll($filters);
@@ -64,7 +70,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && ($_POST['export'] ?? '')
 
 $total = $locaisService->countSearch($filters);
 $totalPages = max(1, ceil($total / $perPage));
-$locais = $locaisService->search($filters, $page, $perPage);
+$locais = $locaisService->search($filters, $pageNum, $perPage);
 ?>
 
 <div class="container mt-4">
@@ -223,16 +229,16 @@ $locais = $locaisService->search($filters, $page, $perPage);
             <?php if ($totalPages > 1): ?>
             <nav>
                 <ul class="pagination pagination-sm justify-content-center">
-                    <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page - 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Anterior</a>
+                    <li class="page-item <?= $pageNum <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $pageNum - 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Anterior</a>
                     </li>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                    <li class="page-item <?= $i === $pageNum ? 'active' : '' ?>">
                         <a class="page-link" href="?page=listar_locais&page_num=<?= $i ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>"><?= $i ?></a>
                     </li>
                     <?php endfor; ?>
-                    <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_locais&page_num=<?= $page + 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Proximo</a>
+                    <li class="page-item <?= $pageNum >= $totalPages ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $pageNum + 1 ?>&busca=<?= urlencode($filters['search']) ?>&tipo_local_id=<?= urlencode($filters['tipo_local_id']) ?>&camera=<?= urlencode($filters['camera']) ?>">Proximo</a>
                     </li>
                 </ul>
             </nav>

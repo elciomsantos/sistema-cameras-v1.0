@@ -11,7 +11,7 @@ return [
     'bloquearUsuario' => 'admin',
     'ativarUsuario' => 'admin',
     'auditoria_cameras' => 'admin',
-    'recuperar_senha' => 'admin',
+    'recuperar_senha' => 'user',
 
     'relatorios_cameras' => 'supervisor',
     'relatorios_alarmes' => 'supervisor',

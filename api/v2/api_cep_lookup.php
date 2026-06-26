@@ -19,8 +19,10 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'CEP inválido.');
     }
 
-    $cacheDir = sys_get_temp_dir() . '/cep_cache/';
-    $cacheFile = $cacheDir . md5($cep) . '.json';
+    $cacheDir = defined('APP_ROOT') ? APP_ROOT . '/storage/cep_cache/' : (sys_get_temp_dir() . '/cftv_gml_cep_cache/');
+    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0700, true) && !is_dir($cacheDir)) {
+    }
+    $cacheFile = $cacheDir . hash('sha256', $cep) . '.json';
     $cacheTtl = 86400;
 
     if (is_file($cacheFile) && filemtime($cacheFile) > (time() - $cacheTtl)) {
@@ -84,10 +86,7 @@ try {
         ApiResponse::notFound('CEP');
     }
 
-    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0755, true) && !is_dir($cacheDir)) {
-    } else {
-        @file_put_contents($cacheFile, $raw, LOCK_EX);
-    }
+    @file_put_contents($cacheFile, $raw, LOCK_EX);
 
     ApiResponse::success([
         'cep' => $data['cep'] ?? null,

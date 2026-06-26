@@ -84,6 +84,20 @@ function executeApiRequest(?string $endpointOverride = null): void
     $apiFile = preg_replace('/^api_/', '', $apiFile);
     $endpoint = $apiFile;
 
+    $allowedEndpoints = [
+        'alarmes', 'auditoria_cameras', 'cadastrar_alarmes', 'cadastrar_cameras',
+        'cameras', 'cep_lookup', 'dashboard', 'editar_alarme', 'editar_camera',
+        'excluir_anexo', 'excluir_camera', 'geocode', 'get_modelos', 'health',
+        'limpar_sessoes_orfas', 'listar_anexos', 'locais', 'manutencao_alarmes',
+        'manutencao_cameras', 'manutencao_utils', 'modelos_alarmes', 'modelos_cameras',
+        'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'status',
+        'swagger', 'upload_anexo',
+    ];
+
+    if (!in_array($endpoint, $allowedEndpoints, true)) {
+        ApiResponse::notFound('endpoint', $endpoint);
+    }
+
     $filepath = API_ROOT . "/{$version}/api_{$apiFile}.php";
 
     if (!file_exists($filepath)) {
@@ -175,6 +189,11 @@ function executeApiRequest(?string $endpointOverride = null): void
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Cross-origin requests not allowed']);
         exit;
+    }
+
+    if ($isSameOrigin && !empty($allowedOrigin)) {
+        header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+        header('Access-Control-Allow-Credentials: true');
     }
 
     if (!$exists) {

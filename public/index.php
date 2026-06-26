@@ -58,7 +58,7 @@ $cspPolicy = "default-src 'self'; "
     . "form-action 'self'";
 header('Content-Security-Policy: ' . $cspPolicy);
 header('X-Content-Type-Options: nosniff');
-header('X-Frame-Options: DENY');
+header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=(), midi=(), payment=()');
 if ($isProduction && isHttpsRequest()) {
@@ -100,7 +100,7 @@ $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
 // Se nao estiver logado e nao for pagina de login_submit ou API, redireciona para login
-$publicPages = ['login', 'login_submit'];
+$publicPages = ['login', 'login_submit', 'nao_autorizado'];
 if (!isset($_SESSION['usuario']) && !in_array($page, $publicPages, true) && !str_starts_with($page, 'api/')) {
     $page = 'login';
 }
@@ -142,8 +142,8 @@ if (str_starts_with($page, 'api/')) {
 // Controle de acesso por pagina
 $pageAccess = require __DIR__ . '/../inc/access_rules.php';
 
-if (isset($pageAccess[$page])) {
-    requererAcesso($pageAccess[$page]);
+if (!in_array($page, $publicPages, true)) {
+    requererAcesso($pageAccess[$page] ?? 'user');
 }
 
 $scriptPath = resolvePageScriptPath($page);

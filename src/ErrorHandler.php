@@ -83,14 +83,14 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             (int)($error['line'] ?? 0)
         ));
 
-        if (!headers_sent()) {
-            http_response_code(500);
+        if (headers_sent()) {
+            exit(1);
         }
 
+        http_response_code(500);
+
         if ($context === 'api') {
-            if (!headers_sent()) {
-                header('Content-Type: application/json; charset=utf-8');
-            }
+            header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'success' => false,
                 'status' => 'error',
@@ -100,9 +100,7 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             exit(1);
         }
 
-        if (!headers_sent()) {
-            header('Content-Type: text/html; charset=UTF-8');
-        }
+        header('Content-Type: text/html; charset=UTF-8');
         if (file_exists(__DIR__ . '/../resources/500.php')) {
             include __DIR__ . '/../resources/500.php';
         } else {

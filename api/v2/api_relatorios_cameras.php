@@ -62,7 +62,9 @@ try {
     }
 
     if (!empty($_GET['pesquisa'])) {
-        $pesquisa = '%' . trim($_GET['pesquisa']) . '%';
+        $pesquisaTrim = trim($_GET['pesquisa']);
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $pesquisaTrim);
+        $pesquisa = '%' . $likeSafe . '%';
         $whereParts[] = "e.ip LIKE :pesquisa";
         $params[':pesquisa'] = $pesquisa;
     }

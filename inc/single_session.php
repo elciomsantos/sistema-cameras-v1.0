@@ -80,16 +80,14 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
         $lockAcquired = true;
 
         $db->query(
-            "INSERT INTO user_sessions (usuario_id, session_token_hash, session_id, ip_address, user_agent, active, last_seen)
-             VALUES (:usuario_id, :session_token_hash, :session_id, :ip_address, :user_agent, 1, NOW())
-             ON DUPLICATE KEY UPDATE
-                 session_token_hash = VALUES(session_token_hash),
-                 session_id = VALUES(session_id),
-                 ip_address = VALUES(ip_address),
-                 user_agent = VALUES(user_agent),
-                 active = 1,
-                 last_seen = NOW(),
-                 updated_at = CURRENT_TIMESTAMP",
+            "UPDATE user_sessions SET active = 0, updated_at = CURRENT_TIMESTAMP
+             WHERE usuario_id = :usuario_id AND active = 1",
+            [':usuario_id' => $usuarioId]
+        );
+
+        $db->query(
+            "REPLACE INTO user_sessions (usuario_id, session_token_hash, session_id, ip_address, user_agent, active, last_seen)
+             VALUES (:usuario_id, :session_token_hash, :session_id, :ip_address, :user_agent, 1, NOW())",
             [
                 ':usuario_id' => $usuarioId,
                 ':session_token_hash' => hashSessionToken($token),
@@ -141,7 +139,7 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
 
     ensureUserSessionsTable($db);
     $result = $db->query(
-        "SELECT session_token_hash, session_id, active, last_seen
+        "SELECT session_token_hash, session_id, active, last_seen, ip_address, user_agent
          FROM user_sessions
          WHERE usuario_id = :usuario_id
            AND active = 1
@@ -159,6 +157,14 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
     }
 
     if (!hash_equals((string)$row->session_token_hash, hashSessionToken($token))) {
+        return false;
+    }
+
+    if ((string)$row->ip_address !== getSessionClientIp()) {
+        return false;
+    }
+
+    if ((string)$row->user_agent !== getSessionUserAgent()) {
         return false;
     }
 

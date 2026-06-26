@@ -68,11 +68,13 @@ try {
     }
     if ($nome !== '') {
         $where[] = '(a.local LIKE :nome OR a.endereco LIKE :nome)';
-        $params[':nome'] = '%' . $nome . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $nome);
+        $params[':nome'] = '%' . $likeSafe . '%';
     }
 
     if ($busca !== '') {
-        $paramVal = '%' . $busca . '%';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $paramVal = '%' . $likeSafe . '%';
 
         if (ctype_digit($busca)) {
             $where[] = '(a.conta = :busca_conta OR

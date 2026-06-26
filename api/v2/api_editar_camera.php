@@ -47,25 +47,28 @@ try {
 
     $svc->setAppUserContext($_SESSION['usuario']->id ?? null);
 
-    $equipData = $svc->buildEquipData($fields, $localId, $modeloId);
-    $svc->updateEquipamento($equipData, $equipId);
+    try {
+        $equipData = $svc->buildEquipData($fields, $localId, $modeloId);
+        $svc->updateEquipamento($equipData, $equipId);
 
-    $svc->saveTipoSpecificUpsert($equipId, $fields['tipo_id'], $data);
+        $svc->saveTipoSpecificUpsert($equipId, $fields['tipo_id'], $data);
 
-    db()->query(
-        "UPDATE locais SET
-            tem_alarme = ?,
-            alarme_conta = ?,
-            classificacao_endereco_id = COALESCE(NULLIF(?, ''), classificacao_endereco_id),
-            logradouro = COALESCE(NULLIF(?, ''), logradouro), bairro = COALESCE(NULLIF(?, ''), bairro),
-            cidade = COALESCE(NULLIF(?, ''), cidade), uf = COALESCE(NULLIF(?, ''), uf),
-            cep = COALESCE(NULLIF(?, ''), cep), numero = COALESCE(NULLIF(?, ''), numero),
-            descricao_posicao = COALESCE(NULLIF(?, ''), descricao_posicao) WHERE id = ?",
-        [$fields['tem_alarme'], $fields['alarme_conta'], $fields['classif_endereco_id'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], $localId]
-    );
+        db()->query(
+            "UPDATE locais SET
+                tem_alarme = ?,
+                alarme_conta = ?,
+                classificacao_endereco_id = COALESCE(NULLIF(?, ''), classificacao_endereco_id),
+                logradouro = COALESCE(NULLIF(?, ''), logradouro), bairro = COALESCE(NULLIF(?, ''), bairro),
+                cidade = COALESCE(NULLIF(?, ''), cidade), uf = COALESCE(NULLIF(?, ''), uf),
+                cep = COALESCE(NULLIF(?, ''), cep), numero = COALESCE(NULLIF(?, ''), numero),
+                descricao_posicao = COALESCE(NULLIF(?, ''), descricao_posicao) WHERE id = ?",
+            [$fields['tem_alarme'], $fields['alarme_conta'], $fields['classif_endereco_id'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], $localId]
+        );
 
-    $svc->commit();
-    $svc->resetAppUserContext();
+        $svc->commit();
+    } finally {
+        $svc->resetAppUserContext();
+    }
 
     ApiResponse::success([
         'message' => 'Equipamento atualizado com sucesso!',

@@ -42,13 +42,16 @@ try {
 
     $svc->setAppUserContext($_SESSION['usuario']->id ?? null);
 
-    $equipData = $svc->buildEquipData($fields, $localId, $modeloId);
-    $equipId = $svc->insertEquipamento($equipData);
+    try {
+        $equipData = $svc->buildEquipData($fields, $localId, $modeloId);
+        $equipId = $svc->insertEquipamento($equipData);
 
-    $svc->saveTipoSpecificInsert($equipId, $fields['tipo_id'], $data);
+        $svc->saveTipoSpecificInsert($equipId, $fields['tipo_id'], $data);
 
-    $svc->commit();
-    $svc->resetAppUserContext();
+        $svc->commit();
+    } finally {
+        $svc->resetAppUserContext();
+    }
 
     ApiResponse::created([
         'message' => "Equipamento cadastrado com sucesso! ID: $equipId",

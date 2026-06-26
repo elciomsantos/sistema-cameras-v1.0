@@ -1,5 +1,15 @@
 <?php
 
+function formatFileSize(int $bytes): string {
+    if ($bytes >= 1048576) {
+        return number_format($bytes / 1048576, 2, ',', '.') . ' MB';
+    }
+    if ($bytes >= 1024) {
+        return number_format($bytes / 1024, 0, ',', '.') . ' KB';
+    }
+    return $bytes . ' B';
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
@@ -75,16 +85,6 @@ try {
     }
 
     $baseUrl = defined('BASE_URL') ? BASE_URL : '';
-
-    function formatFileSize(int $bytes): string {
-        if ($bytes >= 1048576) {
-            return number_format($bytes / 1048576, 2, ',', '.') . ' MB';
-        }
-        if ($bytes >= 1024) {
-            return number_format($bytes / 1024, 0, ',', '.') . ' KB';
-        }
-        return $bytes . ' B';
-    }
 
     $anexos = array_map(function ($row) use ($baseUrl) {
         $ar = (array)$row;

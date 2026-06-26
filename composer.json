@@ -30,6 +30,6 @@
         "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;"
     },
     "config": {
-        "disable-tls": true
+        "disable-tls": false
     }
 }

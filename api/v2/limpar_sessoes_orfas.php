@@ -19,11 +19,15 @@ try {
 
     $db = db();
     $cutoff = date('Y-m-d H:i:s', time() - 86400 * 30);
-    $result = $db->query(
-        "DELETE FROM user_sessions WHERE active = 0 AND updated_at < ?",
-        [$cutoff]
-    );
-    $removidas = $result['affected_rows'] ?? 0;
+    $removidas = 0;
+    do {
+        $result = $db->query(
+            "DELETE FROM user_sessions WHERE active = 0 AND updated_at < ? LIMIT 1000",
+            [$cutoff]
+        );
+        $affected = $result['affected_rows'] ?? 0;
+        $removidas += $affected;
+    } while ($affected >= 1000);
 
     ApiResponse::success(['message' => "$removidas sessões órfãs removidas."]);
 } catch (Throwable $e) {

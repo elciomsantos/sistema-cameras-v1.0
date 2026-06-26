@@ -11,12 +11,13 @@ class LocaisService
 
     public function getAll(array $filters = [], int $page = 1, int $perPage = 20): array
     {
+        $perPage = min($perPage, 100);
         $where = ['1=1'];
         $params = [];
 
         if (!empty($filters['nome'])) {
             $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
-            $params[] = '%' . $filters['nome'] . '%';
+            $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
         }
         if (!empty($filters['secretaria_id'])) {
             $where[] = 'l.secretaria_id = ?';
@@ -35,16 +36,19 @@ class LocaisService
         $whereClause = implode(' AND ', $where);
 
         $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+            COALESCE(eq.total_cameras, 0) as total_cameras,
+            COALESCE(eq.total_outros, 0) as total_outros
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
             LEFT JOIN regioes r ON l.regiao_id = r.id
+            LEFT JOIN (
+                SELECT e.local_id,
+                    SUM(CASE WHEN e.tipo_equipamento_id IN (1,2) THEN 1 ELSE 0 END) AS total_cameras,
+                    SUM(CASE WHEN e.tipo_equipamento_id IN (3,4) THEN 1 ELSE 0 END) AS total_outros
+                FROM equipamentos e WHERE e.deleted_at IS NULL
+                GROUP BY e.local_id
+            ) eq ON eq.local_id = l.id
         WHERE {$whereClause}
         ORDER BY l.nome
         LIMIT ? OFFSET ?";
@@ -62,7 +66,7 @@ class LocaisService
 
         if (!empty($filters['nome'])) {
             $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
-            $params[] = '%' . $filters['nome'] . '%';
+            $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
         }
         if (!empty($filters['secretaria_id'])) {
             $where[] = 'l.secretaria_id = ?';
@@ -147,7 +151,7 @@ class LocaisService
 
         if ($search !== '') {
             $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
-            $searchParam = '%' . $search . '%';
+            $searchParam = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
             $params[] = $searchParam;
             $params[] = $searchParam;
             $params[] = $searchParam;
@@ -176,7 +180,7 @@ class LocaisService
 
         if ($search !== '') {
             $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
-            $searchParam = '%' . $search . '%';
+            $searchParam = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
             $params[] = $searchParam;
             $params[] = $searchParam;
             $params[] = $searchParam;
@@ -193,6 +197,10 @@ class LocaisService
             'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'cep', 'uf', 'cidade', 'bairro',
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
+
+        if (empty($data['nome'])) {
+            throw new InvalidArgumentException('O campo nome é obrigatório.');
+        }
 
         $fields = [];
         $placeholders = [];
@@ -227,6 +235,10 @@ class LocaisService
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
 
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID inválido para atualização.');
+        }
+
         $sets = [];
         $params = [];
 
@@ -248,22 +260,31 @@ class LocaisService
         return $result['status'] === 'success';
     }
 
-    public function search(array $filters = [], int $page = 1, int $perPage = 20): array
+    private function applyFiltersWhere(array $filters, array &$where, array &$params): void
     {
-        $where = ['1=1'];
-        $params = [];
-
         if (!empty($filters['search'])) {
             $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
-            $like = '%' . $filters['search'] . '%';
+            $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['search']) . '%';
             $params[] = $like;
             $params[] = $like;
             $params[] = $like;
             $params[] = $like;
         }
+        if (!empty($filters['nome'])) {
+            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+            $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
+        }
         if (!empty($filters['tipo_local_id'])) {
             $where[] = 'l.tipo_local_id = ?';
             $params[] = (int)$filters['tipo_local_id'];
+        }
+        if (!empty($filters['secretaria_id'])) {
+            $where[] = 'l.secretaria_id = ?';
+            $params[] = (int)$filters['secretaria_id'];
+        }
+        if (!empty($filters['regiao_id'])) {
+            $where[] = 'l.regiao_id = ?';
+            $params[] = (int)$filters['regiao_id'];
         }
         if (!empty($filters['camera'])) {
             if ($filters['camera'] === 'sim') {
@@ -272,21 +293,37 @@ class LocaisService
                 $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
             }
         }
+    }
+
+    private function equipCountJoin(): string
+    {
+        return 'LEFT JOIN (
+            SELECT e.local_id,
+                SUM(CASE WHEN e.tipo_equipamento_id IN (1,2) THEN 1 ELSE 0 END) AS total_cameras,
+                SUM(CASE WHEN e.tipo_equipamento_id IN (3,4) THEN 1 ELSE 0 END) AS total_outros
+            FROM equipamentos e WHERE e.deleted_at IS NULL
+            GROUP BY e.local_id
+        ) eq ON eq.local_id = l.id';
+    }
+
+    public function search(array $filters = [], int $page = 1, int $perPage = 20): array
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        $this->applyFiltersWhere($filters, $where, $params);
 
         $offset = ($page - 1) * $perPage;
         $whereClause = implode(' AND ', $where);
 
         $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+            COALESCE(eq.total_cameras, 0) as total_cameras,
+            COALESCE(eq.total_outros, 0) as total_outros
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
             LEFT JOIN regioes r ON l.regiao_id = r.id
+            {$this->equipCountJoin()}
         WHERE {$whereClause}
         ORDER BY l.nome
         LIMIT ? OFFSET ?";
@@ -302,25 +339,7 @@ class LocaisService
         $where = ['1=1'];
         $params = [];
 
-        if (!empty($filters['search'])) {
-            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
-            $like = '%' . $filters['search'] . '%';
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-        }
-        if (!empty($filters['tipo_local_id'])) {
-            $where[] = 'l.tipo_local_id = ?';
-            $params[] = (int)$filters['tipo_local_id'];
-        }
-        if (!empty($filters['camera'])) {
-            if ($filters['camera'] === 'sim') {
-                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
-            } elseif ($filters['camera'] === 'nao') {
-                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
-            }
-        }
+        $this->applyFiltersWhere($filters, $where, $params);
 
         $whereClause = implode(' AND ', $where);
         $sql = "SELECT COUNT(*) as total FROM locais l WHERE {$whereClause}";
@@ -333,40 +352,20 @@ class LocaisService
         $where = ['1=1'];
         $params = [];
 
-        if (!empty($filters['search'])) {
-            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
-            $like = '%' . $filters['search'] . '%';
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-            $params[] = $like;
-        }
-        if (!empty($filters['tipo_local_id'])) {
-            $where[] = 'l.tipo_local_id = ?';
-            $params[] = (int)$filters['tipo_local_id'];
-        }
-        if (!empty($filters['camera'])) {
-            if ($filters['camera'] === 'sim') {
-                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
-            } elseif ($filters['camera'] === 'nao') {
-                $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
-            }
-        }
+        $this->applyFiltersWhere($filters, $where, $params);
 
         $whereClause = implode(' AND ', $where);
         $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+            COALESCE(eq.total_cameras, 0) as total_cameras,
+            COALESCE(eq.total_outros, 0) as total_outros
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
             LEFT JOIN regioes r ON l.regiao_id = r.id
+            {$this->equipCountJoin()}
         WHERE {$whereClause}
-        ORDER BY l.nome";
+        ORDER BY l.nome
+        LIMIT 5000";
 
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];
@@ -377,24 +376,18 @@ class LocaisService
         $where = ['1=1'];
         $params = [];
 
-        if (!empty($filters['nome'])) {
-            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
-            $params[] = '%' . $filters['nome'] . '%';
-        }
+        $this->applyFiltersWhere($filters, $where, $params);
 
         $whereClause = implode(' AND ', $where);
 
         $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (1,2)) as total_cameras,
-            (SELECT COUNT(*) FROM equipamentos e
-                WHERE e.local_id = l.id AND e.deleted_at IS NULL
-                AND e.tipo_equipamento_id IN (3,4)) as total_outros
+            COALESCE(eq.total_cameras, 0) as total_cameras,
+            COALESCE(eq.total_outros, 0) as total_outros
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
             LEFT JOIN regioes r ON l.regiao_id = r.id
+            {$this->equipCountJoin()}
         WHERE {$whereClause}
         ORDER BY l.nome";
 

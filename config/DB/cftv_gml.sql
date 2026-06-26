@@ -370,6 +370,8 @@ CREATE TABLE locais (
     alarme_conta INT NULL COMMENT 'Conta do alarme',
     regiao_id INT NULL COMMENT 'FK para regioes',
     horario_funcionamento VARCHAR(255) NULL COMMENT 'Horario de funcionamento do local',
+    telefone VARCHAR(50) NULL COMMENT 'Telefone do local',
+    email VARCHAR(150) NULL COMMENT 'E-mail do local',
     secretaria_id INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

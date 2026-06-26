@@ -37,8 +37,10 @@ function validateCsrfToken(?string $token): bool
     }
 
     $tokens = $_SESSION['csrf_tokens'] ?? [];
-    foreach ($tokens as $t) {
+    foreach ($tokens as $i => $t) {
         if (hash_equals($t, $token)) {
+            unset($_SESSION['csrf_tokens'][$i]);
+            $_SESSION['csrf_tokens'] = array_values($_SESSION['csrf_tokens']);
             return true;
         }
     }
@@ -113,7 +115,6 @@ function userHasAccess(string $required = 'user'): bool
     ];
 
     $userLevel = resolveUserAccessLevel($_SESSION['usuario']);
-    $_SESSION['usuario']->nivel_acesso = $userLevel;
     return ($levels[$userLevel] ?? 0) >= ($levels[$required] ?? 1);
 }
 
@@ -254,7 +255,7 @@ function writeAuditLog(string $entidade, ?int $entidadeId, string $operacao, ?ar
     try {
         $logDir = defined('AUDIT_LOG_DIR') ? AUDIT_LOG_DIR : (ini_get('error_log') ? dirname(ini_get('error_log')) : sys_get_temp_dir());
         if (!is_dir($logDir)) {
-            @mkdir($logDir, 0755, true);
+            @mkdir($logDir, 0700, true);
         }
         $logFile = rtrim($logDir, '/') . '/audit_' . date('Y-m-d') . '.log';
         $entry = json_encode([

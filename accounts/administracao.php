@@ -1,14 +1,18 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
-requererAcesso('admin');
+requererAcesso('supervisor');
 
 // Get statistics
 $db = db();
 
-// Count users
+$isAdmin = ($_SESSION['usuario']->nivel_acesso ?? '') === 'admin';
+
+// Count users (apenas admin ve)
 $totalUsers = 0;
-$r = $db->query("SELECT COUNT(*) as total FROM usuarios");
-if ($r['status'] === 'success') $totalUsers = (int)($r['data'][0]->total ?? 0);
+if ($isAdmin) {
+    $r = $db->query("SELECT COUNT(*) as total FROM usuarios");
+    if ($r['status'] === 'success') $totalUsers = (int)($r['data'][0]->total ?? 0);
+}
 
 // Count escolas
 $totalEscolas = 0;
@@ -48,6 +52,7 @@ if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0
 
                     <!-- Stats row -->
                     <div class="row mb-4">
+                        <?php if ($isAdmin): ?>
                         <div class="col-md-2 mb-2">
                             <div class="card bg-primary text-white text-center h-100">
                                 <div class="card-body py-3">
@@ -56,6 +61,7 @@ if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0
                                 </div>
                             </div>
                         </div>
+                        <?php endif; ?>
                         <div class="col-md-2 mb-2">
                             <div class="card bg-success text-white text-center h-100">
                                 <div class="card-body py-3">
@@ -92,6 +98,7 @@ if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0
 
                     <!-- Action cards row -->
                     <div class="row">
+                        <?php if ($isAdmin): ?>
                         <div class="col-md-4 mb-3">
                             <div class="card h-100 border-primary">
                                 <div class="card-body text-center">
@@ -105,6 +112,7 @@ if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0
                                 </div>
                             </div>
                         </div>
+                        <?php endif; ?>
                         <div class="col-md-4 mb-3">
                             <div class="card h-100 border-success">
                                 <div class="card-body text-center">

@@ -3,7 +3,7 @@
 return [
     'home' => 'user',
 
-    'administracao' => 'admin',
+    'administracao' => 'supervisor',
     'cadastroUsuario' => 'admin',
     'listarUsuario' => 'admin',
     'editarUsuario' => 'admin',

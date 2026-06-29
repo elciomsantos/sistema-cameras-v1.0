@@ -31,6 +31,24 @@
 </div>
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
+(function() {
+    var origFetch = window.fetch;
+    if (origFetch) {
+        window.fetch = function() {
+            return origFetch.apply(this, arguments).then(function(response) {
+                var header = response.headers.get('X-CSRF-Token');
+                if (header) {
+                    var meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) {
+                        meta.setAttribute('content', header);
+                    }
+                }
+                return response;
+            });
+        };
+    }
+})();
+
 let timeLeft = <?= 
         isset($_SESSION['ultimo_acesso']) 
             ? max(0, SESSION_TIMEOUT - (time() - $_SESSION['ultimo_acesso'])) 
@@ -298,10 +316,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 credentials: 'same-origin'
             })
             .then(res => {
-                if (res.status === 401) endSession();
+                if (res.status === 401) {
+                    window.location.href = BASE_URL + 'index.php?page=login&timeout=1';
+                    throw new Error('session_expired');
+                }
                 return res.json();
             })
             .then(data => {
+                if (!data) return;
                 var sessionData = data.data || data;
                 if (sessionData.status === 'expired') endSession();
                 else if (sessionData.time_left) {
@@ -311,7 +333,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             })
-            .catch(() => {});
+            .catch(function(e) {
+                if (e && e.message === 'session_expired') return;
+            });
         }, 30000);
     }
 

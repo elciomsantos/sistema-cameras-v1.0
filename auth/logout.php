@@ -13,14 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $csrfToken = $_POST['csrf_token'] ?? null;
-if (!validateCsrfToken($csrfToken)) {
-    header('Location: index.php?page=home');
-    exit;
-}
+$csrfValid = validateCsrfToken($csrfToken);
 
 $usuarioId = currentUserId();
 $sessionToken = $_SESSION['session_token'] ?? null;
-if ($usuarioId) {
+if ($usuarioId && $csrfValid) {
     try {
         $db = db();
         $logoutAll = isset($_POST['logout_all']) && $_POST['logout_all'] === '1';
@@ -34,6 +31,8 @@ if ($usuarioId) {
     }
 }
 
+// Sempre limpa a sessao local e redireciona para login,
+// mesmo se o CSRF falhar, para evitar que o usuario fique preso
 clearLocalSessionState();
 header('Location: index.php?page=login');
 exit;

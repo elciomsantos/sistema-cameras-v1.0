@@ -6,6 +6,11 @@ function getSessionClientIp(): string
 {
     $remoteAddr = trim($_SERVER['REMOTE_ADDR'] ?? 'unknown');
 
+    // Normalizar IPv6 localhost para evitar falsos 401 por alternância ::1/127.0.0.1
+    if ($remoteAddr === '::1') {
+        $remoteAddr = '127.0.0.1';
+    }
+
     if (defined('PROXY_TRUSTED_IPS') && PROXY_TRUSTED_IPS !== '') {
         $trustedProxies = array_map('trim', explode(',', PROXY_TRUSTED_IPS));
         if (in_array($remoteAddr, $trustedProxies, true)) {
@@ -160,8 +165,15 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
         return false;
     }
 
-    if ((string)$row->ip_address !== getSessionClientIp()) {
-        return false;
+    $storedIp = (string)$row->ip_address;
+    $currentIp = getSessionClientIp();
+    if ($storedIp !== $currentIp) {
+        // Normalizar ambos os lados para suportar registros legados com '::1'
+        $normalizedStored = $storedIp === '::1' ? '127.0.0.1' : $storedIp;
+        $normalizedCurrent = $currentIp === '::1' ? '127.0.0.1' : $currentIp;
+        if ($normalizedStored !== $normalizedCurrent) {
+            return false;
+        }
     }
 
     if ((string)$row->user_agent !== getSessionUserAgent()) {

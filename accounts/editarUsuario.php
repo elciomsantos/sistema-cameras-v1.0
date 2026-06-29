@@ -26,6 +26,7 @@ if ($result['status'] !== 'success' || count($result['data']) === 0) {
 }
 
 $usuario = $result['data'][0];
+$senhaTemporariaExibida = null;
 $beforeAudit = [
     'nome' => $usuario->nome ?? null,
     'usuario' => $usuario->usuario ?? null,

@@ -39,7 +39,7 @@ if (!defined('BASE_URL')) {
 }
 
 $isProduction = defined('ENVIRONMENT') && ENVIRONMENT === 'production';
-$scriptEvalPolicy = "";
+$scriptEvalPolicy = $isProduction ? "" : " 'unsafe-inline'";
 $cspNonce = rtrim(strtr(base64_encode(random_bytes(16)), '+/', '-_'), '=');
 $CSP_NONCE = $cspNonce;
 
@@ -174,6 +174,7 @@ if (in_array($page, $actionPages, true)) {
 $preRenderPages = [
     'cadastroUsuario',
     'trocar_senha',
+    'alterar_senha',
     'editarUsuario',
 ];
 $preRenderedContent = null;

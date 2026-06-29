@@ -114,14 +114,19 @@
                             </span>
                         </li>
                         <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="?page=alterar_senha">
+                                <i class="fas fa-key me-1"></i>Alterar Senha
+                            </a>
+                        </li>
                         <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1): ?>
                         <li>
                             <a class="dropdown-item text-warning" href="?page=trocar_senha">
-                                <i class="fas fa-exclamation-triangle me-1"></i>Trocar Senha
+                                <i class="fas fa-exclamation-triangle me-1"></i>Trocar Senha (Obrigatoria)
                             </a>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
                         <?php endif; ?>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <form id="navbarLogoutForm" method="post" action="?page=logout" class="px-2 py-1">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">

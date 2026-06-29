@@ -1,4 +1,7 @@
 <?php
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('user');
+
 $erro = $_SESSION['erro_recuperar'] ?? null;
 unset($_SESSION['erro_recuperar']);
 $sucesso = $_SESSION['sucesso_recuperar'] ?? null;
@@ -23,9 +26,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
 
         if ($rateLimitPassed) {
             $usuario = trim($_POST['text_usuario'] ?? '');
+            $confirmacao = trim($_POST['confirma_usuario'] ?? '');
 
             if ($usuario === '') {
                 $erro = 'Informe o nome de usuario.';
+            } elseif ($confirmacao === '') {
+                $erro = 'Confirme digitando o nome do usuario novamente.';
+            } elseif ($usuario !== $confirmacao) {
+                $erro = 'Os nomes de usuario nao conferem. Digite o mesmo nome nos dois campos.';
             } else {
                 $result = $db->query(
                     "SELECT id, nome FROM usuarios WHERE usuario = :usuario AND ativo = 1",
@@ -42,7 +50,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                         "UPDATE usuarios SET senha = :senha, senha_temporaria = 1 WHERE id = :id",
                         [':senha' => $senhaHash, ':id' => $userData->id]
                     );
+
+                    try {
+                        auditEvent($db, 'usuarios', $userData->id, 'UPDATE',
+                            ['senha_temporaria' => 0],
+                            ['senha_temporaria' => 1],
+                            'web'
+                        );
+                    } catch (Throwable $e) {
+                        error_log('[recuperar_senha] Erro ao registrar auditoria: ' . $e->getMessage());
+                    }
                 }
+
+                $logUser = $_SESSION['usuario']->usuario ?? 'unknown';
+                $logUserId = currentUserId() ?? 'unknown';
+                error_log("[recuperar_senha] Solicitante={$logUser}(id={$logUserId}) alvo={$usuario} IP=" . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
 
                 $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
                 header('Location: ?page=recuperar_senha');
@@ -95,6 +117,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                 <label for="text_usuario" class="form-label">Nome de Usuario</label>
                 <input type="text" name="text_usuario" id="text_usuario" class="form-control" required autofocus>
                 <div class="form-text">Informe o nome do usuario para gerar uma nova senha temporaria segura.</div>
+            </div>
+            <div class="mb-3">
+                <label for="confirma_usuario" class="form-label">Confirme o nome de usuario</label>
+                <input type="text" name="confirma_usuario" id="confirma_usuario" class="form-control" required>
+                <div class="form-text">Digite o mesmo nome novamente para confirmar a acao.</div>
             </div>
             <div class="d-grid gap-2">
                 <button type="submit" name="submit" class="btn btn-primary">

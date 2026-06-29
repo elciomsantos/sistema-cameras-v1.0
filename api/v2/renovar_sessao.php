@@ -49,14 +49,21 @@ try {
     $_SESSION['ultimo_acesso'] = $now;
 
     if (!isset($_SESSION['last_regenerate']) || ($now - (int)$_SESSION['last_regenerate']) >= 300) {
-        $oldSessionId = session_id();
         session_regenerate_id(false);
-        $newSessionId = session_id();
         $_SESSION['last_regenerate'] = $now;
 
-        $sessionToken = createSessionToken();
-        $_SESSION['session_token'] = $sessionToken;
-        registerUniqueSession($db, $usuarioId, $sessionToken);
+        // Apenas atualiza last_seen na sessao existente — NAO cria novo token,
+        // pois isso causaria race condition com requisicoes concorrentes
+        // (api_dashboard, etc.) que falhariam em enforceUniqueSession.
+        try {
+            $db->query(
+                "UPDATE user_sessions SET last_seen = NOW(), updated_at = CURRENT_TIMESTAMP
+                 WHERE usuario_id = :uid AND session_token_hash = :hash",
+                [':uid' => $usuarioId, ':hash' => hashSessionToken($_SESSION['session_token'])]
+            );
+        } catch (Throwable $e) {
+            error_log('[renovar_sessao] Erro ao atualizar last_seen: ' . $e->getMessage());
+        }
     }
 
     $tokens = $_SESSION['csrf_tokens'] ?? [];

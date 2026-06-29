@@ -9,6 +9,7 @@ return [
     'logout',
     'nao_autorizado',
     'trocar_senha',
+    'alterar_senha',
     'recuperar_senha',
 
     // MODULO: ADMIN (pasta /accounts e /resources)

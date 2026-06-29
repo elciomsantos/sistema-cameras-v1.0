@@ -90,8 +90,8 @@ function executeApiRequest(?string $endpointOverride = null): void
         'excluir_anexo', 'excluir_camera', 'geocode', 'get_modelos', 'health',
         'limpar_sessoes_orfas', 'listar_anexos', 'locais', 'manutencao_alarmes',
         'manutencao_cameras', 'manutencao_utils', 'modelos_alarmes', 'modelos_cameras',
-        'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'status',
-        'swagger', 'upload_anexo',
+        'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'session_check',
+        'status', 'swagger', 'upload_anexo',
     ];
 
     if (!in_array($endpoint, $allowedEndpoints, true)) {
@@ -202,11 +202,14 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $publicEndpoints = ['auth/login', 'auth/register', 'ping', 'api_ping'];
     $noRotateEndpoints = ['renovar_sessao'];
+    $noCsrfEndpoints = ['renovar_sessao'];
     if (!in_array($endpoint, $publicEndpoints, true)) {
         requireApiAccessForEndpoint($endpoint);
     }
     $shouldRotate = !in_array($endpoint, $noRotateEndpoints, true);
-    requireApiCsrf($shouldRotate);
+    if (!in_array($endpoint, $noCsrfEndpoints, true)) {
+        requireApiCsrf($shouldRotate);
+    }
 
     if ($exists && file_exists($filepath)) {
         include $filepath;

@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(form);
         form.submit();
     }
+    window.submitLogout = submitLogout;
 
     if (timeLeft <= 0) {
         submitLogout(false);
@@ -273,7 +274,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Primeira marcacao de atividade para evitar warning precoce apos carregar pagina.
+    // Interceptar logout do navbar para usar token CSRF atualizado
+    const navbarLogoutForm = document.getElementById('navbarLogoutForm');
+    if (navbarLogoutForm) {
+        navbarLogoutForm.addEventListener('submit', function(e) {
+            const csrfInput = this.querySelector('input[name="csrf_token"]');
+            if (csrfInput) {
+                csrfInput.value = CSRF_TOKEN();
+            }
+        });
+    }
+
     handleUserActivity();
 
     startMainTimer();

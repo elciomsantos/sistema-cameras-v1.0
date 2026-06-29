@@ -89,6 +89,10 @@ function requireApiCsrf(bool $rotate = true): void
     }
 
     $tokens = $_SESSION['csrf_tokens'] ?? [];
+    if (empty($tokens)) {
+        $tokens = [bin2hex(random_bytes(CSRF_TOKEN_BYTES))];
+        $_SESSION['csrf_tokens'] = $tokens;
+    }
     $current = $tokens[array_key_last($tokens)] ?? '';
     header('X-CSRF-Token: ' . $current);
 }

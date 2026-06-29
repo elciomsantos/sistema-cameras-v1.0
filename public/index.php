@@ -8,6 +8,8 @@ if (!defined('APP_ROOT')) {
     define('APP_ROOT', __DIR__ . '/..');
 }
 
+ob_start();
+
 require_once __DIR__ . '/../config/app.php';
 configureSessionSecurity();
 if (session_status() === PHP_SESSION_NONE) {
@@ -84,13 +86,42 @@ function resolvePageScriptPath(string $page): ?string
     return null;
 }
 
-// Processar logout antes do timeout para sempre encerrar explicitamente
-if ($page === 'action_logout' || $page === 'logout') {
-    require_once __DIR__ . '/../auth/action_logout.php';
+// [ROUTING] Configuracao unificada de rotas
+$routes = [
+
+    // Logout (deve rodar antes do timeout)
+    'logout'        => ['handler' => __DIR__ . '/../auth/action_logout.php', 'type' => 'logout'],
+    'action_logout' => ['handler' => __DIR__ . '/../auth/action_logout.php', 'type' => 'logout'],
+
+    // Action: sem layout, so processamento e redirect/exit
+    'login_submit'         => ['handler' => __DIR__ . '/../auth/action_login_submit.php', 'type' => 'action'],
+    'action_login_submit'  => ['handler' => __DIR__ . '/../auth/action_login_submit.php', 'type' => 'action'],
+    'ativarUsuario'        => ['handler' => __DIR__ . '/../accounts/action_ativar_usuario.php', 'type' => 'action'],
+    'action_ativar_usuario'=> ['handler' => __DIR__ . '/../accounts/action_ativar_usuario.php', 'type' => 'action'],
+    'bloquearUsuario'      => ['handler' => __DIR__ . '/../accounts/action_bloquear_usuario.php', 'type' => 'action'],
+    'action_bloquear_usuario'=> ['handler' => __DIR__ . '/../accounts/action_bloquear_usuario.php', 'type' => 'action'],
+    'deletarUsuario'       => ['handler' => __DIR__ . '/../accounts/action_deletar_usuario.php', 'type' => 'action'],
+    'action_deletar_usuario'=> ['handler' => __DIR__ . '/../accounts/action_deletar_usuario.php', 'type' => 'action'],
+    'action_listar_locais' => ['handler' => __DIR__ . '/../resources/action_listar_locais.php', 'type' => 'action'],
+
+    // Mixed: intercepta POST com submit, senao renderiza layout
+    'recuperar_senha' => ['handler' => __DIR__ . '/../auth/action_recuperar_senha.php', 'type' => 'mixed'],
+    'alterar_senha'   => ['handler' => __DIR__ . '/../accounts/action_alterar_senha.php', 'type' => 'mixed'],
+    'editarUsuario'   => ['handler' => __DIR__ . '/../accounts/action_editar_usuario.php', 'type' => 'mixed'],
+    'trocar_senha'    => ['handler' => __DIR__ . '/../accounts/action_trocar_senha.php', 'type' => 'mixed'],
+    'cadastroUsuario' => ['handler' => __DIR__ . '/../accounts/action_cadastro_usuario.php', 'type' => 'mixed'],
+    'cadastro_locais' => ['handler' => __DIR__ . '/../resources/action_cadastro_locais.php', 'type' => 'mixed'],
+    'editar_locais'   => ['handler' => __DIR__ . '/../resources/action_editar_locais.php', 'type' => 'mixed'],
+
+];
+
+// [1] Logout antes do timeout (sempre limpar sessao)
+if (isset($routes[$page]) && $routes[$page]['type'] === 'logout') {
+    require_once $routes[$page]['handler'];
     exit;
 }
 
-// Verificar timeout uma unica vez (antes de qualquer outra logica)
+// [2] Timeout, sessao unica, CSRF
 $time_left = verificarTimeout($isApi, $tempo_maximo);
 enforceUniqueSession($isApi);
 getCsrfToken();
@@ -99,23 +130,23 @@ require_once __DIR__ . '/../config/config.php';
 $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
-// Se nao estiver logado e nao for pagina de login_submit ou API, redireciona para login
+// [3] Redirecionar nao logados para login (exceto paginas publicas e API)
 $publicPages = ['login', 'login_submit', 'action_login_submit', 'nao_autorizado'];
 if (!isset($_SESSION['usuario']) && !in_array($page, $publicPages, true) && !str_starts_with($page, 'api/')) {
     $page = 'login';
 }
 
-// Se esta logado e tenta acessar login, vai para home
+// [4] Logado tentando login → home
 if (isset($_SESSION['usuario']) && $page === 'login') {
     $page = 'home';
 }
 
-// Verifica se a pagina existe
+// [5] Whitelist de paginas
 if (!in_array($page, $pages_permitidas, true)) {
     $page = '404';
 }
 
-// Processamento de API
+// [6] API
 if (str_starts_with($page, 'api/')) {
     $publicApiPages = [
         'api/api_ping',
@@ -139,13 +170,32 @@ if (str_starts_with($page, 'api/')) {
     exit;
 }
 
-// Controle de acesso por pagina
+// [7] Controle de acesso (exceto paginas publicas)
 $pageAccess = require __DIR__ . '/../inc/access_rules.php';
-
 if (!in_array($page, $publicPages, true)) {
     requererAcesso($pageAccess[$page] ?? 'user');
 }
 
+// [8] Dispatch de rotas: action e mixed
+if (isset($routes[$page])) {
+    $route = $routes[$page];
+
+    // Action: carrega handler sem layout
+    if ($route['type'] === 'action') {
+        require_once $route['handler'];
+        exit;
+    }
+
+    // Mixed: intercepta POST com submit
+    if ($route['type'] === 'mixed' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+        require_once $route['handler'];
+        exit;
+    }
+
+    // Mixed GET: continua para renderizacao normal abaixo
+}
+
+// [9] Resolver caminho do script da pagina
 $scriptPath = resolvePageScriptPath($page);
 if ($scriptPath === null) {
     $scriptPath = resolvePageScriptPath('404');
@@ -156,62 +206,9 @@ if ($scriptPath === null) {
     exit;
 }
 
-// Endpoints de acao (redirect/processamento) nao devem renderizar layout.
-$actionPages = [
-    'login_submit',
-    'action_login_submit',
-    'ativarUsuario',
-    'action_ativar_usuario',
-    'bloquearUsuario',
-    'action_bloquear_usuario',
-    'deletarUsuario',
-    'action_deletar_usuario',
-    'action_listar_locais',
-];
-if (in_array($page, $actionPages, true)) {
-    require_once $scriptPath;
-    exit;
-}
-
-// Action handlers: interceptam POST para processar formularios e redirecionar
-$postActionPages = [
-    'recuperar_senha' => __DIR__ . '/../auth/action_recuperar_senha.php',
-    'alterar_senha'   => __DIR__ . '/../accounts/action_alterar_senha.php',
-    'editarUsuario'   => __DIR__ . '/../accounts/action_editar_usuario.php',
-    'trocar_senha'    => __DIR__ . '/../accounts/action_trocar_senha.php',
-    'cadastroUsuario' => __DIR__ . '/../accounts/action_cadastro_usuario.php',
-    'cadastro_locais' => __DIR__ . '/../resources/action_cadastro_locais.php',
-    'editar_locais'   => __DIR__ . '/../resources/action_editar_locais.php',
-
-];
-if (isset($postActionPages[$page]) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-    require_once $postActionPages[$page];
-    exit;
-}
-
-// Paginas mistas: podem redirecionar antes da renderizacao.
-// Executamos antes do layout para preservar header('Location'),
-// mas mantemos o HTML em buffer quando houver renderizacao normal.
-$preRenderPages = [
-    'cadastroUsuario',
-    'trocar_senha',
-    'alterar_senha',
-    'editarUsuario',
-];
-$preRenderedContent = null;
-if (in_array($page, $preRenderPages, true)) {
-    ob_start();
-    require_once $scriptPath;
-    $preRenderedContent = ob_get_clean();
-}
-
+// [10] Renderizar com layout (buffering global ja ativo desde o inicio)
 $CURRENT_PAGE = $page;
 require_once __DIR__ . '/../inc/header.php';
-if ($preRenderedContent !== null) {
-    echo $preRenderedContent;
-} else {
-    require_once $scriptPath;
-}
-
+require_once $scriptPath;
 require_once __DIR__ . '/../inc/footer.php';
 

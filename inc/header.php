@@ -67,9 +67,7 @@
       .catch(error => console.warn('Service Worker registration failed:', error));
   }
 </script>
-
-
-
-
-
+<?php if (!in_array($CURRENT_PAGE ?? '', ['login', 'recuperar_senha'], true)): ?>
+<?php require_once __DIR__ . '/navbar.php'; ?>
+<?php endif; ?>
 

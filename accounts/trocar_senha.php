@@ -32,7 +32,6 @@ if ($_SESSION['usuario']->senha_temporaria == 0) {
 $erro = $_SESSION['erro_troca_senha'] ?? null;
 unset($_SESSION['erro_troca_senha']);
 
-require_once __DIR__ . '/../inc/navbar.php';
 ?>
 <div class="container mt-5">
     <div class="row justify-content-center">

@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__ . '/../inc/navbar.php';
-
 requererAcesso('supervisor');
 
 $lookup = new LookupService();

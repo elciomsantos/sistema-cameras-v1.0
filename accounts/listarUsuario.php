@@ -1,6 +1,5 @@
 <?php
 // Include necessary files
-require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../inc/check_access.php';
 

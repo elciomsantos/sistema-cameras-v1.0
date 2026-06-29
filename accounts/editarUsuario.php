@@ -36,7 +36,6 @@ if ($senhaTemporariaExibida !== null) {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
 }
-require_once __DIR__ . '/../inc/navbar.php';
 ?>
 <div class="container mt-4">
     <div class="row justify-content-center">

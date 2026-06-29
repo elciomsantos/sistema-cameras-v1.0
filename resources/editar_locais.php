@@ -44,7 +44,6 @@ unset($_SESSION['mensagem_erro_editar_local']);
 $formData = $_SESSION['form_data_editar_local'] ?? [];
 unset($_SESSION['form_data_editar_local']);
 
-require_once __DIR__ . '/../inc/navbar.php';
 ?>
 
 <div class="container mt-4">

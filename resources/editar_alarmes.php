@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/../inc/navbar.php';
 requererAcesso('supervisor');
 require_once __DIR__ . '/../config/database.php';
 

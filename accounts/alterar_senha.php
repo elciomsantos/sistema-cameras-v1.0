@@ -29,7 +29,6 @@ unset($_SESSION['erro_alterar_senha']);
 $sucesso = $_SESSION['sucesso_alterar_senha'] ?? null;
 unset($_SESSION['sucesso_alterar_senha']);
 
-require_once __DIR__ . '/../inc/navbar.php';
 ?>
 <div class="container mt-5">
     <div class="row justify-content-center">

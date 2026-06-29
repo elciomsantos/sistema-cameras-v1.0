@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/navbar.php';
 require_once __DIR__ . '/../inc/check_access.php';
-require_once __DIR__ . '/../src/Services/LookupService.php';
 requererAcesso('supervisor');
 
 $db = db();

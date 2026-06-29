@@ -10,6 +10,8 @@ if (!defined('APP_ROOT')) {
 
 ob_start();
 
+require_once __DIR__ . '/../vendor/autoload.php';
+
 require_once __DIR__ . '/../config/app.php';
 configureSessionSecurity();
 if (session_status() === PHP_SESSION_NONE) {
@@ -20,9 +22,6 @@ require_once __DIR__ . '/../inc/security.php';
 require_once __DIR__ . '/../inc/assets.php';
 require_once __DIR__ . '/../inc/single_session.php';
 require_once __DIR__ . '/../src/ErrorHandler.php';
-require_once __DIR__ . '/../src/Services/LocaisService.php';
-require_once __DIR__ . '/../src/Services/LookupService.php';
-require_once __DIR__ . '/../src/Services/AlarmeService.php';
 require_once __DIR__ . '/../inc/session_handler.php';
 registerGlobalErrorHandlers('web');
 header('Content-Type: text/html; charset=UTF-8');

@@ -11,17 +11,13 @@ ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 
+require_once APP_ROOT . '/vendor/autoload.php';
+
 require_once APP_ROOT . '/config/app.php';
 require_once APP_ROOT . '/config/database.php';
 require_once APP_ROOT . '/inc/security.php';
 require_once APP_ROOT . '/inc/single_session.php';
 require_once APP_ROOT . '/src/ErrorHandler.php';
-require_once APP_ROOT . '/src/Logger.php';
-require_once APP_ROOT . '/src/Api/ApiResponse.php';
-require_once APP_ROOT . '/src/Api/RequestValidator.php';
-require_once APP_ROOT . '/src/Api/RateLimiter.php';
-require_once APP_ROOT . '/src/Services/EquipamentoService.php';
-require_once APP_ROOT . '/src/Services/AlarmeService.php';
 
 function requiredAccessForApiEndpoint(string $endpoint): string
 {

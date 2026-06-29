@@ -141,7 +141,9 @@ if(!isset($result['data']) || count($result['data']) === 0) {
     header('Location: index.php?page=login');
     exit;
 }
-if(!verifyPassword($senha, $result['data'][0]->senha)) {
+$senhaHash = $result['data'][0]->senha;
+$newHash = null;
+if(!verifyPassword($senha, $senhaHash, $newHash)) {
     $attempt['count']++;
     if ($attempt['count'] >= $maxAttempts) {
         $attempt['locked_until'] = $now + $lockSeconds;
@@ -150,6 +152,12 @@ if(!verifyPassword($senha, $result['data'][0]->senha)) {
     $_SESSION['error'] = 'Usuario ou senha invalidos';
     header('Location: index.php?page=login');
     exit;
+}
+if ($newHash) {
+    $db->query("UPDATE usuarios SET senha = :senha WHERE id = :id", [
+        ':senha' => $newHash,
+        ':id' => $result['data'][0]->id,
+    ]);
 }
 $usuarioDb = $result['data'][0];
 

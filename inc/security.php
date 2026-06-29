@@ -306,16 +306,45 @@ function generateTemporaryPassword(int $length = 12): string
 }
 
 // Funções centralizadas de segurança de senha
-function hashPassword(string $password): string
+function hashPasswordOptions(): array
 {
+    if (defined('PASSWORD_ARGON2ID')) {
+        $memoryCost = (int)(getenv('ARGON2_MEMORY_COST') ?: 65536);
+        $timeCost   = (int)(getenv('ARGON2_TIME_COST')   ?: 4);
+        $threads    = (int)(getenv('ARGON2_THREADS')     ?: 3);
+        return [
+            'algo' => PASSWORD_ARGON2ID,
+            'options' => [
+                'memory_cost' => max(8192, min($memoryCost, 262144)),
+                'time_cost'   => max(2, min($timeCost, 10)),
+                'threads'     => max(1, min($threads, 8)),
+            ],
+        ];
+    }
     $cost = (int)(getenv('BCRYPT_COST') ?: 12);
     if ($cost < 8 || $cost > 14) {
         $cost = 12;
     }
-    return password_hash($password, PASSWORD_BCRYPT, ['cost' => $cost]);
+    return [
+        'algo' => PASSWORD_BCRYPT,
+        'options' => ['cost' => $cost],
+    ];
 }
 
-function verifyPassword(string $password, string $hash): bool
+function hashPassword(string $password): string
 {
-    return password_verify($password, $hash);
+    $config = hashPasswordOptions();
+    return password_hash($password, $config['algo'], $config['options']);
+}
+
+function verifyPassword(string $password, string $hash, ?string &$newHash = null): bool
+{
+    if (!password_verify($password, $hash)) {
+        return false;
+    }
+    $config = hashPasswordOptions();
+    if (password_needs_rehash($hash, $config['algo'], $config['options'])) {
+        $newHash = password_hash($password, $config['algo'], $config['options']);
+    }
+    return true;
 }

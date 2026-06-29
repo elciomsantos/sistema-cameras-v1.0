@@ -286,23 +286,39 @@ function writeAuditLog(string $entidade, ?int $entidadeId, string $operacao, ?ar
 function generateTemporaryPassword(int $length = 12): string
 {
     $length = max(PASSWORD_MIN_LENGTH, $length);
-    $chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%&';
-    $charsLen = strlen($chars);
-    $max = 256 - (256 % $charsLen);
+    $lower  = 'abcdefghijkmnopqrstuvwxyz';
+    $upper  = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    $digits = '23456789';
+    $special = '!@#$%&';
+    $all = $lower . $upper . $digits . $special;
+    $allLen = strlen($all);
+    $max = 256 - (256 % $allLen);
 
     $password = '';
+    // guarantee at least one from each category
+    $password .= $lower[random_int(0, strlen($lower) - 1)];
+    $password .= $upper[random_int(0, strlen($upper) - 1)];
+    $password .= $digits[random_int(0, strlen($digits) - 1)];
+    $password .= $special[random_int(0, strlen($special) - 1)];
+
     while (strlen($password) < $length) {
         $bytes = random_bytes($length);
         for ($i = 0; $i < $length; $i++) {
             $byte = ord($bytes[$i]);
             if ($byte < $max) {
-                $password .= $chars[$byte % $charsLen];
+                $password .= $all[$byte % $allLen];
                 if (strlen($password) >= $length) break;
             }
         }
     }
 
-    return $password;
+    // shuffle to avoid predictable prefix
+    $password = str_split($password);
+    for ($i = count($password) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        [$password[$i], $password[$j]] = [$password[$j], $password[$i]];
+    }
+    return implode('', $password);
 }
 
 // Funções centralizadas de segurança de senha

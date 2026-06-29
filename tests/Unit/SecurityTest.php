@@ -29,12 +29,12 @@ class SecurityTest extends TestCase
         $_SESSION = [];
     }
 
-    public function testHashPasswordUseBcrypt(): void
+    public function testHashPasswordUsesStrongAlgorithm(): void
     {
         $password = 'MySecurePass123!';
         $hash = hashPassword($password);
 
-        $this->assertStringStartsWith('$2', $hash);
+        $this->assertStringStartsWith('$argon2id', $hash);
         $this->assertGreaterThanOrEqual(60, strlen($hash));
     }
 
@@ -148,9 +148,10 @@ class SecurityTest extends TestCase
 
     public function testAccessLevelMapping(): void
     {
-        $this->assertEquals('admin', mapAccessIdToName(3));
+        // DB: admin=1, supervisor=2, user=3
+        $this->assertEquals('admin', mapAccessIdToName(1));
         $this->assertEquals('supervisor', mapAccessIdToName(2));
-        $this->assertEquals('user', mapAccessIdToName(1));
+        $this->assertEquals('user', mapAccessIdToName(3));
         $this->assertNull(mapAccessIdToName(99));
     }
 
@@ -162,6 +163,21 @@ class SecurityTest extends TestCase
         $this->assertMatchesRegularExpression('/^[a-zA-Z0-9!@#$%&]+$/', $password);
         $this->assertMatchesRegularExpression('/[a-zA-Z]/', $password, 'Deve conter letras');
         $this->assertMatchesRegularExpression('/[0-9]/', $password, 'Deve conter numeros');
+        $this->assertMatchesRegularExpression('/[!@#$%&]/', $password, 'Deve conter especial');
+    }
+
+    public function testGenerateTemporaryPasswordMultiple(): void
+    {
+        $hasNumber = $hasLetter = $hasSpecial = false;
+        for ($i = 0; $i < 20; $i++) {
+            $pwd = generateTemporaryPassword(12);
+            if (preg_match('/[0-9]/', $pwd)) $hasNumber = true;
+            if (preg_match('/[a-zA-Z]/', $pwd)) $hasLetter = true;
+            if (preg_match('/[!@#$%&]/', $pwd)) $hasSpecial = true;
+        }
+        $this->assertTrue($hasNumber, 'Deve gerar ao menos uma senha com numero em 20 tentativas');
+        $this->assertTrue($hasLetter, 'Deve gerar ao menos uma senha com letra em 20 tentativas');
+        $this->assertTrue($hasSpecial, 'Deve gerar ao menos uma senha com especial em 20 tentativas');
     }
 
     public function testDifferentPasswordsDifferentHashes(): void

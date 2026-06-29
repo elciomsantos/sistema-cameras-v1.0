@@ -21,12 +21,13 @@ class LocaisServiceTest extends TestCase
         $this->assertInstanceOf(\LocaisService::class, $svc);
     }
 
-    public function testCreateReturnsZeroOnEmptyData(): void
+    public function testCreateThrowsOnEmptyData(): void
     {
         $svc = new \LocaisService($this->dbMock);
-        $result = $svc->create([]);
 
-        $this->assertEquals(0, $result);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('O campo nome é obrigatório.');
+        $svc->create([]);
     }
 
     public function testCreateReturnsZeroOnFailedQuery(): void

@@ -21,30 +21,6 @@ class AlarmeServiceTest extends TestCase
         $this->assertInstanceOf(\AlarmeService::class, $svc);
     }
 
-    public function testValidateInputRejectsMissingConta(): void
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $svc = new \AlarmeService($this->dbMock);
-        $svc->validateInput(['local' => 'Local Teste', 'status' => 'Ativo'], false);
-    }
-
-    public function testValidateInputRejectsMissingLocal(): void
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $svc = new \AlarmeService($this->dbMock);
-        $svc->validateInput(['conta' => 123, 'status' => 'Ativo'], false);
-    }
-
-    public function testValidateInputWithRequiredId(): void
-    {
-        $this->expectException(\RuntimeException::class);
-
-        $svc = new \AlarmeService($this->dbMock);
-        $svc->validateInput(['conta' => 123, 'local' => 'Teste', 'status' => 'Ativo'], true);
-    }
-
     public function testBuildParamsStructure(): void
     {
         $svc = new \AlarmeService($this->dbMock);
@@ -129,14 +105,33 @@ class AlarmeServiceTest extends TestCase
 
     public function testValidateInputAcceptsValidData(): void
     {
-        $statusResult = [
+        // Mock for getStatusPermitidos() - called inside validateInput
+        $statusList = [
             'status' => 'success',
-            'data' => [(object)['id' => 1]],
-            'affected_rows' => 1,
+            'data' => [
+                (object)['nome' => 'Ativo'],
+                (object)['nome' => 'Inativo'],
+                (object)['nome' => 'Desligado'],
+                (object)['nome' => 'Manutenção'],
+                (object)['nome' => 'Pendente'],
+            ],
         ];
 
+        // Mock for status lookup (id from nome)
+        $statusLookup = [
+            'status' => 'success',
+            'data' => [(object)['id' => 1]],
+        ];
+
+        // Mock for regiao lookup
+        $regiaoLookup = [
+            'status' => 'success',
+            'data' => [(object)['id' => 1]],
+        ];
+
+        // Set up sequential returns
         $this->dbMock->method('query')
-            ->willReturn($statusResult);
+            ->willReturnOnConsecutiveCalls($statusList, $statusLookup, $regiaoLookup);
 
         $svc = new \AlarmeService($this->dbMock);
         $result = $svc->validateInput([

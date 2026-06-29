@@ -13,6 +13,7 @@ try {
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }
+    session_write_close();
 
     $query = trim((string)($_GET['q'] ?? ''));
     if ($query === '') {

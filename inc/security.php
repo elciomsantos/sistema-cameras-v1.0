@@ -64,6 +64,11 @@ function requireApiCsrf(bool $rotate = true): void
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     $safeMethods = ['GET', 'HEAD', 'OPTIONS'];
     if (in_array(strtoupper($method), $safeMethods, true)) {
+        $tokens = $_SESSION['csrf_tokens'] ?? [];
+        $current = $tokens[array_key_last($tokens)] ?? '';
+        if ($current !== '') {
+            header('X-CSRF-Token: ' . $current);
+        }
         return;
     }
 

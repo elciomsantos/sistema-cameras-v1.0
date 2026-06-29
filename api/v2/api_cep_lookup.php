@@ -13,6 +13,7 @@ try {
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }
+    session_write_close();
 
     $cep = preg_replace('/\D+/', '', (string)($_GET['cep'] ?? ''));
     if (strlen($cep) !== 8) {

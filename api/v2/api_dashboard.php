@@ -14,6 +14,8 @@ try {
         ApiResponse::unauthorized();
     }
     // O bootstrap já controla o nível de acesso via requiredAccessForEndpoint
+    $currentUser = $_SESSION['usuario'];
+    session_write_close();
 
     $db = db();
 
@@ -176,8 +178,8 @@ try {
         'alarm_status_data' => $alarmStatusData,
         'camera_tipo_data' => $cameraTipoData,
         'user_info' => [
-            'nome' => $_SESSION['usuario']->nome ?? $_SESSION['usuario']->usuario ?? 'Usuário',
-            'nivel_acesso' => $_SESSION['usuario']->nivel_acesso ?? 'user'
+            'nome' => $currentUser->nome ?? $currentUser->usuario ?? 'Usuário',
+            'nivel_acesso' => $currentUser->nivel_acesso ?? 'user'
         ],
     ]);
 

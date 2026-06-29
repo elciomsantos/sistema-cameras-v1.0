@@ -16,6 +16,7 @@ try {
     if (!userHasAccess('supervisor')) {
         ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
     }
+    session_write_close();
 
     $validator = new RequestValidator($_GET);
     $validator->validate([

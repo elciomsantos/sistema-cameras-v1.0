@@ -4,14 +4,9 @@ require_once __DIR__ . '/../inc/check_access.php';
 
 requererAcesso('supervisor');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['submit'])) {
-    header('Location: index.php?page=cadastro_locais');
-    exit;
-}
-
-$csrfToken = $_POST['csrf_token'] ?? null;
-if (!validateCsrfToken($csrfToken)) {
-    $_SESSION['mensagem_erro_cadastro_local'] = 'Falha de validacao CSRF.';
+$error = FormValidator::checkSubmission();
+if ($error) {
+    $_SESSION['mensagem_erro_cadastro_local'] = $error;
     header('Location: index.php?page=cadastro_locais');
     exit;
 }
@@ -25,45 +20,39 @@ $ufs = [
     'RJ','RN','RS','RO','RR','SC','SP','SE','TO'
 ];
 
-$tipo_local_id = $_POST['tipo_local_id'] ?? null;
-$nome = mb_strtoupper(trim($_POST['nome'] ?? ''));
-$regiao_id = $_POST['regiao_id'] ?? null;
-$secretaria_id = $_POST['secretaria_id'] ?? null;
-$horario_funcionamento = mb_strtoupper(trim($_POST['horario_funcionamento'] ?? ''));
-$telefone = trim($_POST['telefone'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$tem_alarme = isset($_POST['tem_alarme']) ? 1 : 0;
-$alarme_conta = $tem_alarme ? ((int)($_POST['alarme_conta'] ?? 0) ?: null) : null;
-$cep = preg_replace('/\D+/', '', (string)($_POST['cep'] ?? ''));
-$uf = strtoupper(trim($_POST['uf'] ?? ''));
-$cidade = mb_strtoupper(trim($_POST['cidade'] ?? ''));
-$bairro = mb_strtoupper(trim($_POST['bairro'] ?? ''));
-$classificacao_endereco_id = $_POST['classificacao_endereco_id'] ?? null;
-$logradouro = mb_strtoupper(trim($_POST['logradouro'] ?? ''));
-$numero = trim($_POST['numero'] ?? '');
-$descricao_posicao = mb_strtoupper(trim($_POST['descricao_posicao'] ?? ''));
-$latitude = trim($_POST['latitude'] ?? '');
-$longitude = trim($_POST['longitude'] ?? '');
+$v = new FormValidator($_POST);
+$v->required('nome', 'Nome do Local')
+   ->required('tipo_local_id', 'Tipo de Local')
+   ->inArray('uf', $ufs, 'UF')
+   ->email('email')
+   ->numeric('latitude', 'Latitude')
+   ->numeric('longitude', 'Longitude');
 
-$mensagem_erro = '';
-if ($uf !== '' && !in_array($uf, $ufs, true)) {
-    $mensagem_erro = 'UF inválida.';
-} elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $mensagem_erro = 'E-mail inválido.';
-} elseif ($latitude !== '' && !is_numeric($latitude)) {
-    $mensagem_erro = 'Latitude deve ser numérica.';
-} elseif ($longitude !== '' && !is_numeric($longitude)) {
-    $mensagem_erro = 'Longitude deve ser numérica.';
-}
+$nome = mb_strtoupper(trim($v->get('nome', '')));
+$tipo_local_id = $v->get('tipo_local_id');
+$secretaria_id = $v->get('secretaria_id');
+$regiao_id = $v->get('regiao_id');
+$horario_funcionamento = mb_strtoupper(trim($v->get('horario_funcionamento', '')));
+$telefone = trim($v->get('telefone', ''));
+$tem_alarme = $v->get('tem_alarme') ? 1 : 0;
+$alarme_conta = $tem_alarme ? ((int)($v->get('alarme_conta', 0)) ?: null) : null;
+$cep = preg_replace('/\D+/', '', (string)($v->get('cep', '')));
+$uf = strtoupper(trim($v->get('uf', '')));
+$cidade = mb_strtoupper(trim($v->get('cidade', '')));
+$bairro = mb_strtoupper(trim($v->get('bairro', '')));
+$classificacao_endereco_id = $v->get('classificacao_endereco_id');
+$logradouro = mb_strtoupper(trim($v->get('logradouro', '')));
+$numero = trim($v->get('numero', ''));
+$descricao_posicao = mb_strtoupper(trim($v->get('descricao_posicao', '')));
+$latitude = trim($v->get('latitude', ''));
+$longitude = trim($v->get('longitude', ''));
 
-if (empty($nome)) {
-    $mensagem_erro = 'O campo Nome do Local e obrigatorio.';
-} elseif (empty($tipo_local_id)) {
-    $mensagem_erro = 'Selecione o Tipo de Local.';
+if ($v->fails()) {
+    $_SESSION['mensagem_erro_cadastro_local'] = $v->firstError();
 } else {
     $checkDup = $locaisService->checkDuplicado($nome, $secretaria_id ? (int)$secretaria_id : null);
     if ($checkDup) {
-        $mensagem_erro = 'Ja existe um local com este nome nesta secretaria.';
+        $_SESSION['mensagem_erro_cadastro_local'] = 'Ja existe um local com este nome nesta secretaria.';
     } else {
         $insertData = [
             'tipo_local_id' => $tipo_local_id ? (int)$tipo_local_id : null,
@@ -72,7 +61,6 @@ if (empty($nome)) {
             'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
             'horario_funcionamento' => $horario_funcionamento ?: null,
             'telefone' => $telefone ?: null,
-            'email' => $email ?: null,
             'tem_alarme' => $tem_alarme,
             'alarme_conta' => $alarme_conta,
             'cep' => $cep ?: null,
@@ -92,16 +80,14 @@ if (empty($nome)) {
             $_SESSION['sucesso'] = 'Local cadastrado com sucesso.';
             header('Location: index.php?page=listar_locais');
             exit;
-        } else {
-            $mensagem_erro = 'Erro ao cadastrar local.';
         }
+        $_SESSION['mensagem_erro_cadastro_local'] = 'Erro ao cadastrar local.';
     }
 }
 
-$_SESSION['mensagem_erro_cadastro_local'] = $mensagem_erro;
 $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
     'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-    'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'cep', 'uf',
+    'horario_funcionamento', 'telefone', 'tem_alarme', 'alarme_conta', 'cep', 'uf',
     'cidade', 'bairro', 'classificacao_endereco_id',
     'logradouro', 'numero', 'descricao_posicao',
     'latitude', 'longitude',

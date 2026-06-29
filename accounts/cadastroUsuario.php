@@ -6,152 +6,21 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('admin');
 $db = db();
 
-function verifica_usuario($dbConn, $usuario) {
-    try {
-        $sql = "SELECT COUNT(*) AS total FROM usuarios WHERE usuario = :usuario";
-        $params = [':usuario' => $usuario];
-        $result = $dbConn->query($sql, $params);
+$erro = $_SESSION['erro_cadastro'] ?? null;
+unset($_SESSION['erro_cadastro']);
+$sucesso = $_SESSION['status_cadastro'] ?? null;
+unset($_SESSION['status_cadastro']);
 
-        if ($result['status'] === 'success' && count($result['data']) > 0) {
-            $row = $result['data'][0];
-            if ($row->total >= 1) {
-                $_SESSION['usuario_existe'] = true;
-                return true; // Usuario existe
-            }
-        }
-        return false; // Usuario nao existe
-    } catch (Exception $ex) {
-        error_log('Erro ao verificar usuario: ' . $ex->getMessage());
-        return false;
+$listUsuarios = [];
+try {
+    $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.created_at AS data, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id ORDER BY u.id DESC";
+    $result = $db->query($sql);
+    if ($result['status'] === 'success') {
+        $listUsuarios = $result['data'];
     }
+} catch (Exception $e) {
+    error_log('Erro ao buscar usuarios: ' . $e->getMessage());
 }
-
-function verifica_nome($dbConn, $nome) {
-    try {
-        $sql = "SELECT COUNT(*) AS total FROM usuarios WHERE nome = :nome";
-        $params = [':nome' => $nome];
-        $result = $dbConn->query($sql, $params);
-
-        if ($result['status'] === 'success' && count($result['data']) > 0) {
-            $row = $result['data'][0];
-            if ($row->total >= 1) {
-                $_SESSION['nome_existe'] = true;
-                return true; // Nome existe
-            }
-        }
-        return false; // Nome nao existe
-    } catch (Exception $ex) {
-        error_log('Erro ao verificar nome: ' . $ex->getMessage());
-        return false;
-    }
-}
-
-function inserirUsuario($dbConn) {
-    try {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-            $csrfToken = $_POST['csrf_token'] ?? null;
-            if (!validateCsrfToken($csrfToken)) {
-                $_SESSION['erro_cadastro'] = 'Falha de validacao CSRF.';
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-
-            $nome = trim($_POST['text_nome'] ?? '');
-            $usuario = trim($_POST['text_usuario'] ?? '');
-            $senha = $_POST['text_senha'] ?? '';
-            $nivel_acesso = $_POST['text_nivel_acesso'] ?? 'user';
-            if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
-                $nivel_acesso = 'user';
-            }
-
-            // Converter nome do nível de acesso para ID
-            $nivel_acesso_id = 3; // padrão: user
-            if ($nivel_acesso === 'admin') {
-                $nivel_acesso_id = 1;
-            } elseif ($nivel_acesso === 'supervisor') {
-                $nivel_acesso_id = 2;
-            }
-
-            if (empty($nome) || empty($usuario) || empty($senha)) {
-                $_SESSION['erro_cadastro'] = 'Todos os campos sao obrigatorios!';
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-
-            $passwordErrors = [];
-            if (!validatePasswordPolicy($senha, $passwordErrors)) {
-                $_SESSION['erro_cadastro'] = implode(' ', $passwordErrors);
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-
-            if (verifica_usuario($dbConn, $usuario)) {
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-
-            if (verifica_nome($dbConn, $nome)) {
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-
-            $senha_hash = hashPassword($senha);
-
-            enableAuditTriggers($dbConn, 'web');
-
-            $sql = "INSERT INTO usuarios (nome, usuario, senha, nivel_acesso_id, senha_temporaria) VALUES (:nome, :usuario, :senha, :nivel_acesso_id, 1)";
-            $params = [
-                ':nome' => $nome,
-                ':usuario' => $usuario,
-                ':senha' => $senha_hash,
-                ':nivel_acesso_id' => $nivel_acesso_id
-            ];
-
-            $result = $dbConn->query($sql, $params);
-
-            if ($result['status'] === 'success') {
-                $_SESSION["status_cadastro"] = true;
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            } else {
-                $_SESSION['erro_cadastro'] = 'Erro ao cadastrar usuario!';
-                if (ob_get_level() > 0) { ob_end_clean(); }
-                header('Location: index.php?page=administracao');
-                exit;
-            }
-        }
-    } catch (Exception $ex) {
-        $_SESSION['erro_cadastro'] = 'Erro ao cadastrar usuario!';
-        if (ob_get_level() > 0) { ob_end_clean(); }
-        header('Location: index.php?page=administracao');
-        exit;
-    }
-}
-
-// Function to list users from the database
-function listarUsuarios($dbConn) {
-    try {
-        $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.created_at AS data, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id ORDER BY u.id DESC";
-        $result = $dbConn->query($sql);
-
-        if ($result['status'] === 'success') {
-            return $result['data'];
-        }
-        return [];
-    } catch (Exception $e) {
-        error_log('Erro ao buscar usuarios: ' . $e->getMessage());
-        return [];
-    }
-}
-
-inserirUsuario($db);
-$listUsuarios = listarUsuarios($db);
 ?>
 
 <div class="container mt-4 mb-5">
@@ -169,10 +38,14 @@ $listUsuarios = listarUsuarios($db);
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <?php if (isset($_SESSION['erro_cadastro'])): ?>
+            <?php if ($erro): ?>
                 <div class="alert alert-danger">
-                    <?= htmlspecialchars($_SESSION['erro_cadastro'], ENT_QUOTES, 'UTF-8') ?>
-                    <?php unset($_SESSION['erro_cadastro']); ?>
+                    <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($sucesso): ?>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>Usuario cadastrado com sucesso!
                 </div>
             <?php endif; ?>
 

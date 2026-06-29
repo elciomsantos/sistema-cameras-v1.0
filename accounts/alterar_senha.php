@@ -6,7 +6,6 @@ require_once __DIR__ . '/../inc/check_access.php';
 
 requererAcesso('user');
 
-$db = db();
 $sessionToken = $_SESSION['session_token'] ?? null;
 $usuarioId = currentUserId();
 if ($usuarioId && $sessionToken) {
@@ -31,52 +30,6 @@ $erro = $_SESSION['erro_alterar_senha'] ?? null;
 unset($_SESSION['erro_alterar_senha']);
 $sucesso = $_SESSION['sucesso_alterar_senha'] ?? null;
 unset($_SESSION['sucesso_alterar_senha']);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-    $csrfToken = $_POST['csrf_token'] ?? null;
-    if (!validateCsrfToken($csrfToken)) {
-        $erro = 'Falha de validacao CSRF.';
-    } else {
-        $senha_atual = $_POST['senha_atual'] ?? '';
-        $nova_senha = $_POST['nova_senha'] ?? '';
-        $confirma_senha = $_POST['confirma_senha'] ?? '';
-
-        if (empty($senha_atual) || empty($nova_senha) || empty($confirma_senha)) {
-            $erro = 'Todos os campos sao obrigatorios!';
-        } elseif ($nova_senha !== $confirma_senha) {
-            $erro = 'As novas senhas nao coincidem!';
-        } else {
-            $passwordErrors = [];
-            if (!validatePasswordPolicy($nova_senha, $passwordErrors)) {
-                $erro = implode(' ', $passwordErrors);
-            } else {
-                $userResult = $db->query("SELECT senha FROM usuarios WHERE id = :id", [':id' => $_SESSION['usuario']->id]);
-                $storedHash = '';
-                if ($userResult['status'] === 'success' && !empty($userResult['data'])) {
-                    $storedHash = $userResult['data'][0]->senha ?? '';
-                }
-                if (!verifyPassword($senha_atual, $storedHash)) {
-                    $erro = 'Senha atual incorreta!';
-                } else {
-                    $senha_hash = hashPassword($nova_senha);
-                    $sql = "UPDATE usuarios SET senha = :senha WHERE id = :id";
-                    $params = [
-                        ':senha' => $senha_hash,
-                        ':id' => $_SESSION['usuario']->id
-                    ];
-                    $result = $db->query($sql, $params);
-                    if ($result['status'] === 'success') {
-                        $_SESSION['sucesso_alterar_senha'] = 'Senha alterada com sucesso!';
-                        header('Location: ?page=alterar_senha');
-                        exit;
-                    } else {
-                        $erro = 'Erro ao alterar a senha!';
-                    }
-                }
-            }
-        }
-    }
-}
 
 require_once __DIR__ . '/../inc/navbar.php';
 ?>

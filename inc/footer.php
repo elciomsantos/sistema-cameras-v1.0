@@ -61,7 +61,7 @@ const alertTime = 60;
 document.addEventListener('DOMContentLoaded', function() {
     function getLogoutActionUrl() {
         const base = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
-        return `${base}index.php?page=logout`;
+        return `${base}index.php?page=action_logout`;
     }
 
     function getRenewSessionUrl() {

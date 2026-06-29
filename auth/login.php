@@ -66,7 +66,7 @@ unset($_SESSION['error']);
     <div class="login-card">
         <h3 class="login-title">Login</h3>
         <hr>
-        <form action="?page=login_submit" method="post">
+        <form action="?page=action_login_submit" method="post">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
             <div class="mb-3">
                 <label for="text_usuario">Usuario</label>

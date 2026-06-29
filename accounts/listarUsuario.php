@@ -94,7 +94,7 @@ $listUsuarios = listarUsuarios($db);
                                     
                                     <!-- Botão Bloquear/Ativar com tooltip -->
                                     <?php if ($usuario->ativo == 1): ?>
-                                        <form method="post" action="?page=bloquearUsuario" class="d-inline">
+                                        <form method="post" action="?page=action_bloquear_usuario" class="d-inline">
                                             <input type="hidden" name="id" value="<?= (int)$usuario->id; ?>">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                             <button type="submit"
@@ -106,7 +106,7 @@ $listUsuarios = listarUsuarios($db);
                                             </button>
                                         </form>
                                     <?php else: ?>
-                                        <form method="post" action="?page=ativarUsuario" class="d-inline">
+                                        <form method="post" action="?page=action_ativar_usuario" class="d-inline">
                                             <input type="hidden" name="id" value="<?= (int)$usuario->id; ?>">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                             <button type="submit"
@@ -120,7 +120,7 @@ $listUsuarios = listarUsuarios($db);
                                     <?php endif; ?>
 
                                     <!-- Botão Excluir com tooltip -->
-                                    <form method="post" action="?page=deletarUsuario" class="d-inline">
+                                    <form method="post" action="?page=action_deletar_usuario" class="d-inline">
                                         <input type="hidden" name="id" value="<?= (int)$usuario->id; ?>">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8'); ?>">
                                         <button type="submit"

@@ -39,110 +39,11 @@ $ufs = [
 
 $contasAlarmes = $lookupService->getContasAlarmes();
 
-$beforeAudit = [
-    'nome' => $local->nome ?? null,
-    'tipo_local_id' => $local->tipo_local_id ?? null,
-    'regiao_id' => $local->regiao_id ?? null,
-    'secretaria_id' => $local->secretaria_id ?? null,
-    'horario_funcionamento' => $local->horario_funcionamento ?? null,
-    'tem_alarme' => $local->tem_alarme ?? null,
-];
+$mensagem_erro = $_SESSION['mensagem_erro_editar_local'] ?? '';
+unset($_SESSION['mensagem_erro_editar_local']);
 
-$mensagem_erro = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-    $csrfToken = $_POST['csrf_token'] ?? null;
-    if (!validateCsrfToken($csrfToken)) {
-        $mensagem_erro = 'Falha de validacao CSRF.';
-    } else {
-        $tipo_local_id = $_POST['tipo_local_id'] ?? null;
-        $nome = mb_strtoupper(trim($_POST['nome'] ?? ''));
-        $regiao_id = $_POST['regiao_id'] ?? null;
-        $secretaria_id = $_POST['secretaria_id'] ?? null;
-        $horario_funcionamento = mb_strtoupper(trim($_POST['horario_funcionamento'] ?? ''));
-        $telefone = trim($_POST['telefone'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $tem_alarme = isset($_POST['tem_alarme']) ? 1 : 0;
-        $alarme_conta = $tem_alarme ? ((int)($_POST['alarme_conta'] ?? 0) ?: null) : null;
-        $cep = preg_replace('/\D+/', '', (string)($_POST['cep'] ?? ''));
-        $uf = strtoupper(trim($_POST['uf'] ?? ''));
-        $cidade = mb_strtoupper(trim($_POST['cidade'] ?? ''));
-        $bairro = mb_strtoupper(trim($_POST['bairro'] ?? ''));
-        $classificacao_endereco_id = $_POST['classificacao_endereco_id'] ?? null;
-        $logradouro = mb_strtoupper(trim($_POST['logradouro'] ?? ''));
-        $numero = trim($_POST['numero'] ?? '');
-        $descricao_posicao = mb_strtoupper(trim($_POST['descricao_posicao'] ?? ''));
-        $latitude = trim($_POST['latitude'] ?? '');
-        $longitude = trim($_POST['longitude'] ?? '');
-
-        if (empty($nome)) {
-            $mensagem_erro = 'O campo Nome do Local e obrigatorio.';
-        } elseif (empty($tipo_local_id)) {
-            $mensagem_erro = 'Selecione o Tipo de Local.';
-        } else {
-            $checkDup = $locaisService->checkDuplicado($nome, $secretaria_id ? (int)$secretaria_id : null, $id_local);
-            if ($checkDup) {
-                $mensagem_erro = 'Ja existe um local com este nome nesta secretaria.';
-            } else {
-            $updateData = [
-                'tipo_local_id' => $tipo_local_id ? (int)$tipo_local_id : null,
-                'nome' => $nome,
-                'regiao_id' => $regiao_id ? (int)$regiao_id : null,
-                'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
-                'horario_funcionamento' => $horario_funcionamento ?: null,
-                'telefone' => $telefone ?: null,
-                'email' => $email ?: null,
-                'tem_alarme' => $tem_alarme,
-                'alarme_conta' => $alarme_conta,
-                'cep' => $cep ?: null,
-                'uf' => $uf ?: null,
-                'cidade' => $cidade ?: null,
-                'bairro' => $bairro ?: null,
-                'classificacao_endereco_id' => $classificacao_endereco_id ? (int)$classificacao_endereco_id : null,
-                'logradouro' => $logradouro ?: null,
-                'numero' => $numero ?: null,
-                'descricao_posicao' => $descricao_posicao ?: null,
-                'latitude' => $latitude !== '' ? (float)$latitude : null,
-                'longitude' => $longitude !== '' ? (float)$longitude : null,
-            ];
-
-            enableAuditTriggers($db, 'web');
-            $updated = $locaisService->update($id_local, $updateData);
-
-            if ($updated) {
-                $_SESSION['mensagem_sucesso_editar_local'] = 'Local atualizado com sucesso.';
-                header('Location: index.php?page=editar_locais&id=' . $id_local);
-                exit;
-            } else {
-                $mensagem_erro = 'Erro ao atualizar local.';
-            }
-            }
-        }
-    }
-
-    // Se houve erro, popula $formData com os dados submetidos para exibir no formulario
-    if ($mensagem_erro) {
-        $formData = [
-            'tipo_local_id' => $tipo_local_id,
-            'nome' => $nome,
-            'regiao_id' => $regiao_id,
-            'secretaria_id' => $secretaria_id,
-            'horario_funcionamento' => $horario_funcionamento,
-            'tem_alarme' => $tem_alarme,
-            'alarme_conta' => $alarme_conta,
-            'cep' => $cep,
-            'uf' => $uf,
-            'cidade' => $cidade,
-            'bairro' => $bairro,
-            'classificacao_endereco_id' => $classificacao_endereco_id,
-            'logradouro' => $logradouro,
-            'numero' => $numero,
-            'descricao_posicao' => $descricao_posicao,
-            'latitude' => $latitude,
-            'longitude' => $longitude,
-        ];
-    }
-}
+$formData = $_SESSION['form_data_editar_local'] ?? [];
+unset($_SESSION['form_data_editar_local']);
 
 require_once __DIR__ . '/../inc/navbar.php';
 ?>
@@ -184,7 +85,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($tiposLocais as $t): ?>
-                                    <option value="<?= (int)$t->id ?>" <?= ((int)$local->tipo_local_id === (int)$t->id) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$t->id ?>" <?= ((isset($formData['tipo_local_id']) ? (int)$formData['tipo_local_id'] : (int)$local->tipo_local_id) === (int)$t->id) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($t->nome, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -193,7 +94,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                             <div class="col-md-5">
                                 <label for="nome" class="form-label">Nome do Local *</label>
                                 <input type="text" class="form-control form-control-sm" id="nome" name="nome" required
-                                    value="<?= htmlspecialchars($local->nome ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['nome'] ?? $local->nome ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Ex: ESCOLA MUNICIPAL PROF JOÃO">
                             </div>
                             <div class="col-md-2">
@@ -201,7 +102,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <select class="form-select form-select-sm" id="regiao_id" name="regiao_id">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($regioes as $r): ?>
-                                    <option value="<?= (int)$r->id ?>" <?= ((int)$local->regiao_id === (int)$r->id) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$r->id ?>" <?= ((isset($formData['regiao_id']) ? (int)$formData['regiao_id'] : (int)$local->regiao_id) === (int)$r->id) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($r->nome, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -210,18 +111,18 @@ require_once __DIR__ . '/../inc/navbar.php';
                             <div class="col-md-3 d-flex align-items-end">
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" id="tem_alarme" name="tem_alarme" value="1"
-                                        <?= ($local->tem_alarme ?? 0) ? 'checked' : '' ?>>
+                                        <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? 'checked' : '' ?>>
                                     <label class="form-check-label" for="tem_alarme">
                                         Local possui alarme
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= ($local->tem_alarme ?? 0) ? 'block' : 'none' ?>;">
+                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? 'block' : 'none' ?>;">
                                 <label for="alarme_conta" class="form-label">Conta do Alarme</label>
                                 <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($contasAlarmes as $c): ?>
-                                    <option value="<?= (int)$c->conta ?>" <?= (($local->alarme_conta ?? 0) === (int)$c->conta) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$c->conta ?>" <?= ((isset($formData['alarme_conta']) ? (int)$formData['alarme_conta'] : ($local->alarme_conta ?? 0)) === (int)$c->conta) ? 'selected' : '' ?>>
                                         <?= (int)$c->conta ?> - <?= htmlspecialchars($c->local, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -232,7 +133,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id">
                                     <option value="">Nenhuma</option>
                                     <?php foreach ($secretarias as $s): ?>
-                                    <option value="<?= (int)$s->id ?>" <?= ((int)$local->secretaria_id === (int)$s->id) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$s->id ?>" <?= ((isset($formData['secretaria_id']) ? (int)$formData['secretaria_id'] : (int)$local->secretaria_id) === (int)$s->id) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -241,7 +142,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                             <div class="col-md-6">
                                 <label for="horario_funcionamento" class="form-label">Horario de Funcionamento</label>
                                 <input type="text" class="form-control form-control-sm" id="horario_funcionamento" name="horario_funcionamento"
-                                    value="<?= htmlspecialchars($local->horario_funcionamento ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['horario_funcionamento'] ?? $local->horario_funcionamento ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Ex: Seg a Sex 08:00-18:00">
                             </div>
                         </div>
@@ -252,7 +153,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <label for="cep" class="form-label">CEP</label>
                                 <div class="input-group input-group-sm">
                                     <input type="text" class="form-control form-control-sm" id="cep" name="cep" maxlength="9"
-                                        value="<?= htmlspecialchars($local->cep ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                        value="<?= htmlspecialchars($formData['cep'] ?? $local->cep ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="00000-000">
                                     <button type="button" class="btn btn-outline-primary" id="btnBuscarCep">
                                         <i class="fas fa-search"></i>
@@ -264,20 +165,20 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <select class="form-select form-select-sm" id="uf" name="uf">
                                     <option value="">Selecione</option>
                                     <?php foreach ($ufs as $uf): ?>
-                                    <option value="<?= $uf ?>" <?= (($local->uf ?? '') === $uf) ? 'selected' : '' ?>><?= $uf ?></option>
+                                    <option value="<?= $uf ?>" <?= ((isset($formData['uf']) ? $formData['uf'] : ($local->uf ?? '')) === $uf) ? 'selected' : '' ?>><?= $uf ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="cidade" class="form-label">Cidade</label>
                                 <input type="text" class="form-control form-control-sm" id="cidade" name="cidade"
-                                    value="<?= htmlspecialchars($local->cidade ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['cidade'] ?? $local->cidade ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Londrina">
                             </div>
                             <div class="col-md-3">
                                 <label for="bairro" class="form-label">Bairro</label>
                                 <input type="text" class="form-control form-control-sm" id="bairro" name="bairro"
-                                    value="<?= htmlspecialchars($local->bairro ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['bairro'] ?? $local->bairro ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Centro">
                             </div>
                             <div class="col-md-3">
@@ -285,7 +186,7 @@ require_once __DIR__ . '/../inc/navbar.php';
                                 <select class="form-select form-select-sm" id="classificacao_endereco_id" name="classificacao_endereco_id">
                                     <option value="">Selecione</option>
                                     <?php foreach ($classificacoes as $c): ?>
-                                    <option value="<?= (int)$c->id ?>" <?= ((int)($local->classificacao_endereco_id ?? 0) === (int)$c->id) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$c->id ?>" <?= ((isset($formData['classificacao_endereco_id']) ? (int)$formData['classificacao_endereco_id'] : (int)($local->classificacao_endereco_id ?? 0)) === (int)$c->id) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($c->nome, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -294,19 +195,19 @@ require_once __DIR__ . '/../inc/navbar.php';
                             <div class="col-md-6">
                                 <label for="logradouro" class="form-label">Logradouro</label>
                                 <input type="text" class="form-control form-control-sm" id="logradouro" name="logradouro"
-                                    value="<?= htmlspecialchars($local->logradouro ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['logradouro'] ?? $local->logradouro ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Rua das Flores">
                             </div>
                             <div class="col-md-3">
                                 <label for="numero" class="form-label">Numero</label>
                                 <input type="text" class="form-control form-control-sm" id="numero" name="numero"
-                                    value="<?= htmlspecialchars($local->numero ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['numero'] ?? $local->numero ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="123">
                             </div>
                             <div class="col-12">
                                 <label for="descricao_posicao" class="form-label">Complemento / Referencia</label>
                                 <input type="text" class="form-control form-control-sm" id="descricao_posicao" name="descricao_posicao"
-                                    value="<?= htmlspecialchars($local->descricao_posicao ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['descricao_posicao'] ?? $local->descricao_posicao ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Proximo ao mercado, sala 2">
                             </div>
                         </div>
@@ -316,13 +217,13 @@ require_once __DIR__ . '/../inc/navbar.php';
                             <div class="col-md-5">
                                 <label for="latitude" class="form-label">Latitude</label>
                                 <input type="text" class="form-control form-control-sm" id="latitude" name="latitude"
-                                    value="<?= htmlspecialchars($local->latitude ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['latitude'] ?? $local->latitude ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="-23.3103">
                             </div>
                             <div class="col-md-5">
                                 <label for="longitude" class="form-label">Longitude</label>
                                 <input type="text" class="form-control form-control-sm" id="longitude" name="longitude"
-                                    value="<?= htmlspecialchars($local->longitude ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    value="<?= htmlspecialchars($formData['longitude'] ?? $local->longitude ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="-51.1628">
                             </div>
                             <div class="col-md-2 d-flex align-items-end">

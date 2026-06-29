@@ -5,8 +5,6 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('admin');
 
 $db = db();
-$mensagem_erro = '';
-$mensagem_sucesso = '';
 
 $id_usuario = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
@@ -26,110 +24,13 @@ if ($result['status'] !== 'success' || count($result['data']) === 0) {
 }
 
 $usuario = $result['data'][0];
-$senhaTemporariaExibida = null;
-$beforeAudit = [
-    'nome' => $usuario->nome ?? null,
-    'usuario' => $usuario->usuario ?? null,
-    'nivel_acesso' => $usuario->nivel_acesso ?? null,
-    'ativo' => $usuario->ativo ?? null,
-    'senha_temporaria' => $usuario->senha_temporaria ?? null
-];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
-    $csrfToken = $_POST['csrf_token'] ?? null;
-
-    if (!validateCsrfToken($csrfToken)) {
-        $mensagem_erro = 'Falha de validacao CSRF.';
-    } else {
-        $nome = trim($_POST['nome'] ?? '');
-        $usuario_novo = trim($_POST['usuario'] ?? '');
-        $nivel_acesso = $_POST['nivel_acesso'] ?? 'user';
-        if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
-            $nivel_acesso = 'user';
-        }
-        $nivel_acesso_id = 3;
-        if ($nivel_acesso === 'admin') {
-            $nivel_acesso_id = 1;
-        } elseif ($nivel_acesso === 'supervisor') {
-            $nivel_acesso_id = 2;
-        }
-        $ativo = isset($_POST['ativo']) ? 1 : 0;
-        $redefinir_senha = isset($_POST['redefinir_senha']);
-
-        if ((int)$id_usuario === (int)$_SESSION['usuario']->id && $ativo === 0) {
-            $mensagem_erro = 'Voce nao pode desativar seu proprio usuario.';
-        } elseif ($nome === '' || $usuario_novo === '') {
-            $mensagem_erro = 'Nome e usuario sao obrigatorios.';
-        } else {
-            $sql_verifica = "SELECT id FROM usuarios WHERE usuario = :usuario AND id != :id";
-            $params_verifica = [
-                ':usuario' => $usuario_novo,
-                ':id' => $id_usuario
-            ];
-            $result_verifica = $db->query($sql_verifica, $params_verifica);
-
-            if (($result_verifica['status'] ?? 'error') !== 'success') {
-                $mensagem_erro = 'Erro ao validar usuario.';
-            } elseif (count($result_verifica['data']) > 0) {
-                $mensagem_erro = 'Este nome de usuario ja esta em uso.';
-            } else {
-                $senhaTemporariaPlain = null;
-
-                if ($redefinir_senha) {
-                    $senhaTemporariaPlain = generateTemporaryPassword(12);
-                    $senhaHash = hashPassword($senhaTemporariaPlain);
-                    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo, senha = :senha, senha_temporaria = 1 WHERE id = :id";
-                    $params_update = [
-                        ':nome' => $nome,
-                        ':usuario' => $usuario_novo,
-                        ':nivel_acesso_id' => $nivel_acesso_id,
-                        ':ativo' => $ativo,
-                        ':senha' => $senhaHash,
-                        ':id' => $id_usuario
-                    ];
-                } else {
-                    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo WHERE id = :id";
-                    $params_update = [
-                        ':nome' => $nome,
-                        ':usuario' => $usuario_novo,
-                        ':nivel_acesso_id' => $nivel_acesso_id,
-                        ':ativo' => $ativo,
-                        ':id' => $id_usuario
-                    ];
-                }
-
-                enableAuditTriggers($db, 'web');
-                $result_update = $db->query($sql_update, $params_update);
-
-                if (($result_update['status'] ?? 'error') === 'success') {
-                    $afterAudit = [
-                        'nome' => $nome,
-                        'usuario' => $usuario_novo,
-                        'nivel_acesso' => $nivel_acesso,
-                        'ativo' => $ativo,
-                        'senha_temporaria' => $redefinir_senha ? 1 : ($usuario->senha_temporaria ?? 0)
-                    ];
-                    auditEvent($db, 'usuarios', $id_usuario, 'UPDATE', $beforeAudit, $afterAudit, 'web');
-
-                    $mensagem_sucesso = 'Usuario atualizado com sucesso.';
-                    $usuario->nome = $nome;
-                    $usuario->usuario = $usuario_novo;
-                    $usuario->nivel_acesso = $nivel_acesso;
-                    $usuario->ativo = $ativo;
-                    $usuario->senha_temporaria = $redefinir_senha ? 1 : ($usuario->senha_temporaria ?? 0);
-
-                    $senhaTemporariaExibida = null;
-                    if ($senhaTemporariaPlain !== null) {
-                        $senhaTemporariaExibida = $senhaTemporariaPlain;
-                        $mensagem_sucesso .= ' Senha temporaria gerada com sucesso!';
-                    }
-                } else {
-                    $mensagem_erro = 'Erro ao atualizar usuario.';
-                }
-            }
-        }
-    }
-}
+$mensagem_erro = $_SESSION['erro_editar_usuario'] ?? '';
+unset($_SESSION['erro_editar_usuario']);
+$mensagem_sucesso = $_SESSION['sucesso_editar_usuario'] ?? '';
+unset($_SESSION['sucesso_editar_usuario']);
+$senhaTemporariaExibida = $_SESSION['senha_temporaria_exibida'] ?? null;
+unset($_SESSION['senha_temporaria_exibida']);
 
 if ($senhaTemporariaExibida !== null) {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');

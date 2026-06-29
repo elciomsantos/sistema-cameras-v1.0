@@ -76,7 +76,7 @@ try {
                         <ul class="dropdown-menu dropdown-menu-end p-2" id="menuColunas" style="min-width:200px;max-height:300px;overflow-y:auto">
                         </ul>
                     </div>
-                    <a href="?page=logout" class="btn btn-outline-danger ms-auto">
+                    <a href="?page=action_logout" class="btn btn-outline-danger ms-auto">
                         <i class="fas fa-sign-out-alt me-1"></i>Sair
                     </a>
                 </div>

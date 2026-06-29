@@ -85,8 +85,8 @@ function resolvePageScriptPath(string $page): ?string
 }
 
 // Processar logout antes do timeout para sempre encerrar explicitamente
-if ($page === 'logout') {
-    require_once __DIR__ . '/../auth/logout.php';
+if ($page === 'action_logout' || $page === 'logout') {
+    require_once __DIR__ . '/../auth/action_logout.php';
     exit;
 }
 
@@ -100,7 +100,7 @@ $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
 // Se nao estiver logado e nao for pagina de login_submit ou API, redireciona para login
-$publicPages = ['login', 'login_submit', 'nao_autorizado'];
+$publicPages = ['login', 'login_submit', 'action_login_submit', 'nao_autorizado'];
 if (!isset($_SESSION['usuario']) && !in_array($page, $publicPages, true) && !str_starts_with($page, 'api/')) {
     $page = 'login';
 }
@@ -159,12 +159,33 @@ if ($scriptPath === null) {
 // Endpoints de acao (redirect/processamento) nao devem renderizar layout.
 $actionPages = [
     'login_submit',
+    'action_login_submit',
     'ativarUsuario',
+    'action_ativar_usuario',
     'bloquearUsuario',
+    'action_bloquear_usuario',
     'deletarUsuario',
+    'action_deletar_usuario',
+    'action_listar_locais',
 ];
 if (in_array($page, $actionPages, true)) {
     require_once $scriptPath;
+    exit;
+}
+
+// Action handlers: interceptam POST para processar formularios e redirecionar
+$postActionPages = [
+    'recuperar_senha' => __DIR__ . '/../auth/action_recuperar_senha.php',
+    'alterar_senha'   => __DIR__ . '/../accounts/action_alterar_senha.php',
+    'editarUsuario'   => __DIR__ . '/../accounts/action_editar_usuario.php',
+    'trocar_senha'    => __DIR__ . '/../accounts/action_trocar_senha.php',
+    'cadastroUsuario' => __DIR__ . '/../accounts/action_cadastro_usuario.php',
+    'cadastro_locais' => __DIR__ . '/../resources/action_cadastro_locais.php',
+    'editar_locais'   => __DIR__ . '/../resources/action_editar_locais.php',
+
+];
+if (isset($postActionPages[$page]) && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+    require_once $postActionPages[$page];
     exit;
 }
 

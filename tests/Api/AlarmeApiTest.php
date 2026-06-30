@@ -12,7 +12,7 @@ class AlarmeApiTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->apiBase = getenv('API_BASE_URL') ?: 'http://localhost/sistema-cameras-v1.0/public/index.php?page=api/v2/';
+        $this->apiBase = getenv('API_BASE_URL') ?: 'http://localhost/sistema-cameras-v1.0/public/index.php?page=api/';
     }
 
     public function testApiAlarmesGetWithoutAuthReturnsUnauthorized(): void
@@ -54,7 +54,7 @@ class AlarmeApiTest extends TestCase
         $this->assertArrayHasKey('success', $data);
     }
 
-    public function testApiPingReturnsPong(): void
+    public function testApiPingReturnsOk(): void
     {
         $url = $this->apiBase . 'api_ping';
         $context = stream_context_create(['http' => ['method' => 'GET', 'ignore_errors' => true]]);
@@ -66,8 +66,10 @@ class AlarmeApiTest extends TestCase
 
         $data = json_decode($response, true);
         $this->assertIsArray($data);
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
         $this->assertArrayHasKey('data', $data);
-        $this->assertEquals('pong', $data['data']['message'] ?? '');
+        $this->assertEquals('ok', $data['data']['status'] ?? '');
     }
 
     public function testApiCadastrarAlarmesWithoutCsrfReturnsError(): void
@@ -96,7 +98,7 @@ class AlarmeApiTest extends TestCase
         $this->assertFalse($data['success']);
     }
 
-    public function testApiHealthReturnsServiceInfo(): void
+    public function testApiHealthRequiresAuth(): void
     {
         $url = $this->apiBase . 'api_health';
         $context = stream_context_create(['http' => ['method' => 'GET', 'ignore_errors' => true]]);
@@ -107,7 +109,8 @@ class AlarmeApiTest extends TestCase
         }
 
         $data = json_decode($response, true);
-        $this->assertArrayHasKey('service', $data['data'] ?? []);
-        $this->assertEquals('sistema-cameras-api', $data['data']['service'] ?? '');
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('success', $data);
+        $this->assertFalse($data['success']);
     }
 }

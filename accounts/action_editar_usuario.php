@@ -18,7 +18,7 @@ if (!validateCsrfToken($csrfToken)) {
     exit;
 }
 
-$id_usuario = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+$id_usuario = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if (!$id_usuario) {
     $_SESSION['erro_editar_usuario'] = 'Usuario invalido.';
     header('Location: ?page=listarUsuario');
@@ -50,6 +50,12 @@ $usuario_novo = trim($_POST['usuario'] ?? '');
 $nivel_acesso = $_POST['nivel_acesso'] ?? 'user';
 if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
     $nivel_acesso = 'user';
+}
+
+if (mb_strlen($nome) > 255 || mb_strlen($usuario_novo) > 100) {
+    $_SESSION['erro_editar_usuario'] = 'Nome ou usuario muito longo.';
+    header('Location: ?page=editarUsuario&id=' . $id_usuario);
+    exit;
 }
 
 $nivel_acesso_id = 3;

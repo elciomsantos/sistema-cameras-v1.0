@@ -89,7 +89,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                     </button>
                 </div>
             </form>
-            <script>
+            <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
             function exportCsv() {
                 var f = document.getElementById('formFiltrosLocais');
                 var q = new URLSearchParams(new FormData(f)).toString();
@@ -104,7 +104,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                 var t = document.createElement('input');
                 t.type = 'hidden';
                 t.name = 'csrf_token';
-                t.value = '<?= getCsrfToken() ?>';
+                t.value = <?= json_encode(getCsrfToken()) ?>;
                 form.appendChild(t);
                 var d = document.createElement('input');
                 d.type = 'hidden';

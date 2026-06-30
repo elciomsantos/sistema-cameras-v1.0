@@ -30,7 +30,7 @@ self.addEventListener('install', event => {
             './index.php',
             './images/favicon-32x32.png',
             './images/favicon-16x16.png',
-            './apple-touch-icon.png'
+            './images/apple-touch-icon.png'
           ]);
         }
       }),

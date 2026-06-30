@@ -26,6 +26,12 @@ if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
     $nivel_acesso = 'user';
 }
 
+if (mb_strlen($nome) > 255 || mb_strlen($usuario) > 100) {
+    $_SESSION['erro_cadastro'] = 'Nome ou usuario muito longo.';
+    header('Location: index.php?page=administracao');
+    exit;
+}
+
 $nivel_acesso_id = 3;
 if ($nivel_acesso === 'admin') {
     $nivel_acesso_id = 1;

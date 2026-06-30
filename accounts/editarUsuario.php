@@ -81,6 +81,7 @@ if ($senhaTemporariaExibida !== null) {
 
                     <form method="post">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="id" value="<?= (int)$usuario->id ?>">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">

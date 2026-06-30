@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
 // Carregar dados para selects
@@ -58,7 +59,7 @@ unset($_SESSION['form_data']);
                                     <select name="status_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['status'] as $status): ?>
-                                        <option value="<?= $status->id ?>"
+                                        <option value="<?= (int)$status->id ?>"
                                             <?= isset($formData['status_id']) && $formData['status_id'] == $status->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($status->nome) ?>
                                         </option>
@@ -88,7 +89,7 @@ unset($_SESSION['form_data']);
                                     <select name="tipo_local_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['tipos_locais'] as $tipoLocal): ?>
-                                        <option value="<?= $tipoLocal->id ?>"
+                                        <option value="<?= (int)$tipoLocal->id ?>"
                                             <?= isset($formData['tipo_local_id']) && $formData['tipo_local_id'] == $tipoLocal->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($tipoLocal->nome) ?>
                                         </option>
@@ -102,7 +103,7 @@ unset($_SESSION['form_data']);
                                     <select name="regiao_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['regioes'] as $regiao): ?>
-                                        <option value="<?= $regiao->id ?>"
+                                        <option value="<?= (int)$regiao->id ?>"
                                             <?= isset($formData['regiao_id']) && $formData['regiao_id'] == $regiao->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($regiao->nome) ?>
                                         </option>
@@ -116,7 +117,7 @@ unset($_SESSION['form_data']);
                                     <select name="procedimento_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['procedimentos'] as $procedimento): ?>
-                                        <option value="<?= $procedimento->id ?>"
+                                        <option value="<?= (int)$procedimento->id ?>"
                                             <?= isset($formData['procedimento_id']) && $formData['procedimento_id'] == $procedimento->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($procedimento->nome) ?>
                                         </option>
@@ -171,7 +172,7 @@ unset($_SESSION['form_data']);
                                     <select name="marca_id" id="marcaSelect" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['marcas'] as $marca): ?>
-                                        <option value="<?= $marca->id ?>"
+                                        <option value="<?= (int)$marca->id ?>"
                                             <?= isset($formData['marca_id']) && $formData['marca_id'] == $marca->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($marca->nome) ?>
                                         </option>
@@ -206,7 +207,7 @@ unset($_SESSION['form_data']);
                                     <select name="tipo_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['tipos_equipamento'] as $tipo): ?>
-                                        <option value="<?= $tipo->id ?>"
+                                        <option value="<?= (int)$tipo->id ?>"
                                             <?= isset($formData['tipo_id']) && $formData['tipo_id'] == $tipo->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($tipo->nome) ?>
                                         </option>
@@ -220,7 +221,7 @@ unset($_SESSION['form_data']);
                                     <select name="tipo_camera" class="form-select">
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['tipo_cameras'] as $tc): ?>
-                                        <option value="<?= $tc->id ?>"
+                                        <option value="<?= (int)$tc->id ?>"
                                             <?= isset($formData['tipo_camera']) && $formData['tipo_camera'] == $tc->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($tc->nome) ?>
                                         </option>
@@ -233,7 +234,7 @@ unset($_SESSION['form_data']);
                                     <select name="transmissao_id" class="form-select">
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['transmissoes'] as $trans): ?>
-                                        <option value="<?= $trans->id ?>"
+                                        <option value="<?= (int)$trans->id ?>"
                                             <?= isset($formData['transmissao_id']) && $formData['transmissao_id'] == $trans->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($trans->tipo ?? $trans->nome) ?>
                                         </option>
@@ -246,7 +247,7 @@ unset($_SESSION['form_data']);
                                     <select name="origem_link_id" class="form-select">
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['origem_links'] as $origem): ?>
-                                        <option value="<?= $origem->id ?>"
+                                        <option value="<?= (int)$origem->id ?>"
                                             data-inscricao="<?= htmlspecialchars($origem->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             <?= isset($formData['origem_link_id']) && $formData['origem_link_id'] == $origem->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($origem->nome) ?>
@@ -512,7 +513,7 @@ unset($_SESSION['form_data']);
                                     <select name="secretaria_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['secretarias'] as $sec): ?>
-                                        <option value="<?= $sec->id ?>"
+                                        <option value="<?= (int)$sec->id ?>"
                                             <?= isset($formData['secretaria_id']) && $formData['secretaria_id'] == $sec->id ? 'selected' : '' ?>>
                                             <?= htmlspecialchars($sec->nome) ?>
                                         </option>

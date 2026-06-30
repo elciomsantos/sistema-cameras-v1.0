@@ -48,7 +48,7 @@ $locaisList = $locaisService->getAllLocais();
                             <select class="form-select form-select-sm" id="filtroStatus">
                                 <option value="">Todos</option>
                                 <?php foreach ($statusList as $status): ?>
-                                    <option value="<?= $status->id ?>"><?= htmlspecialchars($status->nome) ?></option>
+                                    <option value="<?= (int)$status->id ?>"><?= htmlspecialchars($status->nome) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -57,7 +57,7 @@ $locaisList = $locaisService->getAllLocais();
                             <select class="form-select form-select-sm" id="filtroLocal">
                                 <option value="">Todos</option>
                                 <?php foreach ($locaisList as $local): ?>
-                                    <option value="<?= $local->id ?>"><?= htmlspecialchars($local->nome) ?></option>
+                                    <option value="<?= (int)$local->id ?>"><?= htmlspecialchars($local->nome) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

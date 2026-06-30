@@ -13,8 +13,12 @@ return [
     'action_deletar_usuario' => 'admin',
     'action_bloquear_usuario' => 'admin',
     'action_ativar_usuario' => 'admin',
+    'action_cadastro_usuario' => 'admin',
+    'action_editar_usuario' => 'admin',
+    'action_alterar_senha' => 'user',
+    'action_trocar_senha' => 'user',
     'auditoria_cameras' => 'admin',
-    'recuperar_senha' => 'user',
+    'recuperar_senha' => 'admin',
     'alterar_senha' => 'user',
 
     'relatorios_cameras' => 'supervisor',

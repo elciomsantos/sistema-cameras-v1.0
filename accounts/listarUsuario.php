@@ -84,7 +84,7 @@ $listUsuarios = listarUsuarios($db);
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     <!-- Botão Editar com tooltip -->
-                                    <a href="?page=editarUsuario&id=<?= $usuario->id; ?>" 
+                                    <a href="?page=editarUsuario&id=<?= (int)$usuario->id ?>" 
                                     class="btn btn-sm btn-outline-warning" 
                                     title="Editar usuário"
                                     data-bs-toggle="tooltip">

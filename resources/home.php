@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('user');
 ?>
 
 <?php vite_page_css('home-dashboard'); ?>

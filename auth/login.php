@@ -14,7 +14,7 @@ unset($_SESSION['error']);
     align-items: center;
     min-height: 100vh;
     padding: 24px;
-    background: url('<?= BASE_URL ?>/images/tela_fundo.png') no-repeat center center fixed;
+    background: url('<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/images/tela_fundo.png') no-repeat center center fixed;
     background-color: #0f1e2f;
     background-size: min(720px, 85vw) auto;
     box-shadow:

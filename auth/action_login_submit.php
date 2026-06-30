@@ -15,6 +15,17 @@ if (!validateCsrfToken($csrfToken)) {
 $usuario = $_POST['text_usuario'] ?? null;
 $senha = $_POST['text_senha'] ?? null;
 
+if ($usuario !== null && mb_strlen($usuario) > 255) {
+    $_SESSION['error'] = 'Falha de validacao.';
+    header('Location: index.php?page=login');
+    exit;
+}
+if ($senha !== null && mb_strlen($senha) > 128) {
+    $_SESSION['error'] = 'Falha de validacao.';
+    header('Location: index.php?page=login');
+    exit;
+}
+
 if(!$usuario || !$senha) {
     header('Location: index.php?page=login');
     exit;
@@ -101,6 +112,31 @@ function clearLoginAttempt(database $db, string $username, string $ip): void
 
 $db = getRequestDatabase();
 
+// Per-IP rate limit check (password spray mitigation)
+$ipAttemptKey = '__ip_lock__';
+$ipAttempt = ['count' => 0, 'first_at' => $now, 'locked_until' => 0];
+$maxIpAttempts = 15;
+
+try {
+    $ipAttemptFromDb = readLoginAttempt($db, $ipAttemptKey, $ip, $now);
+    if ($ipAttemptFromDb !== null) {
+        $ipAttempt = $ipAttemptFromDb;
+        if (!empty($ipAttempt['locked_until']) && $ipAttempt['locked_until'] > $now) {
+            $_SESSION['error'] = 'Muitas tentativas. Tente novamente em alguns minutos.';
+            header('Location: index.php?page=login');
+            exit;
+        }
+    }
+} catch (Throwable $e) {
+    $_SESSION['error'] = 'Erro interno. Tente novamente.';
+    header('Location: index.php?page=login');
+    exit;
+}
+
+if (($now - (int)$ipAttempt['first_at']) > $windowSeconds) {
+    $ipAttempt = ['count' => 0, 'first_at' => $now, 'locked_until' => 0];
+}
+
 $attempt = ['count' => 0, 'first_at' => $now, 'locked_until' => 0];
 
 try {
@@ -123,6 +159,16 @@ if (($now - (int)$attempt['first_at']) > $windowSeconds) {
     $attempt = ['count' => 0, 'first_at' => $now, 'locked_until' => 0];
 }
 
+// Increment per-IP counter on each failed attempt
+function incrementIpAttempt(database $db, string $ip, int $now, array &$ipAttempt, int $maxIpAttempts, int $lockSeconds): void
+{
+    $ipAttempt['count']++;
+    if ($ipAttempt['count'] >= $maxIpAttempts) {
+        $ipAttempt['locked_until'] = $now + $lockSeconds;
+    }
+    persistLoginAttempt($db, '__ip_lock__', $ip, $ipAttempt);
+}
+
 $sql = "SELECT id, usuario, nome, senha, ativo, nivel_acesso_id, senha_temporaria FROM usuarios WHERE usuario = :usuario";
 $params = [':usuario' => $usuario];
 $result = $db->query($sql, $params);
@@ -132,6 +178,7 @@ if($result['status'] === 'error') {
     exit;
 }
 if(!isset($result['data']) || count($result['data']) === 0) {
+    incrementIpAttempt($db, $ip, $now, $ipAttempt, $maxIpAttempts, $lockSeconds);
     $attempt['count']++;
     if ($attempt['count'] >= $maxAttempts) {
         $attempt['locked_until'] = $now + $lockSeconds;
@@ -144,6 +191,7 @@ if(!isset($result['data']) || count($result['data']) === 0) {
 $senhaHash = $result['data'][0]->senha;
 $newHash = null;
 if(!verifyPassword($senha, $senhaHash, $newHash)) {
+    incrementIpAttempt($db, $ip, $now, $ipAttempt, $maxIpAttempts, $lockSeconds);
     $attempt['count']++;
     if ($attempt['count'] >= $maxAttempts) {
         $attempt['locked_until'] = $now + $lockSeconds;
@@ -162,7 +210,7 @@ if ($newHash) {
 $usuarioDb = $result['data'][0];
 
 if ((int)($usuarioDb->ativo ?? 1) !== 1) {
-    $_SESSION['error'] = 'Usuario inativo. Contate um administrador.';
+    $_SESSION['error'] = 'Credenciais invalidas ou conta desativada.';
     header('Location: index.php?page=login');
     exit;
 }

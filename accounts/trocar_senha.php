@@ -24,7 +24,7 @@ if (!isset($_SESSION['usuario'])) {
     header('Location: index.php?page=login');
     exit;
 }
-if ($_SESSION['usuario']->senha_temporaria == 0) {
+if ((int)$_SESSION['usuario']->senha_temporaria !== 1) {
     header('Location: index.php?page=home');
     exit;
 }
@@ -67,7 +67,7 @@ unset($_SESSION['erro_troca_senha']);
                         <div class="mb-3">
                             <label for="confirma_senha" class="form-label">Confirmar Nova Senha</label>
                             <input type="password" class="form-control" id="confirma_senha" name="confirma_senha" 
-                                minlength="6" required>
+                                minlength="8" required>
                         </div>
                         <div class="d-grid gap-2">
                             <button type="submit" name="submit" class="btn btn-primary">

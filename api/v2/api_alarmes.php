@@ -158,11 +158,11 @@ try {
         LEFT JOIN catalogo_modelos_alarmes m ON m.id = a.modelo_alarme_id
         {$whereSql}
         ORDER BY a.data_atualizacao DESC, a.id DESC
-        LIMIT ? OFFSET ?
+        LIMIT :limit_val OFFSET :offset_val
     ";
 
-    $params[] = $perPage;
-    $params[] = $offset;
+    $params[':limit_val'] = $perPage;
+    $params[':offset_val'] = $offset;
     $result = $db->query($sql, $params);
 
     $queryTime = microtime(true) - $startTime;

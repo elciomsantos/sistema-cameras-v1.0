@@ -134,6 +134,7 @@ try {
     }
 
     $caminhoRelativo = 'uploads/' . $subdir . '/' . $nomeArquivo;
+    $anexoId = 0;
 
     $db->beginTransaction();
     try {

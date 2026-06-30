@@ -6,9 +6,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-define('ACCESS_LEVEL_USER', 1);
+define('ACCESS_LEVEL_ADMIN', 1);
 define('ACCESS_LEVEL_SUPERVISOR', 2);
-define('ACCESS_LEVEL_ADMIN', 3);
+define('ACCESS_LEVEL_USER', 3);
 
 define('CSRF_TOKEN_BYTES', 32);
 define('PASSWORD_MIN_LENGTH', 8);
@@ -117,14 +117,13 @@ function userHasAccess(string $required = 'user'): bool
         return false;
     }
 
-    $levels = [
-        'user' => ACCESS_LEVEL_USER,
-        'supervisor' => ACCESS_LEVEL_SUPERVISOR,
-        'admin' => ACCESS_LEVEL_ADMIN,
-    ];
-
     $userLevel = resolveUserAccessLevel($_SESSION['usuario']);
-    return ($levels[$userLevel] ?? 0) >= ($levels[$required] ?? 1);
+    $hierarchy = ['user', 'supervisor', 'admin'];
+
+    $userRank = array_search($userLevel, $hierarchy, true);
+    $requiredRank = array_search($required, $hierarchy, true);
+
+    return $userRank !== false && $requiredRank !== false && $userRank >= $requiredRank;
 }
 
 function normalizeAccessLevelName(?string $name): ?string

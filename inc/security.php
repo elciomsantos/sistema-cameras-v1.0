@@ -66,9 +66,11 @@ function requireApiCsrf(bool $rotate = true): void
     if (in_array(strtoupper($method), $safeMethods, true)) {
         $tokens = $_SESSION['csrf_tokens'] ?? [];
         $current = $tokens[array_key_last($tokens)] ?? '';
-        if ($current !== '') {
-            header('X-CSRF-Token: ' . $current);
+        if ($current === '') {
+            $current = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+            $_SESSION['csrf_tokens'] = [$current];
         }
+        header('X-CSRF-Token: ' . $current);
         return;
     }
 
@@ -109,6 +111,42 @@ function currentUserId(): ?int
     }
 
     return (int) $_SESSION['usuario']->id;
+}
+
+/**
+ * Resolve o IP real do cliente considerando proxies confiáveis.
+ * Usa REMOTE_ADDR como fonte primária. Só confia em X-Forwarded-For
+ * se a conexão direta vier de um proxy listado em PROXY_TRUSTED_IPS.
+ */
+function resolveClientIp(): string
+{
+    $remoteAddr = trim($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+
+    // Normalizar IPv6 localhost
+    if ($remoteAddr === '::1') {
+        $remoteAddr = '127.0.0.1';
+    }
+
+    if (defined('PROXY_TRUSTED_IPS') && PROXY_TRUSTED_IPS !== '') {
+        $trustedProxies = array_map('trim', explode(',', PROXY_TRUSTED_IPS));
+        if (in_array($remoteAddr, $trustedProxies, true)) {
+            $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+            if ($forwarded !== '') {
+                $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
+                foreach ($ips as $ip) {
+                    if (!in_array($ip, $trustedProxies, true) && filter_var($ip, FILTER_VALIDATE_IP)) {
+                        return $ip;
+                    }
+                }
+            }
+            $realIp = $_SERVER['HTTP_X_REAL_IP'] ?? '';
+            if ($realIp !== '' && filter_var($realIp, FILTER_VALIDATE_IP)) {
+                return $realIp;
+            }
+        }
+    }
+
+    return $remoteAddr;
 }
 
 function userHasAccess(string $required = 'user'): bool
@@ -222,8 +260,7 @@ function validatePasswordPolicy(string $password, ?array &$errors = null): bool
 function enableAuditTriggers($db, string $origem = 'web'): void
 {
     $userId = currentUserId();
-    $db->query("SET @app_user_id = ?", [$userId]);
-    $db->query("SET @app_origem = ?", [$origem]);
+    $db->setUserContext($userId, $origem);
 }
 
 function auditEvent($db, string $entidade, ?int $entidadeId, string $operacao, ?array $dadosAntes = null, ?array $dadosDepois = null, string $origem = 'web'): void

@@ -537,14 +537,12 @@ class EquipamentoService
 
     public function setAppUserContext(?int $userId): void
     {
-        $this->db->query("SET @app_user_id = ?", [$userId]);
-        $this->db->query("SET @app_origem = 'api'");
+        $this->db->setUserContext($userId ?? 0, 'api');
     }
 
     public function resetAppUserContext(): void
     {
-        $this->db->query("SET @app_user_id = NULL");
-        $this->db->query("SET @app_origem = NULL");
+        $this->db->setUserContext(null, null);
     }
 
     public function beginTransaction(): void

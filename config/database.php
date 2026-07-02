@@ -71,6 +71,12 @@ class database
         return $this->pdo;
     }
 
+    public function setUserContext(?int $userId, ?string $origem = 'web'): void
+    {
+        $this->query("SET @app_user_id = ?", [$userId]);
+        $this->query("SET @app_origem = ?", [$origem]);
+    }
+
     public function query($sql, $params = [])
     {
         $this->ensureConnection();

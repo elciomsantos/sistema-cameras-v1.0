@@ -4,34 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 
 function getSessionClientIp(): string
 {
-    $remoteAddr = trim($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-
-    // Normalizar IPv6 localhost para evitar falsos 401 por alternância ::1/127.0.0.1
-    if ($remoteAddr === '::1') {
-        $remoteAddr = '127.0.0.1';
-    }
-
-    if (defined('PROXY_TRUSTED_IPS') && PROXY_TRUSTED_IPS !== '') {
-        $trustedProxies = array_map('trim', explode(',', PROXY_TRUSTED_IPS));
-        if (in_array($remoteAddr, $trustedProxies, true)) {
-            $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-            if ($forwarded !== '') {
-                $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
-                foreach ($ips as $ip) {
-                    if (!in_array($ip, $trustedProxies, true) && filter_var($ip, FILTER_VALIDATE_IP)) {
-                        return $ip;
-                    }
-                }
-            }
-            $realIp = $_SERVER['HTTP_X_REAL_IP'] ?? '';
-            if ($realIp !== '' && filter_var($realIp, FILTER_VALIDATE_IP)) {
-                return $realIp;
-            }
-        }
-        return $remoteAddr;
-    }
-
-    return $remoteAddr;
+    return resolveClientIp();
 }
 
 function getSessionUserAgent(): string
@@ -174,12 +147,14 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
 
     $storedIp = (string)$row->ip_address;
     $currentIp = getSessionClientIp();
-    if ($storedIp !== $currentIp) {
-        // Normalizar ambos os lados para suportar registros legados com '::1'
+    if ($storedIp !== $currentIp && $storedIp !== '') {
         $normalizedStored = $storedIp === '::1' ? '127.0.0.1' : $storedIp;
         $normalizedCurrent = $currentIp === '::1' ? '127.0.0.1' : $currentIp;
         if ($normalizedStored !== $normalizedCurrent) {
-            return false;
+            error_log(sprintf(
+                '[session] IP mismatch for user %d: stored=%s current=%s (session not invalidated)',
+                $usuarioId, $storedIp, $currentIp
+            ));
         }
     }
 

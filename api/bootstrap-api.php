@@ -121,7 +121,7 @@ function executeApiRequest(?string $endpointOverride = null): void
     );
 
     if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
-        $clientIp = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        $clientIp = resolveClientIp();
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $rateLimitKey = "{$endpoint}:{$clientIp}";
 
@@ -187,6 +187,10 @@ function executeApiRequest(?string $endpointOverride = null): void
     $noCsrfEndpoints = [];
     if (!in_array($endpoint, $publicEndpoints, true)) {
         requireApiAccessForEndpoint($endpoint);
+    }
+    if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']->id)) {
+        $db = db();
+        $db->setUserContext((int)$_SESSION['usuario']->id, 'api');
     }
     $shouldRotate = !in_array($endpoint, $noRotateEndpoints, true);
     if (!in_array($endpoint, $noCsrfEndpoints, true)) {

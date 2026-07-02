@@ -132,15 +132,61 @@ try {
     if ($alarmeId) $subdir = 'alarmes';
     if ($manutencaoCameraId) $subdir = 'manutencoes_cameras';
     if ($manutencaoAlarmeId) $subdir = 'manutencoes_alarmes';
-    $uploadDir = __DIR__ . '/../../public/uploads/' . $subdir . '/';
+    $uploadDir = APP_ROOT . '/storage/uploads/' . $subdir . '/';
     $caminhoAbsoluto = $uploadDir . $nomeArquivo;
 
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
         ApiResponse::internalError('Falha ao criar diretório de upload.');
     }
 
-    if (!move_uploaded_file($file['tmp_name'], $caminhoAbsoluto)) {
-        ApiResponse::internalError('Falha ao salvar arquivo no servidor.');
+    $imageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+    if (in_array($detectedMime, $imageMimes, true)) {
+        $gdLoaders = [
+            'image/jpeg' => 'imagecreatefromjpeg',
+            'image/png'  => 'imagecreatefrompng',
+            'image/gif'  => 'imagecreatefromgif',
+            'image/webp' => 'imagecreatefromwebp',
+            'image/bmp'  => 'imagecreatefrombmp',
+        ];
+        $gdSavers = [
+            'image/jpeg' => 'imagejpeg',
+            'image/png'  => 'imagepng',
+            'image/gif'  => 'imagegif',
+            'image/webp' => 'imagewebp',
+            'image/bmp'  => 'imagebmp',
+        ];
+        $loader = $gdLoaders[$detectedMime];
+        $saver = $gdSavers[$detectedMime];
+        $src = @$loader($file['tmp_name']);
+        if ($src === false) {
+            ApiResponse::error('VALIDATION_ERROR', 'Imagem invalida ou corrompida.');
+        }
+        $quality = ($detectedMime === 'image/jpeg') ? 90 : -1;
+        $saved = @$saver($src, $caminhoAbsoluto, $quality);
+        imagedestroy($src);
+        if (!$saved) {
+            ApiResponse::internalError('Falha ao processar imagem.');
+        }
+    } else {
+        $headerValidators = [
+            'application/pdf' => "\x25\x50\x44\x46",
+            'application/msword' => "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => "\x50\x4B\x03\x04",
+            'application/vnd.ms-excel' => "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => "\x50\x4B\x03\x04",
+        ];
+        $expectedHeader = $headerValidators[$detectedMime] ?? null;
+        if ($expectedHeader !== null) {
+            $fh = fopen($file['tmp_name'], 'rb');
+            $actualHeader = $fh !== false ? fread($fh, strlen($expectedHeader)) : '';
+            if ($fh !== false) { fclose($fh); }
+            if ($actualHeader !== $expectedHeader) {
+                ApiResponse::error('VALIDATION_ERROR', 'Arquivo invalido ou corrompido.');
+            }
+        }
+        if (!move_uploaded_file($file['tmp_name'], $caminhoAbsoluto)) {
+            ApiResponse::internalError('Falha ao salvar arquivo no servidor.');
+        }
     }
 
     $caminhoRelativo = 'uploads/' . $subdir . '/' . $nomeArquivo;

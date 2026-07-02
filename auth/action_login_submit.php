@@ -32,30 +32,7 @@ if(!$usuario || !$senha) {
 }
 
 $now = time();
-$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-
-if (defined('PROXY_TRUSTED_IPS') && PROXY_TRUSTED_IPS !== '') {
-    $trustedProxies = array_map('trim', explode(',', PROXY_TRUSTED_IPS));
-    if (in_array($remoteAddr, $trustedProxies, true)) {
-        $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-        if ($forwarded !== '') {
-            $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
-            $ip = $remoteAddr;
-            foreach ($ips as $forwardedIp) {
-                if (!in_array($forwardedIp, $trustedProxies, true) && filter_var($forwardedIp, FILTER_VALIDATE_IP)) {
-                    $ip = $forwardedIp;
-                    break;
-                }
-            }
-        } else {
-            $ip = $remoteAddr;
-        }
-    } else {
-        $ip = $remoteAddr;
-    }
-} else {
-    $ip = $remoteAddr;
-}
+$ip = resolveClientIp();
 
 $maxAttempts = LOGIN_MAX_ATTEMPTS;
 $windowSeconds = LOGIN_WINDOW_SECONDS;

@@ -33,14 +33,21 @@ try {
     $anexo = $result['data'][0];
     $caminhoRelativo = $anexo->caminho ?? '';
 
-    $uploadsBase = realpath(__DIR__ . '/../../public/uploads');
+    $uploadsBase = realpath(APP_ROOT . '/storage/uploads');
     $relativePath = str_replace('\\', '/', ltrim($caminhoRelativo, '/'));
 
     if ($uploadsBase === false || !str_starts_with($relativePath, 'uploads/')) {
         ApiResponse::error('VALIDATION_ERROR', 'Caminho do anexo invalido.');
     }
 
-    $caminhoAbsoluto = realpath(__DIR__ . '/../../public/' . $relativePath);
+    $caminhoAbsoluto = realpath($uploadsBase . '/' . substr($relativePath, 8));
+    if ($caminhoAbsoluto === false) {
+        // Fallback: arquivo legado em public/uploads/
+        $caminhoAbsoluto = realpath(__DIR__ . '/../../public/' . $relativePath);
+        if ($caminhoAbsoluto !== false) {
+            $uploadsBase = realpath(__DIR__ . '/../../public/uploads');
+        }
+    }
     if ($caminhoAbsoluto === false) {
         ApiResponse::notFound('arquivo');
     }

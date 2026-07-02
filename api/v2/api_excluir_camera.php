@@ -36,8 +36,7 @@ try {
 
     $db->beginTransaction();
 
-    $db->query("SET @app_user_id = ?", [$_SESSION['usuario']->id ?? null]);
-    $db->query("SET @app_origem = 'api'");
+    $db->setUserContext((int)$_SESSION['usuario']->id, 'api');
     $result = $db->query("UPDATE equipamentos SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL", [$id]);
 
     if ($result['status'] === 'success' && !empty($result['affected_rows']) && $result['affected_rows'] > 0) {

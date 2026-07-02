@@ -25,6 +25,8 @@ if (!$local) {
     exit;
 }
 
+requererEscopoLocal($id_local);
+
 $tiposLocais = $locaisService->getAllTiposLocais();
 $secretarias = $locaisService->getAllSecretarias();
 $classificacoes = $locaisService->getAllClassificacoesEnderecos();

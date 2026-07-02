@@ -10,6 +10,11 @@ $filters = [
     'tipo_local_id' => $_GET['tipo_local_id'] ?? '',
     'camera' => $_GET['camera'] ?? '',
 ];
+$usuarioSecretariaId = getUsuarioSecretariaId();
+$nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
+    $filters['secretaria_id'] = $usuarioSecretariaId;
+}
 $pageNum = max(1, (int)($_GET['page_num'] ?? 1));
 $perPage = 50;
 

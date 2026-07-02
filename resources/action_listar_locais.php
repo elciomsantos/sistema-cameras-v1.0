@@ -29,6 +29,11 @@ if (!empty($_POST['filters'])) {
         'camera' => in_array(trim($parsed['camera'] ?? ''), ['sim', 'nao', ''], true) ? trim($parsed['camera'] ?? '') : '',
     ];
 }
+$usuarioSecretariaId = getUsuarioSecretariaId();
+$nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
+    $filters['secretaria_id'] = $usuarioSecretariaId;
+}
 
 $allLocais = $locaisService->searchAll($filters);
 

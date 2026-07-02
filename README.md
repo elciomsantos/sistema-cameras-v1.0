@@ -390,3 +390,10 @@ vendor/bin/phpunit tests/Api/
 
 **Versão**: 1.0.0
 **Última atualização**: 2026-06-30
+
+Passos para nova implantação:
+1. mysql -u root < config/DB/cftv_gml.sql
+2. Copiar .env.example → configurar credenciais em C:\env\sistema-cameras\.env (Windows) ou /etc/sistema-cameras/.env (Linux)
+3. composer install
+4. npm install && npm run build
+5. Configurar Apache/Nginx apontando para public/

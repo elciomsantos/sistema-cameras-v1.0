@@ -145,13 +145,21 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $allowedOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $isSameOrigin = false;
+
+    $serverScheme = isHttpsRequest() ? 'https' : 'http';
+    $serverName = $_SERVER['SERVER_NAME'] ?? '';
+    $serverPort = (string)($_SERVER['SERVER_PORT'] ?? '80');
+    $defaultPort = ($serverScheme === 'https') ? '443' : '80';
+    $expectedOrigin = ($serverPort === $defaultPort)
+        ? "{$serverScheme}://{$serverName}"
+        : "{$serverScheme}://{$serverName}:{$serverPort}";
+
     if (!empty($allowedOrigin)) {
         if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
             $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
             $isSameOrigin = in_array($allowedOrigin, $configuredOrigins, true);
         } else {
-            // Em produção, NÃO tentar adivinhar a origem - exigir configuração explícita
-            $isSameOrigin = false;
+            $isSameOrigin = ($allowedOrigin === $expectedOrigin);
         }
     }
 

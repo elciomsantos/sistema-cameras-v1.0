@@ -12,6 +12,10 @@ $classificacoes = $locaisService->getAllClassificacoesEnderecos();
 $regioes = $locaisService->getAllRegioes();
 $contasAlarmes = $lookupService->getContasAlarmes();
 
+$usuarioSecretariaId = getUsuarioSecretariaId();
+$nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+$isScopedUser = $nivel !== 'admin' && $usuarioSecretariaId !== null;
+
 $ufs = [
     'AC','AL','AP','AM','BA','CE','DF','ES','GO',
     'MA','MT','MS','MG','PA','PB','PR','PE','PI',
@@ -114,14 +118,17 @@ function fd(string $key): string {
                             </div>
                             <div class="col-md-6">
                                 <label for="secretaria_id" class="form-label">Secretaria</label>
-                                <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id">
+                                <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id" <?= $isScopedUser ? 'disabled' : '' ?>>
                                     <option value="">Nenhuma</option>
                                     <?php foreach ($secretarias as $s): ?>
-                                    <option value="<?= (int)$s->id ?>" <?= (isset($formData['secretaria_id']) && (int)$formData['secretaria_id'] === (int)$s->id) ? 'selected' : '' ?>>
+                                    <option value="<?= (int)$s->id ?>" <?= (isset($formData['secretaria_id']) && (int)$formData['secretaria_id'] === (int)$s->id) || ($isScopedUser && (int)$s->id === $usuarioSecretariaId) ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <?php if ($isScopedUser): ?>
+                                <input type="hidden" name="secretaria_id" value="<?= $usuarioSecretariaId ?>">
+                                <?php endif; ?>
                             </div>
                             <div class="col-md-6">
                                 <label for="horario_funcionamento" class="form-label">Horario de Funcionamento</label>

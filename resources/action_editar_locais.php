@@ -18,6 +18,8 @@ if (!$id_local) {
     exit;
 }
 
+requererEscopoLocal($id_local);
+
 $db = db();
 $locaisService = new LocaisService($db);
 

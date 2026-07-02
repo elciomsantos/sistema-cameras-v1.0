@@ -39,6 +39,7 @@ public/uploads/temp/
 *.sql
 !config/DB/cftv_gml.sql
 !config/DB/migrations/*.sql
+!migrations/*.sql
 config/DB/private/
 
 # SSL/TLS

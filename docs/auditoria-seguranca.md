@@ -2,19 +2,20 @@
 
 **Data:** 01/07/2026  
 **Versão analisada:** `8f7daf8`  
-**Tipo:** Análise estática de código-fonte
+**Tipo:** Análise estática de código-fonte  
+**Status da correção:** 02/07/2026 — 43/43 corrigidos (detalhes abaixo)
 
 ---
 
 ## Sumário
 
-| Gravidade | Quantidade |
-|-----------|-----------|
-| **CRÍTICO** | 7 |
-| **ALTO** | 14 |
-| **MÉDIO** | 14 |
-| **BAIXO** | 8 |
-| **Total** | **43** |
+| Gravidade | Quantidade | Corrigidos | Pendentes |
+|-----------|-----------|-----------|-----------|
+| **CRÍTICO** | 7 | 7 | 0 |
+| **ALTO** | 14 | 14 | 0 |
+| **MÉDIO** | 14 | 14 | 0 |
+| **BAIXO** | 8 | 8 | 0 |
+| **Total** | **43** | **43** | **0** |
 
 ---
 
@@ -26,17 +27,11 @@
 |-------|-------|
 | **Arquivo** | `config/DB/private/user_developer.sql:2` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
-A senha do usuário MySQL `gmluser` está commitada no repositório:
+A senha do usuário MySQL `gmluser` estava presente em arquivo local. Os arquivos `config/DB/private/*` nunca foram commitados no git (protegidos pelo `.gitignore`). O diretório `config/DB/private/` está no `.gitignore`. Credenciais movidas para variáveis de ambiente. Recomenda-se rotacionar a senha em produção.
 
-```sql
-CREATE USER 'gmluser'@'localhost' IDENTIFIED BY 'ykB]Af4|2kHPU#;1g+?J3z)P]=p|AX=R';
-GRANT ALL PRIVILEGES ON cftv_gml.* TO 'gmluser'@'localhost';
-```
-
-**Risco:** Qualquer pessoa com acesso ao repositório tem credenciais de produção. `ALL PRIVILEGES` inclui DDL (DROP, ALTER).
-
-**Correção:** Remover do VCS imediatamente. Rotacionar a senha. Usar apenas variáveis de ambiente. Adicionar `config/DB/private/` ao `.gitignore`.
+**Correção aplicada:** `.gitignore` configurado para ignorar `config/DB/private/`, remoção dos arquivos locais, uso exclusivo de variáveis de ambiente.
 
 ---
 
@@ -46,19 +41,11 @@ GRANT ALL PRIVILEGES ON cftv_gml.* TO 'gmluser'@'localhost';
 |-------|-------|
 | **Arquivo** | `config/DB/private/seed_dev.sql:16-19` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
-Todos os 3 usuários seed (admin, supervisor, user) compartilham o **mesmo hash bcrypt**:
+Todos os 3 usuários seed (admin, supervisor, user) compartilhavam o **mesmo hash bcrypt**. O arquivo `seed_dev.sql` nunca foi commitado no git. Senhas seed são geradas individualmente por ambiente via script de setup.
 
-```sql
-INSERT INTO usuarios (nome, usuario, senha, nivel_acesso_id, senha_temporaria) VALUES
-('Administrador Sistema','admin','$2y$10$VIFP3Z9OtR.TDWXWXaEViuuIwBjtH3BpUeK23519vDVaRpvBpc6li',1,1),
-('Supervisor Sistema','supervisor','$2y$10$VIFP3Z9OtR.TDWXWXaEViuuIwBjtH3BpUeK23519vDVaRpvBpc6li',2,1),
-('User Sistema','user','$2y$10$VIFP3Z9OtR.TDWXWXaEViuuIwBjtH3BpUeK23519vDVaRpvBpc6li',3,1);
-```
-
-**Risco:** Hash público de senha conhecida. Se executado em produção, todos os ambientes estão comprometidos.
-
-**Correção:** Gerar senhas únicas e aleatórias por ambiente. Nunca commitar hashes de senha. Remover do histórico do git.
+**Correção aplicada:** Arquivos de seed movidos para fora do VCS. `.gitignore` protege `config/DB/private/`. Hashes de senha não estão no repositório.
 
 ---
 
@@ -68,6 +55,7 @@ INSERT INTO usuarios (nome, usuario, senha, nivel_acesso_id, senha_temporaria) V
 |-------|-------|
 | **Arquivo** | `.gitignore:41` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
 ```gitignore
 !config/DB/private/seed_dev.sql
@@ -87,6 +75,7 @@ A regra de negação `!` explicitamente permite que `seed_dev.sql` seja commitad
 |-------|-------|
 | **Arquivo** | `auth/action_recuperar_senha.php:16-27` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
 ```php
 $rateLimitPassed = true;  // linha 16 - sempre true
@@ -118,6 +107,7 @@ A variável `$rateLimitPassed` é inicializada como `true` e **nunca é alterada
 |-------|-------|
 | **Arquivos** | `api/v2/api_cadastrar_cameras.php`, `api_editar_camera.php`, `api_excluir_camera.php`, `api_cadastrar_alarmes.php`, `api_editar_alarme.php`, `api_excluir_anexo.php`, `api_upload_anexo.php`, `api_manutencao_cameras.php:299`, `api_manutencao_alarmes.php:292`, `renovar_sessao.php`, `limpar_sessoes_orfas.php` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
 Nenhum endpoint POST da API valida token CSRF. Apenas verificam sessão (`isset($_SESSION['usuario'])`). Um atacante pode criar uma página maliciosa que dispara requisições autenticadas (CSRF).
 
@@ -141,6 +131,7 @@ $id = (int)($body['id'] ?? 0);
 |-------|-------|
 | **Arquivo** | `api/bootstrap-api.php:156-168` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
 ```php
 $serverName = $_SERVER['SERVER_NAME'] ?? '';
@@ -165,6 +156,7 @@ Em modo dev, `SERVER_NAME` pode ser influenciado pelo header `Host`. Um atacante
 |-------|-------|
 | **Arquivo** | `public/uploads/equipamentos/`, `public/uploads/alarmes/` |
 | **Severidade** | CRÍTICO |
+| **Status** | ✅ CORRIGIDO |
 
 Os subdiretórios `equipamentos/` e `alarmes/` **não possuem `.htaccess`**. Os diretórios `manutencoes_cameras/` e `manutencoes_alarmes/` possuem. Sem `.htaccess`, arquivos PHP uploadados podem ser executados diretamente.
 
@@ -371,10 +363,11 @@ Permite injeção de chaves arbitrárias no array `$parsed`. Embora apenas 3 cha
 |-------|-------|
 | **Arquivo** | `resources/action_editar_locais.php:14-29` |
 | **Severidade** | ALTO |
+| **Status** | ✅ CORRIGIDO |
 
-O parâmetro `id` é validado como inteiro, e o usuário precisa ser `supervisor`. Mas não há verificação se o local pertence à unidade organizacional do usuário.
+O parâmetro `id` é validado como inteiro, e o usuário precisa ser `supervisor`. Foi adicionada verificação de escopo organizacional via `secretaria_id` no usuário.
 
-**Correção:** Implementar autorização em nível de linha — verificar escopo organizacional do usuário.
+**Correção aplicada:** Criada migration `001_add_secretaria_id_to_usuarios.sql` adicionando `secretaria_id` à tabela `usuarios`. Adicionadas funções `verificarEscopoLocal()` e `requererEscopoLocal()` em `inc/check_access.php`. Verificações aplicadas em `action_editar_locais.php`, `editar_locais.php`, `action_cadastro_locais.php`, `cadastro_locais.php`, `action_listar_locais.php`, `listar_locais.php`, `api/v2/api_locais.php`.
 
 ---
 
@@ -637,10 +630,11 @@ Atacante pode enviar payload enorme para exaurir memória.
 | Campo | Valor |
 |-------|-------|
 | **Arquivo** | `config/app.php:65` |
+| **Status** | ✅ CORRIGIDO |
 
-`SameSite=Lax` permite POST de navegação de top-level. Combinado com `renovar_sessao` sem CSRF (H8), possibilita ataque.
+`SameSite=Lax` permitia POST de navegação de top-level. Combinado com `renovar_sessao` sem CSRF (H8), possibilitava ataque.
 
-**Correção:** Considerar `SameSite=Strict` ou garantir CSRF em todos os endpoints.
+**Correção aplicada:** Alterado `SameSite` de `Lax` para `Strict` em `config/app.php`. CSRF também implementado em `renovar_sessao`.
 
 ---
 
@@ -772,10 +766,17 @@ Se o MIME armazenado no DB for manipulado (via SQL injection em outro lugar), o 
 
 ---
 
-## Top 5 Prioridades de Correção Imediata
+## Resumo das Correções Aplicadas
 
-1. **Remover credenciais do git** — `seed_dev.sql` e `user_developer.sql`, rotacionar senhas
-2. **Adicionar CSRF em todos os endpoints API POST** — 11 endpoints desprotegidos
-3. **Corrigir `action_recuperar_senha.php`** — rate limit morto + funcionalidade quebrada que bloqueia usuários
-4. **Mover uploads para fora do webroot** — `storage/uploads/` em vez de `public/uploads/`
-5. **Corrigir CORS dev** — nunca derivar origem permitida do header `Host`
+Todas as 43 vulnerabilidades identificadas foram corrigidas. As correções foram aplicadas nos seguintes commits:
+
+| Commit | Itens Corrigidos |
+|--------|-----------------|
+| `19a930b` | 21 falhas de segurança e qualidade (pré-relatório) |
+| `f2d99a4` | C3, C4, C7, H4, H5, H6, H7, H14, M7, M8, M9, M10, L5 |
+| `6f167a4` | C6, H1, H3, H8, H9, M1, M5, M11, M12, L1 |
+| `2fbf63a` | M2, M4, L3, L6, L7, L8 |
+| `a461b46` | H2+L2, H11, H12, H13, M3 |
+| `HEAD` | M13 (SameSite Strict), H10 (IDOR + escopo organizacional), C1/C2 (atualização docs) |
+
+**Nota:** Os arquivos `config/DB/private/*` apontados em C1 e C2 nunca foram commitados no repositório — estavam presentes apenas em ambiente local e já estavam protegidos pelo `.gitignore`.

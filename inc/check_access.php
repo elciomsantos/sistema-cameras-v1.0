@@ -22,3 +22,49 @@ function requererAcesso($nivel_requerido = 'user'): void
         exit;
     }
 }
+
+function getUsuarioSecretariaId(): ?int
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return null;
+
+    $secretariaId = $usuario->secretaria_id ?? null;
+    return $secretariaId !== null ? (int)$secretariaId : null;
+}
+
+function verificarEscopoLocal(int $localId): bool
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return false;
+
+    $nivel = resolveUserAccessLevel($usuario);
+    if ($nivel === 'admin') return true;
+
+    $secretariaId = getUsuarioSecretariaId();
+    if ($secretariaId === null) return true;
+
+    $db = db();
+    $result = $db->query(
+        "SELECT secretaria_id FROM locais WHERE id = ?",
+        [$localId]
+    );
+
+    if ($result['status'] !== 'success' || empty($result['data'])) {
+        return false;
+    }
+
+    $localSecretariaId = (int)($result['data'][0]->secretaria_id ?? 0);
+    return $localSecretariaId === $secretariaId;
+}
+
+function requererEscopoLocal(int $localId): void
+{
+    if (!verificarEscopoLocal($localId)) {
+        if (!headers_sent()) {
+            header('Location: index.php?page=nao_autorizado');
+            exit;
+        }
+        echo 'Acesso nao autorizado a este local.';
+        exit;
+    }
+}

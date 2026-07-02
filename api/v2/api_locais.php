@@ -15,7 +15,18 @@ try {
     }
 
     $db = db();
-    $result = $db->query("SELECT id, nome FROM locais ORDER BY nome");
+
+    $secretariaId = getUsuarioSecretariaId();
+    $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+
+    if ($nivel === 'admin' || $secretariaId === null) {
+        $result = $db->query("SELECT id, nome FROM locais ORDER BY nome");
+    } else {
+        $result = $db->query(
+            "SELECT id, nome FROM locais WHERE secretaria_id = ? ORDER BY nome",
+            [$secretariaId]
+        );
+    }
 
     if ($result['status'] === 'success') {
         ApiResponse::success([

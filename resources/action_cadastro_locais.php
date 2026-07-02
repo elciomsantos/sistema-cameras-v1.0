@@ -31,6 +31,12 @@ $v->required('nome', 'Nome do Local')
 $nome = mb_strtoupper(trim($v->get('nome', '')));
 $tipo_local_id = $v->get('tipo_local_id');
 $secretaria_id = $v->get('secretaria_id');
+
+$usuarioSecretariaId = getUsuarioSecretariaId();
+$nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
+    $secretaria_id = (string)$usuarioSecretariaId;
+}
 $regiao_id = $v->get('regiao_id');
 $horario_funcionamento = mb_strtoupper(trim($v->get('horario_funcionamento', '')));
 $telefone = trim($v->get('telefone', ''));

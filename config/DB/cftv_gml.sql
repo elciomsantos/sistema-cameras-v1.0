@@ -29,12 +29,15 @@ CREATE TABLE usuarios (
     nivel_acesso_id INT NOT NULL,
     senha_temporaria TINYINT(1) NOT NULL DEFAULT 0,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
+    secretaria_id INT NULL AFTER nivel_acesso_id,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usuarios_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
     CONSTRAINT fk_usuarios_nivel_acesso FOREIGN KEY (nivel_acesso_id) REFERENCES niveis_acesso(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB COMMENT='Usuários do sistema';
 
 CREATE INDEX idx_usuarios_nivel_acesso ON usuarios(nivel_acesso_id);
+CREATE INDEX idx_usuarios_secretaria ON usuarios(secretaria_id);
 
 -- =====================================================
 -- SESSAO UNICA POR USUARIO

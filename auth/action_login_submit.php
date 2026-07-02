@@ -150,7 +150,7 @@ function incrementIpAttempt(database $db, string $ip, int $now, array &$ipAttemp
     persistLoginAttempt($db, '__ip_lock__', $ip, $ipAttempt);
 }
 
-$sql = "SELECT id, usuario, nome, senha, ativo, nivel_acesso_id, senha_temporaria FROM usuarios WHERE usuario = :usuario";
+$sql = "SELECT id, usuario, nome, senha, ativo, nivel_acesso_id, secretaria_id, senha_temporaria FROM usuarios WHERE usuario = :usuario";
 $params = [':usuario' => $usuario];
 $result = $db->query($sql, $params);
 

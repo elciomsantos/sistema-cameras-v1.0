@@ -77,11 +77,7 @@ function loadConfiguration(): void
         if (isProduction()) {
             throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
         }
-        throw new RuntimeException(
-            "Arquivo de configuração não encontrado.\n\n" .
-            "Copie o arquivo .env.example para .env na raiz do projeto e configure as credenciais.\n\n" .
-            "Consulte a documentação do sistema para mais detalhes."
-        );
+        throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
     }
 }
 
@@ -121,9 +117,8 @@ if ($envDbPass === false) {
 }
 
 if (!empty($missingVars)) {
-    $msg = 'Configurações ausentes: ' . implode(', ', $missingVars);
-    error_log('[CONFIG] ' . $msg);
-    throw new RuntimeException($msg);
+    error_log('[CONFIG] Configurações ausentes: ' . implode(', ', $missingVars));
+    throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
 }
 
 define('DB_HOST', $envDbHost);

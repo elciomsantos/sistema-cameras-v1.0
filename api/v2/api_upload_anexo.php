@@ -77,7 +77,17 @@ try {
     }
 
     $file = $_FILES['file'];
-    $nomeOriginalSanitizado = basename($file['name']);
+    $nomeOriginalRaw = pathinfo($file['name'], PATHINFO_FILENAME);
+    $nomeOriginalExt = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $nomeOriginalSafe = preg_replace('/[^\x20-\x7E]/', '', $nomeOriginalRaw);
+    $nomeOriginalSafe = preg_replace('/[<>"\/\\\\|:?*]/', '_', $nomeOriginalSafe);
+    $nomeOriginalSafe = substr(trim($nomeOriginalSafe), 0, 100);
+    if ($nomeOriginalExt !== '') {
+        $nomeOriginalExt = preg_replace('/[^A-Za-z0-9._-]/', '', $nomeOriginalExt);
+        $nomeOriginalSanitizado = $nomeOriginalSafe . '.' . $nomeOriginalExt;
+    } else {
+        $nomeOriginalSanitizado = $nomeOriginalSafe;
+    }
 
     $maxSize = 10 * 1024 * 1024;
     if ($file['size'] > $maxSize) {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 class Logger
 {
     private static ?string $correlationId = null;
-    private static string $minLevel = 'debug';
+    private static string $minLevel = 'warning';
     private static array $levels = ['debug', 'info', 'warning', 'error', 'critical'];
 
     public static function init(?string $correlationId = null): void

@@ -13,18 +13,15 @@ if (!validateCsrfToken($csrfToken)) {
     exit;
 }
 
-$rateLimitPassed = true;
+$rateLimitPassed = false;
 if (class_exists('RateLimiter', true)) {
     $rateLimiter = new RateLimiter();
-    $rateLimitKey = 'recuperar_senha:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-    if (!$rateLimiter->consume($rateLimitKey, 3, 900)) {
-        $_SESSION['erro_recuperar'] = 'Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.';
-        header('Location: ?page=recuperar_senha');
-        exit;
-    }
+    $rateLimitKey = 'recuperar_senha:' . getSessionClientIp();
+    $rateLimitPassed = $rateLimiter->consume($rateLimitKey, 3, 900);
 }
 
 if (!$rateLimitPassed) {
+    $_SESSION['erro_recuperar'] = 'Muitas tentativas. Aguarde 15 minutos antes de tentar novamente.';
     header('Location: ?page=recuperar_senha');
     exit;
 }
@@ -76,12 +73,15 @@ if ($result['status'] === 'success' && !empty($result['data'])) {
     } catch (Throwable $e) {
         error_log('[action_recuperar_senha] Erro ao registrar auditoria: ' . $e->getMessage());
     }
+
+    $_SESSION['nova_senha_gerada'] = $novaSenha;
+    $_SESSION['sucesso_recuperar'] = "Senha temporária gerada para o usuário '{$userData->nome}': {$novaSenha}";
+} else {
+    $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
 }
 
 $logUser = $_SESSION['usuario']->usuario ?? 'unknown';
 $logUserId = currentUserId() ?? 'unknown';
-error_log("[action_recuperar_senha] Solicitante={$logUser}(id={$logUserId}) alvo={$usuario} IP=" . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
-
-$_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
+error_log("[action_recuperar_senha] Solicitante={$logUser}(id={$logUserId}) alvo={$usuario} IP=" . getSessionClientIp());
 header('Location: ?page=recuperar_senha');
 exit;

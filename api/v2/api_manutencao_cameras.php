@@ -97,12 +97,20 @@ function loadManutencaoPayload(
         unset($historicoParams[':bc1'], $historicoParams[':bc2'], $historicoParams[':bc3']);
     }
     if ($dataInicial !== '') {
-        $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) >= :data_inicial';
-        $historicoParams[':data_inicial'] = $dataInicial . ' 00:00:00';
+        if (!DateTime::createFromFormat('Y-m-d', $dataInicial)) {
+            $dataInicial = '';
+        } else {
+            $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) >= :data_inicial';
+            $historicoParams[':data_inicial'] = $dataInicial . ' 00:00:00';
+        }
     }
     if ($dataFinal !== '') {
-        $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) <= :data_final';
-        $historicoParams[':data_final'] = $dataFinal . ' 23:59:59';
+        if (!DateTime::createFromFormat('Y-m-d', $dataFinal)) {
+            $dataFinal = '';
+        } else {
+            $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) <= :data_final';
+            $historicoParams[':data_final'] = $dataFinal . ' 23:59:59';
+        }
     }
     $historicoWhereSql = empty($historicoParts) ? '' : 'AND ' . implode(' AND ', $historicoParts);
 

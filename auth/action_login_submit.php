@@ -209,7 +209,7 @@ if ($newHash) {
 }
 $usuarioDb = $result['data'][0];
 
-if ((int)($usuarioDb->ativo ?? 1) !== 1) {
+if ((int)($usuarioDb->ativo ?? 0) !== 1) {
     $_SESSION['error'] = 'Credenciais invalidas ou conta desativada.';
     header('Location: index.php?page=login');
     exit;

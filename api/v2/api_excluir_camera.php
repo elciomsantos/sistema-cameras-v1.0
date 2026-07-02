@@ -44,7 +44,6 @@ try {
         $db->commit();
         ApiResponse::success([
             'message' => 'Câmera excluída com sucesso',
-            'affected_rows' => $result['affected_rows'],
         ]);
         exit;
     }

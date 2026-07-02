@@ -123,14 +123,14 @@ class database
                     return $this->query($sql, $params);
                 } catch (\Throwable $retryErr) {
                     error_log('Database error (after reconnect): ' . $retryErr->getMessage());
-                    throw new \RuntimeException('Erro interno no banco de dados.', 0, $retryErr);
+                    throw new \RuntimeException('Erro interno no banco de dados.');
                 }
             }
-            error_log('Database error: ' . $err->getMessage() . ' | SQL: ' . $sql);
-            throw new \RuntimeException('Erro interno no banco de dados.', 0, $err);
+            error_log('Database error: ' . $err->getMessage());
+            throw new \RuntimeException('Erro interno no banco de dados.');
         } catch (\Throwable $err) {
             error_log('Database error: ' . $err->getMessage());
-            throw new \RuntimeException('Erro interno no banco de dados.', 0, $err);
+            throw new \RuntimeException('Erro interno no banco de dados.');
         }
     }
 

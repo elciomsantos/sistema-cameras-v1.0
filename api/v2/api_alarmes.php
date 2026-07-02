@@ -116,7 +116,8 @@ try {
     if (!$countResult || $countResult['status'] !== 'success') {
         $msg = (string)($countResult['error'] ?? '');
         if (stripos($msg, "doesn't exist") !== false || stripos($msg, 'Base table or view not found') !== false) {
-            ApiResponse::error('NOT_FOUND', 'Tabela de alarmes não encontrada. Execute o script SQL.');
+            error_log('[api_alarmes] Tabela de alarmes não encontrada: ' . $msg);
+            ApiResponse::internalError('Erro ao carregar alarmes.');
         }
         ApiResponse::internalError('Erro ao carregar alarmes.');
     }

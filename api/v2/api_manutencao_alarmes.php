@@ -127,12 +127,20 @@ function loadManutencaoPayload(
         unset($historicoParams[':busca_conta'], $historicoParams[':busca_conta2'], $historicoParams[':busca_conta3'], $historicoParams[':busca_conta_num']);
     }
     if ($dataInicial !== '') {
-        $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) >= :data_inicial';
-        $historicoParams[':data_inicial'] = $dataInicial . ' 00:00:00';
+        if (!DateTime::createFromFormat('Y-m-d', $dataInicial)) {
+            $dataInicial = '';
+        } else {
+            $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) >= :data_inicial';
+            $historicoParams[':data_inicial'] = $dataInicial . ' 00:00:00';
+        }
     }
     if ($dataFinal !== '') {
-        $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) <= :data_final';
-        $historicoParams[':data_final'] = $dataFinal . ' 23:59:59';
+        if (!DateTime::createFromFormat('Y-m-d', $dataFinal)) {
+            $dataFinal = '';
+        } else {
+            $historicoParts[] = 'COALESCE(m.data_execucao, m.data_hora, m.created_at) <= :data_final';
+            $historicoParams[':data_final'] = $dataFinal . ' 23:59:59';
+        }
     }
     $historicoWhereSql = empty($historicoParts) ? '' : 'AND ' . implode(' AND ', $historicoParts);
 
@@ -267,7 +275,7 @@ try {
     }
 
     if (!userHasAccess('supervisor')) {
-        ApiResponse::unauthorized();
+        ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
     }
 
     $db = db();

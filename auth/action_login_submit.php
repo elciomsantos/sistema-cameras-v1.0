@@ -61,13 +61,14 @@ $maxAttempts = LOGIN_MAX_ATTEMPTS;
 $windowSeconds = LOGIN_WINDOW_SECONDS;
 $lockSeconds = LOGIN_LOCK_SECONDS;
 
-function readLoginAttempt(database $db, string $username, string $ip, int $now): ?array
+function readLoginAttempt(database $db, string $username, string $ip, int $now, bool $forUpdate = false): ?array
 {
+    $lockSql = $forUpdate ? ' FOR UPDATE' : '';
     $attemptQuery = $db->query(
         "SELECT attempt_count, first_attempt_at, locked_until
          FROM login_attempts
          WHERE username = :username
-           AND ip_address = :ip_address",
+           AND ip_address = :ip_address{$lockSql}",
         [':username' => $username, ':ip_address' => $ip]
     );
     if (($attemptQuery['status'] ?? '') !== 'success' || empty($attemptQuery['data'])) {
@@ -139,17 +140,20 @@ if (($now - (int)$ipAttempt['first_at']) > $windowSeconds) {
 
 $attempt = ['count' => 0, 'first_at' => $now, 'locked_until' => 0];
 
+$db->beginTransaction();
 try {
-    $attemptFromDb = readLoginAttempt($db, (string)$usuario, $ip, $now);
+    $attemptFromDb = readLoginAttempt($db, (string)$usuario, $ip, $now, true);
     if ($attemptFromDb !== null) {
         $attempt = $attemptFromDb;
         if (!empty($attempt['locked_until']) && $attempt['locked_until'] > $now) {
+            $db->commit();
             $_SESSION['error'] = 'Muitas tentativas. Tente novamente em alguns minutos.';
             header('Location: index.php?page=login');
             exit;
         }
     }
 } catch (Throwable $e) {
+    if ($db->inTransaction()) { $db->rollback(); }
     $_SESSION['error'] = 'Erro interno. Tente novamente.';
     header('Location: index.php?page=login');
     exit;
@@ -184,6 +188,8 @@ if(!isset($result['data']) || count($result['data']) === 0) {
         $attempt['locked_until'] = $now + $lockSeconds;
     }
     persistLoginAttempt($db, (string)$usuario, $ip, $attempt);
+    verifyPassword($senha, '$2y$10$00000000000000000000000000000000000000000000000000000', $dummyHash);
+    $db->commit();
     $_SESSION['error'] = 'Usuario ou senha invalidos';
     header('Location: index.php?page=login');
     exit;
@@ -197,6 +203,7 @@ if(!verifyPassword($senha, $senhaHash, $newHash)) {
         $attempt['locked_until'] = $now + $lockSeconds;
     }
     persistLoginAttempt($db, (string)$usuario, $ip, $attempt);
+    $db->commit();
     $_SESSION['error'] = 'Usuario ou senha invalidos';
     header('Location: index.php?page=login');
     exit;
@@ -208,6 +215,8 @@ if ($newHash) {
     ]);
 }
 $usuarioDb = $result['data'][0];
+
+if ($db->inTransaction()) { $db->commit(); }
 
 if ((int)($usuarioDb->ativo ?? 0) !== 1) {
     $_SESSION['error'] = 'Credenciais invalidas ou conta desativada.';

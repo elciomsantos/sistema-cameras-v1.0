@@ -150,22 +150,8 @@ function executeApiRequest(?string $endpointOverride = null): void
             $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
             $isSameOrigin = in_array($allowedOrigin, $configuredOrigins, true);
         } else {
-            if (isProduction()) {
-                // Em produção, NÃO tentar adivinhar a origem - exigir configuração explícita
-                $isSameOrigin = false;
-            } else {
-                // Em desenvolvimento, aceitar fallback baseado no Host header (menos seguro)
-                $serverScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                $serverPort = $_SERVER['SERVER_PORT'] ?? '80';
-                $serverName = $_SERVER['SERVER_NAME'] ?? '';
-                if ($serverName !== '') {
-                    $defaultPort = ($serverScheme === 'https') ? '443' : '80';
-                    $expectedOrigin = ($serverPort === $defaultPort)
-                        ? "{$serverScheme}://{$serverName}"
-                        : "{$serverScheme}://{$serverName}:{$serverPort}";
-                    $isSameOrigin = $allowedOrigin === $expectedOrigin;
-                }
-            }
+            // Em produção, NÃO tentar adivinhar a origem - exigir configuração explícita
+            $isSameOrigin = false;
         }
     }
 
@@ -198,7 +184,7 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $publicEndpoints = ['auth/login', 'auth/register', 'ping', 'api_ping'];
     $noRotateEndpoints = ['renovar_sessao'];
-    $noCsrfEndpoints = ['renovar_sessao'];
+    $noCsrfEndpoints = [];
     if (!in_array($endpoint, $publicEndpoints, true)) {
         requireApiAccessForEndpoint($endpoint);
     }

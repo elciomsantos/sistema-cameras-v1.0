@@ -16,7 +16,7 @@ define('LOGIN_MAX_ATTEMPTS', 5);
 define('LOGIN_WINDOW_SECONDS', 900);
 define('LOGIN_LOCK_SECONDS', 900);
 
-define('CSRF_TOKEN_WINDOW_SIZE', 3);
+define('CSRF_TOKEN_WINDOW_SIZE', 1);
 
 function getCsrfToken(): string
 {

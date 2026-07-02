@@ -21,11 +21,12 @@ $locaisService = new LocaisService();
 $filters = [];
 if (!empty($_POST['filters'])) {
     $parsed = [];
-    parse_str($_POST['filters'], $parsed);
+    $input = $_POST['filters'];
+    parse_str($input, $parsed);
     $filters = [
         'search' => trim($parsed['busca'] ?? ''),
-        'tipo_local_id' => $parsed['tipo_local_id'] ?? '',
-        'camera' => $parsed['camera'] ?? '',
+        'tipo_local_id' => preg_replace('/[^0-9]/', '', $parsed['tipo_local_id'] ?? ''),
+        'camera' => in_array(trim($parsed['camera'] ?? ''), ['sim', 'nao', ''], true) ? trim($parsed['camera'] ?? '') : '',
     ];
 }
 

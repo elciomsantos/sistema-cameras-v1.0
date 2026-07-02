@@ -25,6 +25,10 @@ class EquipamentoService
 
     public static function parseJsonInput(): array
     {
+        $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+        if ($contentLength > 10 * 1024 * 1024) {
+            ApiResponse::error('BAD_REQUEST', 'Payload muito grande. Máximo: 10MB.');
+        }
         $jsonInput = json_decode(file_get_contents('php://input'), true);
         $data = is_array($jsonInput) ? $jsonInput : [];
         if (empty($data)) {

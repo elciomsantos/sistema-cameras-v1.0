@@ -54,6 +54,7 @@ function isHttpsRequest(): bool
 function configureSessionSecurity(): void
 {
     if (session_status() !== PHP_SESSION_NONE) {
+        error_log('[app] configureSessionSecurity ignorada: sessão já iniciada antes das configurações de segurança.');
         return;
     }
 

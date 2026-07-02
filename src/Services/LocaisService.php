@@ -389,7 +389,8 @@ class LocaisService
             LEFT JOIN regioes r ON l.regiao_id = r.id
             {$this->equipCountJoin()}
         WHERE {$whereClause}
-        ORDER BY l.nome";
+        ORDER BY l.nome
+        LIMIT 10000";
 
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];

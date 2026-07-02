@@ -125,7 +125,7 @@ if ($isSwaggerSpec || $isSwaggerJson) {
                 layout: "StandaloneLayout",
                 defaultModelsExpandDepth: 1,
                 defaultModelExpandDepth: 1,
-                tryItOutEnabled: true,
+                tryItOutEnabled: false,
                 requestInterceptor: (request) => {
                     // Adiciona credenciais para requisições autenticadas
                     request.headers['X-Requested-With'] = 'XMLHttpRequest';

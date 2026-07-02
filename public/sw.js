@@ -74,11 +74,9 @@ self.addEventListener('fetch', event => {
 
   if (request.method !== 'GET') return;
 
-  // API requests - Network only, no cache
+  // API requests - Network only, never cache
   if (url.pathname.includes('/api/') || url.search.includes('page=api/')) {
-    event.respondWith(
-      fetch(request).catch(() => caches.match(request))
-    );
+    event.respondWith(fetch(request));
     return;
   }
 

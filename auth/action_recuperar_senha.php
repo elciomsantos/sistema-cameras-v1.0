@@ -18,6 +18,9 @@ if (class_exists('RateLimiter', true)) {
     $rateLimiter = new RateLimiter();
     $rateLimitKey = 'recuperar_senha:' . getSessionClientIp();
     $rateLimitPassed = $rateLimiter->consume($rateLimitKey, 3, 900);
+} else {
+    $rateLimitPassed = ($_SESSION['_rate_limit_recuperar_senha'] ?? 0) < 3;
+    $_SESSION['_rate_limit_recuperar_senha'] = ($_SESSION['_rate_limit_recuperar_senha'] ?? 0) + 1;
 }
 
 if (!$rateLimitPassed) {

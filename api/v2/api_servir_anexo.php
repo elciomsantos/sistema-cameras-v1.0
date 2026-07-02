@@ -57,6 +57,10 @@ try {
     }
 
     $mimeType = $anexo->mime_type ?? mime_content_type($caminhoAbsoluto) ?: 'application/octet-stream';
+    $allowedServeMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'application/pdf'];
+    if (!in_array($mimeType, $allowedServeMimes, true)) {
+        $mimeType = 'application/octet-stream';
+    }
     $nomeOriginal = $anexo->nome_original ?? basename($caminhoAbsoluto);
     $tamanho = filesize($caminhoAbsoluto);
 

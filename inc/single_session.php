@@ -91,8 +91,15 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
         );
 
         $db->query(
-            "REPLACE INTO user_sessions (usuario_id, session_token_hash, session_id, ip_address, user_agent, active, last_seen)
-             VALUES (:usuario_id, :session_token_hash, :session_id, :ip_address, :user_agent, 1, NOW())",
+            "INSERT INTO user_sessions (usuario_id, session_token_hash, session_id, ip_address, user_agent, active, last_seen)
+             VALUES (:usuario_id, :session_token_hash, :session_id, :ip_address, :user_agent, 1, NOW())
+             ON DUPLICATE KEY UPDATE
+                session_token_hash = VALUES(session_token_hash),
+                session_id = VALUES(session_id),
+                ip_address = VALUES(ip_address),
+                user_agent = VALUES(user_agent),
+                active = 1,
+                last_seen = NOW()",
             [
                 ':usuario_id' => $usuarioId,
                 ':session_token_hash' => hashSessionToken($token),

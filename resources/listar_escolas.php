@@ -29,7 +29,7 @@ $locais = $locaisService->getByTipoNome('ESCOLA', $search, $pageNum, $perPage);
                 <div class="col-md-4">
                     <input type="text" name="busca" class="form-control form-control-sm"
                         placeholder="Buscar por nome, logradouro, bairro..."
-                        value="<?= htmlspecialchars($search) ?>">
+                        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary btn-sm w-100">
@@ -60,11 +60,11 @@ $locais = $locaisService->getByTipoNome('ESCOLA', $search, $pageNum, $perPage);
                     <tbody>
                         <?php foreach ($locais as $l): ?>
                         <tr>
-                            <td><?= htmlspecialchars($l->nome ?? '') ?></td>
+                            <td><?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars(($l->logradouro ?? '') . ($l->numero ? ', ' . $l->numero : '')) ?></td>
-                            <td><?= htmlspecialchars($l->bairro ?? '') ?></td>
-                            <td><?= htmlspecialchars($l->cidade ?? '') ?></td>
-                            <td><span class="badge bg-info"><?= htmlspecialchars($l->sigla ?? $l->secretaria ?? '-') ?></span></td>
+                            <td><?= htmlspecialchars($l->bairro ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><?= htmlspecialchars($l->cidade ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><span class="badge bg-info"><?= htmlspecialchars($l->sigla ?? $l->secretaria ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

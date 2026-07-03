@@ -71,7 +71,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-8">
                                     <label class="form-label required">Nome/Local da Câmera</label>
                                     <input type="text" name="nome_local" class="form-control" maxlength="255" required
-                                        value="<?= htmlspecialchars($formData['nome_local'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['nome_local'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Escola Municipal, Praça Central, Cmei, Via Pública">
                                     <div class="invalid-feedback">Informe o nome/local da câmera</div>
                                 </div>
@@ -79,7 +79,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-4">
                                     <label class="form-label">Descrição do Local de Instalação</label>
                                     <input type="text" name="descricao_posicao" class="form-control" maxlength="255"
-                                        value="<?= htmlspecialchars($formData['descricao_posicao'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['descricao_posicao'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Corredor Central, Sala 01">
                                     <div class="form-text">Detalhe onde o equipamento está instalado</div>
                                 </div>
@@ -91,7 +91,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['tipos_locais'] as $tipoLocal): ?>
                                         <option value="<?= (int)$tipoLocal->id ?>"
                                             <?= isset($formData['tipo_local_id']) && $formData['tipo_local_id'] == $tipoLocal->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($tipoLocal->nome) ?>
+                                            <?= htmlspecialchars($tipoLocal->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -105,7 +105,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['regioes'] as $regiao): ?>
                                         <option value="<?= (int)$regiao->id ?>"
                                             <?= isset($formData['regiao_id']) && $formData['regiao_id'] == $regiao->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($regiao->nome) ?>
+                                            <?= htmlspecialchars($regiao->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -119,7 +119,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['procedimentos'] as $procedimento): ?>
                                         <option value="<?= (int)$procedimento->id ?>"
                                             <?= isset($formData['procedimento_id']) && $formData['procedimento_id'] == $procedimento->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($procedimento->nome) ?>
+                                            <?= htmlspecialchars($procedimento->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -148,7 +148,7 @@ unset($_SESSION['form_data']);
                                             </label>
                                             <input type="text" name="alarme_conta" id="alarmeConta"
                                                 class="form-control"
-                                                value="<?= htmlspecialchars($formData['alarme_conta'] ?? '') ?>"
+                                                value="<?= htmlspecialchars($formData['alarme_conta'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                                 placeholder="Ex: 12345"
                                                 maxlength="50"
                                                 <?= $temAlarme ? '' : 'disabled' ?>>
@@ -174,7 +174,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['marcas'] as $marca): ?>
                                         <option value="<?= (int)$marca->id ?>"
                                             <?= isset($formData['marca_id']) && $formData['marca_id'] == $marca->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($marca->nome) ?>
+                                            <?= htmlspecialchars($marca->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -194,7 +194,7 @@ unset($_SESSION['form_data']);
                                     <label class="form-label required">Modelo</label>
                                     <div id="modeloContainer">
                                         <input type="text" name="novo_modelo_nome" class="form-control" required
-                                            value="<?= htmlspecialchars($formData['novo_modelo_nome'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['novo_modelo_nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: IPC-HDW5842T-ZE, DS-2CD2143G0-I">
                                         <input type="hidden" name="modelo_id" id="modelo_id"
                                             value="<?= $formData['modelo_id'] ?? '' ?>">
@@ -209,7 +209,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['tipos_equipamento'] as $tipo): ?>
                                         <option value="<?= (int)$tipo->id ?>"
                                             <?= isset($formData['tipo_id']) && $formData['tipo_id'] == $tipo->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($tipo->nome) ?>
+                                            <?= htmlspecialchars($tipo->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -223,7 +223,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['tipo_cameras'] as $tc): ?>
                                         <option value="<?= (int)$tc->id ?>"
                                             <?= isset($formData['tipo_camera']) && $formData['tipo_camera'] == $tc->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($tc->nome) ?>
+                                            <?= htmlspecialchars($tc->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -236,7 +236,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['transmissoes'] as $trans): ?>
                                         <option value="<?= (int)$trans->id ?>"
                                             <?= isset($formData['transmissao_id']) && $formData['transmissao_id'] == $trans->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($trans->tipo ?? $trans->nome) ?>
+                                            <?= htmlspecialchars($trans->tipo ?? $trans->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -250,7 +250,7 @@ unset($_SESSION['form_data']);
                                         <option value="<?= (int)$origem->id ?>"
                                             data-inscricao="<?= htmlspecialchars($origem->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             <?= isset($formData['origem_link_id']) && $formData['origem_link_id'] == $origem->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($origem->nome) ?>
+                                            <?= htmlspecialchars($origem->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -259,7 +259,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Inscrição</label>
                                     <input type="text" name="inscricao" class="form-control"
-                                        value="<?= htmlspecialchars($formData['inscricao'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['inscricao'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Identificador da inscrição do link"
                                         maxlength="20">
                                     <div class="form-text">Inscrição do link</div>
@@ -274,13 +274,13 @@ unset($_SESSION['form_data']);
                                     <div class="col-md-4">
                                         <label class="form-label">Sentido da Via</label>
                                         <input type="text" name="lpr_sentido_via" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             maxlength="50" placeholder="Ex: CRESCENTE, DECRESCENTE">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Faixa Monitorada</label>
                                         <input type="text" name="lpr_faixa_monitorada" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             maxlength="50" placeholder="Ex: FAIXA 1, FAIXA 2">
                                     </div>
                                     <div class="col-md-4">
@@ -295,7 +295,7 @@ unset($_SESSION['form_data']);
                                     <div class="col-md-4">
                                         <label class="form-label">URL de Acesso</label>
                                         <input type="url" name="lpr_url_acesso" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             maxlength="2083" placeholder="https://...">
                                     </div>
                                 </div>
@@ -309,20 +309,20 @@ unset($_SESSION['form_data']);
                                     <div class="col-md-4">
                                         <label class="form-label required">Modelo</label>
                                         <input type="text" name="dvr_modelo" class="form-control" required
-                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             maxlength="80" placeholder="Ex: DVR 1104, DS-7104">
                                         <div class="invalid-feedback">Informe o modelo do DVR</div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Canais</label>
                                         <input type="number" name="dvr_canais" class="form-control"
-                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             min="1" placeholder="Ex: 4, 8, 16">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Armazenamento (TB)</label>
                                         <input type="number" name="dvr_armazenamento_tb" class="form-control"
-                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             min="0" step="0.01" placeholder="Ex: 2.00">
                                     </div>
                                 </div>
@@ -336,7 +336,7 @@ unset($_SESSION['form_data']);
                                     <div class="col-md-4">
                                         <label class="form-label required">Quantidade de Câmeras</label>
                                         <input type="number" name="totem_quantidade_cameras" class="form-control" required
-                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             min="1" placeholder="Ex: 4">
                                         <div class="invalid-feedback">Informe a quantidade de câmeras</div>
                                     </div>
@@ -374,7 +374,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Endereço IP</label>
                                     <input type="text" name="ip" class="form-control"
-                                        value="<?= htmlspecialchars($formData['ip'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['ip'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="192.168.1.100">
                                     <div class="form-text">Endereço IP da câmera na rede</div>
                                 </div>
@@ -382,7 +382,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Série/MAC Address</label>
                                     <input type="text" name="serie_mac" class="form-control"
-                                        value="<?= htmlspecialchars($formData['serie_mac'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['serie_mac'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="00:1A:2B:3C:4D:5E ou serial number">
                                     <div class="form-text">Número de série ou endereço MAC</div>
                                 </div>
@@ -390,14 +390,14 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Patrimônio</label>
                                     <input type="text" name="patrimonio" class="form-control"
-                                        value="<?= htmlspecialchars($formData['patrimonio'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['patrimonio'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Número do patrimônio">
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Mosaico</label>
                                     <input type="text" name="mosaico" class="form-control"
-                                        value="<?= htmlspecialchars($formData['mosaico'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['mosaico'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Posição no mosaico (ex: CAM-01)">
                                     <div class="form-text">Identificação no mosaico de câmeras</div>
                                 </div>
@@ -416,7 +416,7 @@ unset($_SESSION['form_data']);
                                     <label class="form-label">CEP</label>
                                     <div class="input-group">
                                         <input type="text" name="cep" id="cep" class="form-control"
-                                            value="<?= htmlspecialchars($formData['cep'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['cep'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="00000-000" maxlength="9">
                                         <button type="button" class="btn btn-outline-primary" id="btnBuscarCep">
                                             Buscar
@@ -427,14 +427,14 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-2">
                                     <label class="form-label required">UF</label>
                                     <input type="text" name="uf" id="uf" class="form-control" required maxlength="2"
-                                        value="<?= htmlspecialchars($formData['uf'] ?? '') ?>" placeholder="PR">
+                                        value="<?= htmlspecialchars($formData['uf'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="PR">
                                     <div class="invalid-feedback">Informe a UF</div>
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="form-label required">Cidade</label>
                                     <input type="text" name="cidade" id="cidade" class="form-control" required
-                                        value="<?= htmlspecialchars($formData['cidade'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['cidade'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Londrina">
                                     <div class="invalid-feedback">Informe a cidade</div>
                                 </div>
@@ -442,7 +442,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-3">
                                     <label class="form-label required">Bairro</label>
                                     <input type="text" name="bairro" id="bairro" class="form-control" required
-                                        value="<?= htmlspecialchars($formData['bairro'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['bairro'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Centro">
                                     <div class="invalid-feedback">Informe o bairro</div>
                                 </div>
@@ -475,7 +475,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label required">Logradouro</label>
                                     <input type="text" name="logradouro" id="logradouro" class="form-control" required
-                                        value="<?= htmlspecialchars($formData['logradouro'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['logradouro'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Brasil, das Flores, XV de Novembro">
                                     <div class="invalid-feedback">Informe o nome da via</div>
                                 </div>
@@ -483,7 +483,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-2">
                                     <label class="form-label required">Número</label>
                                     <input type="text" name="numero" id="numero" class="form-control" required
-                                        value="<?= htmlspecialchars($formData['numero'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['numero'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: 150">
                                     <div class="invalid-feedback">Informe o número</div>
                                 </div>
@@ -491,7 +491,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-2">
                                     <label class="form-label">Complemento</label>
                                     <input type="text" name="complemento" id="complemento" class="form-control"
-                                        value="<?= htmlspecialchars($formData['complemento'] ?? '') ?>"
+                                        value="<?= htmlspecialchars($formData['complemento'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                         placeholder="Ex: Prédio A">
                                 </div>
 
@@ -499,7 +499,7 @@ unset($_SESSION['form_data']);
                                     <label class="form-label">Coordenadas</label>
                                     <div class="input-group">
                                         <input type="text" name="coordenadas" id="coordenadas" class="form-control"
-                                            value="<?= htmlspecialchars($formData['coordenadas'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['coordenadas'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Latitude, Longitude">
                                         <button type="button" class="btn btn-outline-primary" id="btnBuscarCoordenadas">
                                             Buscar
@@ -515,7 +515,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['secretarias'] as $sec): ?>
                                         <option value="<?= (int)$sec->id ?>"
                                             <?= isset($formData['secretaria_id']) && $formData['secretaria_id'] == $sec->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($sec->nome) ?>
+                                            <?= htmlspecialchars($sec->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -523,7 +523,7 @@ unset($_SESSION['form_data']);
                                 </div>
 
                                 <input type="hidden" name="numero_ruas"
-                                    value="<?= htmlspecialchars($formData['numero_ruas'] ?? '') ?>">
+                                    value="<?= htmlspecialchars($formData['numero_ruas'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                             </div>
                         </div></div>
 
@@ -538,13 +538,13 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Data de Instalação</label>
                                     <input type="date" name="data_instalacao" class="form-control"
-                                        value="<?= htmlspecialchars($formData['data_instalacao'] ?? date('Y-m-d')) ?>">
+                                        value="<?= htmlspecialchars($formData['data_instalacao'] ?? date('Y-m-d', ENT_QUOTES, 'UTF-8')) ?>">
                                 </div>
 
                                 <div class="col-12">
                                     <label class="form-label">Observações</label>
                                     <textarea name="observacao" class="form-control" rows="4" maxlength="500"
-                                        placeholder="Observações adicionais sobre a câmera..."><?= htmlspecialchars($formData['observacao'] ?? '') ?></textarea>
+                                        placeholder="Observações adicionais sobre a câmera..."><?= htmlspecialchars($formData['observacao'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                                     <div class="form-text">Máximo 500 caracteres</div>
                                 </div>
                             </div>

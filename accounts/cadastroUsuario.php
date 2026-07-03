@@ -64,9 +64,9 @@ try {
                         <?php if (!empty($listUsuarios)): ?>
                             <?php foreach ($listUsuarios as $usuario): ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($usuario->id ?? '') ?></td>
-                                    <td><?= htmlspecialchars($usuario->nome ?? '') ?></td>
-                                    <td><?= htmlspecialchars($usuario->usuario ?? '') ?></td>
+                                    <td><?= htmlspecialchars($usuario->id ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?= htmlspecialchars($usuario->nome ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                                    <td><?= htmlspecialchars($usuario->usuario ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                     <td>
                                         <span class="badge 
                                             <?php
@@ -81,10 +81,10 @@ try {
                                                         echo 'bg-primary';
                                                 }
                                             ?>">
-                                            <?= htmlspecialchars($usuario->nivel_acesso ?? 'user') ?>
+                                            <?= htmlspecialchars($usuario->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8') ?>
                                         </span>
                                     </td>
-                                    <td><?= htmlspecialchars($usuario->data ?? '') ?></td>
+                                    <td><?= htmlspecialchars($usuario->data ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                                     <td>
                                         <?php if ($usuario->senha_temporaria == 1): ?>
                                             <span class="badge bg-warning">Senha Tempor&aacute;ria</span>

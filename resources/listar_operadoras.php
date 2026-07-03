@@ -40,7 +40,7 @@ $operadoras = ($result['status'] === 'success') ? $result['data'] : [];
                 <div class="col-md-4">
                     <input type="text" name="busca" class="form-control form-control-sm"
                         placeholder="Buscar por nome ou inscrição..."
-                        value="<?= htmlspecialchars($search) ?>">
+                        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary btn-sm w-100">
@@ -69,8 +69,8 @@ $operadoras = ($result['status'] === 'success') ? $result['data'] : [];
                     <tbody>
                         <?php foreach ($operadoras as $o): ?>
                         <tr>
-                            <td><strong><?= htmlspecialchars($o->nome ?? '') ?></strong></td>
-                            <td><code><?= htmlspecialchars($o->inscricao ?? '') ?></code></td>
+                            <td><strong><?= htmlspecialchars($o->nome ?? '', ENT_QUOTES, 'UTF-8') ?></strong></td>
+                            <td><code><?= htmlspecialchars($o->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?></code></td>
                             <td>
                                 <span class="badge bg-primary"><?= (int)($o->total_equipamentos ?? 0) ?></span>
                             </td>

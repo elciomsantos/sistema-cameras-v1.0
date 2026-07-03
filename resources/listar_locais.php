@@ -60,7 +60,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                 <div class="col-md-3">
                     <input type="text" name="busca" class="form-control form-control-sm"
                         placeholder="Buscar por nome, logradouro, bairro..."
-                        value="<?= htmlspecialchars($filters['search']) ?>">
+                        value="<?= htmlspecialchars($filters['search'], ENT_QUOTES, 'UTF-8') ?>">
                 </div>
                 <div class="col-md-2">
                     <select name="tipo_local_id" class="form-select form-select-sm">

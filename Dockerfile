@@ -37,8 +37,6 @@ RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/memory.ini \
 
 ENV CAMERAS_ENV=production
 
-RUN cp .env.example .env
-
 RUN a2dissite 000-default.conf && echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\

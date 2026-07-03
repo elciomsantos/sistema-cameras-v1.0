@@ -145,32 +145,36 @@ function executeApiRequest(?string $endpointOverride = null): void
     }
 
     $allowedOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    $isSameOrigin = false;
+    $isOriginAllowed = false;
 
-    $serverScheme = isHttpsRequest() ? 'https' : 'http';
-    $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
-    if ($serverHost === '' || preg_match('/[<>(){}|\\^~\[\]`\x00-\x1f\x7f]/', $serverHost)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid host']);
-        exit;
-    }
-    $serverPort = (string)($_SERVER['SERVER_PORT'] ?? '80');
-    $defaultPort = ($serverScheme === 'https') ? '443' : '80';
-    $expectedOrigin = ($serverPort === $defaultPort)
-        ? "{$serverScheme}://{$serverHost}"
-        : "{$serverScheme}://{$serverHost}:{$serverPort}";
-
-    if (!empty($allowedOrigin)) {
-        if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
-            $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
-            $isSameOrigin = in_array($allowedOrigin, $configuredOrigins, true);
+    if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
+        $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
+        if (in_array('*', $configuredOrigins, true)) {
+            error_log('[CORS] APP_ALLOWED_ORIGINS contem "*" — remova para seguranca.');
+            $isOriginAllowed = true;
         } else {
-            $isSameOrigin = ($allowedOrigin === $expectedOrigin);
+            $isOriginAllowed = in_array($allowedOrigin, $configuredOrigins, true);
         }
+    } elseif (!empty($allowedOrigin)) {
+        $serverScheme = isHttpsRequest() ? 'https' : 'http';
+        $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+        if ($serverHost === '' || preg_match('/[<>(){}|\\^~\[\]`\x00-\x1f\x7f]/', $serverHost)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Invalid host']);
+            exit;
+        }
+        $serverPort = (string)($_SERVER['SERVER_PORT'] ?? '80');
+        $defaultPort = ($serverScheme === 'https') ? '443' : '80';
+        $expectedOrigin = ($serverPort === $defaultPort)
+            ? "{$serverScheme}://{$serverHost}"
+            : "{$serverScheme}://{$serverHost}:{$serverPort}";
+        $isOriginAllowed = ($allowedOrigin === $expectedOrigin);
     }
+
+    header('Vary: Origin');
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        if (!$isSameOrigin) {
+        if (!$isOriginAllowed) {
             http_response_code(204);
             exit;
         }
@@ -181,14 +185,21 @@ function executeApiRequest(?string $endpointOverride = null): void
         exit;
     }
 
-    if (!$isSameOrigin && !empty($allowedOrigin)) {
+    if (!$isOriginAllowed && !empty($allowedOrigin)) {
         http_response_code(403);
         echo json_encode(['success' => false, 'error' => 'Cross-origin requests not allowed']);
         exit;
     }
 
-    if ($isSameOrigin && !empty($allowedOrigin)) {
-        header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+    if ($isOriginAllowed && !empty($allowedOrigin)) {
+        $originForVary = $allowedOrigin;
+        if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
+            $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
+            if (!in_array('*', $configuredOrigins, true)) {
+                $originForVary = $allowedOrigin;
+            }
+        }
+        header('Access-Control-Allow-Origin: ' . $originForVary);
         header('Access-Control-Allow-Credentials: true');
     }
 

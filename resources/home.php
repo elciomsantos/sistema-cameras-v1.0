@@ -12,7 +12,7 @@ requererAcesso('user');
             <div>
                 <h1><i class="fas fa-home me-2"></i>Dashboard do Sistema</h1>
                 <p class="mb-0">Bem-vindo,
-                    <strong><?= htmlspecialchars($_SESSION['usuario']->nome ?? 'Usuário') ?></strong>!
+                    <strong><?= htmlspecialchars($_SESSION['usuario']->nome ?? 'Usuário', ENT_QUOTES, 'UTF-8') ?></strong>!
                 </p>
             </div>
             <div>

@@ -69,7 +69,7 @@ try {
                                 <select name="status_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['status'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -78,7 +78,7 @@ try {
                                 <select name="procedimento_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['procedimentos'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -87,7 +87,7 @@ try {
                                 <select name="regiao_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['regioes'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -96,7 +96,7 @@ try {
                                 <select name="tipo_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['tipos_equipamento'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -105,7 +105,7 @@ try {
                                 <select name="tipo_camera" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['tipo_cameras'] as $tc): ?>
-                                        <option value="<?= htmlspecialchars((string)$tc->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($tc->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$tc->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($tc->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -133,7 +133,7 @@ try {
                                 <select name="marca_id" class="form-select" id="marcaSelect" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['marcas'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -162,13 +162,13 @@ try {
                                     <div class="col-md-4">
                                         <label class="form-label">Sentido da Via</label>
                                         <input type="text" name="lpr_sentido_via" class="form-control" maxlength="50"
-                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: CRESCENTE, DECRESCENTE">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Faixa Monitorada</label>
                                         <input type="text" name="lpr_faixa_monitorada" class="form-control" maxlength="50"
-                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: FAIXA 1, FAIXA 2">
                                     </div>
                                     <div class="col-md-4">
@@ -181,7 +181,7 @@ try {
                                     <div class="col-md-4">
                                         <label class="form-label">URL de Acesso</label>
                                         <input type="url" name="lpr_url_acesso" class="form-control" maxlength="2083"
-                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="https://...">
                                     </div>
                                 </div>
@@ -195,19 +195,19 @@ try {
                                     <div class="col-md-4">
                                         <label class="form-label">Modelo</label>
                                         <input type="text" name="dvr_modelo" class="form-control" maxlength="80" required
-                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: DVR 1104, DS-7104">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Canais</label>
                                         <input type="number" name="dvr_canais" class="form-control" min="1"
-                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: 4, 8, 16">
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">Armazenamento (TB)</label>
                                         <input type="number" name="dvr_armazenamento_tb" class="form-control" min="0" step="0.01"
-                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: 2.00">
                                     </div>
                                 </div>
@@ -221,7 +221,7 @@ try {
                                     <div class="col-md-4">
                                         <label class="form-label">Quantidade de Câmeras</label>
                                         <input type="number" name="totem_quantidade_cameras" class="form-control" min="1" required
-                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '') ?>"
+                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: 4">
                                     </div>
                                     <div class="col-md-4">
@@ -256,7 +256,7 @@ try {
                                 <select name="local_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['locais'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -265,7 +265,7 @@ try {
                                 <select name="secretaria_id" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['secretarias'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -274,7 +274,7 @@ try {
                                 <select name="transmissao_id" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['transmissoes'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->tipo ?? $item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->tipo ?? $item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -283,7 +283,7 @@ try {
                                 <select name="origem_link_id" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['origem_links'] as $item): ?>
-                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>" data-inscricao="<?= htmlspecialchars($item->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome) ?></option>
+                                        <option value="<?= htmlspecialchars((string)$item->id, ENT_QUOTES, 'UTF-8') ?>" data-inscricao="<?= htmlspecialchars($item->inscricao ?? '', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -374,8 +374,8 @@ try {
                                 <select name="tipo_logradouro" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['classificacao_enderecos'] as $item): ?>
-                                        <option value="<?= htmlspecialchars($item->nome) ?>">
-                                            <?= htmlspecialchars($item->nome) ?>
+                                        <option value="<?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

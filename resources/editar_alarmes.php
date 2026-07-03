@@ -74,7 +74,7 @@ $regiaoList = array_map(fn($r) => (array)$r, $lookup->getRegioesList());
                                 <select name="status" class="form-select" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($statusList as $s): ?>
-                                        <option value="<?= htmlspecialchars($s['nome']) ?>"><?= htmlspecialchars($s['nome']) ?></option>
+                                        <option value="<?= htmlspecialchars($s['nome'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($s['nome'], ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                                 <div class="invalid-feedback">Selecione o status.</div>
@@ -84,7 +84,7 @@ $regiaoList = array_map(fn($r) => (array)$r, $lookup->getRegioesList());
                                 <select name="regiao" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($regiaoList as $r): ?>
-                                        <option value="<?= htmlspecialchars($r['nome']) ?>"><?= htmlspecialchars($r['nome']) ?></option>
+                                        <option value="<?= htmlspecialchars($r['nome'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($r['nome'], ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>

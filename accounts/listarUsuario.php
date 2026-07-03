@@ -67,12 +67,12 @@ $listUsuarios = listarUsuarios($db);
                 <tbody>
                     <?php foreach ($listUsuarios as $usuario): ?>
                         <tr>
-                            <td class="fw-bold"><?= htmlspecialchars($usuario->id ?? ''); ?></td>
-                            <td><?= htmlspecialchars($usuario->nome ?? ''); ?></td>
-                            <td><?= htmlspecialchars($usuario->usuario ?? ''); ?></td>
+                            <td class="fw-bold"><?= htmlspecialchars($usuario->id ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?= htmlspecialchars($usuario->nome ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td><?= htmlspecialchars($usuario->usuario ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
                                 <span class="badge <?= ($usuario->nivel_acesso === 'admin') ? 'bg-danger' : 'bg-primary' ?>">
-                                    <?= htmlspecialchars($usuario->nivel_acesso ?? 'user'); ?>
+                                    <?= htmlspecialchars($usuario->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8'); ?>
                                 </span>
                             </td>
                             <td>
@@ -80,7 +80,7 @@ $listUsuarios = listarUsuarios($db);
                                     <?= ($usuario->ativo == 1) ? 'Ativo' : 'Inativo' ?>
                                 </span>
                             </td>
-                            <td><?= htmlspecialchars($usuario->data ?? ''); ?></td>
+                            <td><?= htmlspecialchars($usuario->data ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
                                 <div class="d-flex justify-content-center gap-2">
                                     <!-- Botão Editar com tooltip -->

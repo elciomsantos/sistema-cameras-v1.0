@@ -52,6 +52,12 @@ try {
     $whereParts = ['e.tipo_equipamento_id = :tipo_equipamento_id', 'e.deleted_at IS NULL'];
     $params = [':tipo_equipamento_id' => 1];
 
+    $usuarioSecretariaId = getUsuarioSecretariaId();
+    if ($usuarioSecretariaId !== null && resolveUserAccessLevel($_SESSION['usuario'] ?? null) === 'user') {
+        $whereParts[] = 'e.secretaria_id = :secretaria_id';
+        $params[':secretaria_id'] = $usuarioSecretariaId;
+    }
+
     if ($id > 0) {
         $whereParts[] = 'e.id = :id';
         $params[':id'] = $id;

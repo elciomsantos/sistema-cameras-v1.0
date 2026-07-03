@@ -31,6 +31,12 @@ try {
     }
 
     $anexo = $result['data'][0];
+    $anexoId = (int)$anexo->id;
+
+    if (!verificarEscopoAnexo($anexoId)) {
+        ApiResponse::forbidden('Anexo nao pertence a sua secretaria.');
+    }
+
     $caminhoRelativo = $anexo->caminho ?? '';
 
     $uploadsBase = realpath(APP_ROOT . '/storage/uploads');

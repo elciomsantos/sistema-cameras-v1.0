@@ -68,3 +68,88 @@ function requererEscopoLocal(int $localId): void
         exit;
     }
 }
+
+function verificarUsuarioSecretaria(?int $secretariaId): bool
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return false;
+
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+
+    $userSecretariaId = getUsuarioSecretariaId();
+    if ($userSecretariaId === null) return true;
+
+    return $secretariaId !== null && $secretariaId === $userSecretariaId;
+}
+
+function verificarEscopoEquipamento(int $equipamentoId): bool
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return false;
+
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+
+    $secretariaId = getUsuarioSecretariaId();
+    if ($secretariaId === null) return true;
+
+    $db = db();
+    $result = $db->query(
+        "SELECT secretaria_id FROM equipamentos WHERE id = ? AND deleted_at IS NULL",
+        [$equipamentoId]
+    );
+
+    if ($result['status'] !== 'success' || empty($result['data'])) {
+        return false;
+    }
+
+    $equipSecretariaId = (int)($result['data'][0]->secretaria_id ?? 0);
+    return $equipSecretariaId === $secretariaId;
+}
+
+function getAnexoLocalId(int $anexoId): ?int
+{
+    $db = db();
+    $result = $db->query(
+        "SELECT
+            a.equipamento_id,
+            a.alarme_id,
+            a.manutencao_camera_id,
+            a.manutencao_alarme_id,
+            COALESCE(
+                (SELECT local_id FROM equipamentos WHERE id = a.equipamento_id AND deleted_at IS NULL),
+                (SELECT local_id FROM central_alarmes WHERE id = a.alarme_id),
+                (SELECT e.local_id FROM equipamentos_manutencoes em
+                 JOIN equipamentos e ON e.id = em.equipamento_id
+                 WHERE em.id = a.manutencao_camera_id AND e.deleted_at IS NULL),
+                (SELECT ca.local_id FROM alarmes_manutencoes am
+                 JOIN central_alarmes ca ON ca.id = am.alarme_id
+                 WHERE am.id = a.manutencao_alarme_id)
+            ) AS local_id
+        FROM equipamentos_anexos a
+        WHERE a.id = ?",
+        [$anexoId]
+    );
+
+    if ($result['status'] !== 'success' || empty($result['data'])) {
+        return null;
+    }
+
+    $localId = $result['data'][0]->local_id ?? null;
+    return $localId !== null ? (int)$localId : null;
+}
+
+function verificarEscopoAnexo(int $anexoId): bool
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return false;
+
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+
+    $secretariaId = getUsuarioSecretariaId();
+    if ($secretariaId === null) return true;
+
+    $localId = getAnexoLocalId($anexoId);
+    if ($localId === null) return false;
+
+    return verificarEscopoLocal($localId);
+}

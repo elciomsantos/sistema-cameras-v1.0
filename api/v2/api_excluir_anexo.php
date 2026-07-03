@@ -37,6 +37,11 @@ try {
     }
 
     $anexo = $result['data'][0];
+
+    if (!verificarEscopoAnexo($anexoId)) {
+        ApiResponse::forbidden('Anexo nao pertence a sua secretaria.');
+    }
+
     $before = (array)$anexo;
 
     $uploadsBase = realpath(__DIR__ . '/../../public/uploads');

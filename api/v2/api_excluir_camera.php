@@ -29,9 +29,13 @@ try {
 
     $db = db();
 
-    $check = $db->query("SELECT id FROM equipamentos WHERE id = ?", [$id]);
+    $check = $db->query("SELECT id, secretaria_id, local_id FROM equipamentos WHERE id = ? AND deleted_at IS NULL", [$id]);
     if (empty($check['data'])) {
         ApiResponse::notFound('câmera', $id);
+    }
+
+    if (!verificarEscopoEquipamento($id)) {
+        ApiResponse::forbidden('Camera nao pertence a sua secretaria.');
     }
 
     $db->beginTransaction();

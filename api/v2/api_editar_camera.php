@@ -35,6 +35,10 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'IDs inválidos.');
     }
 
+    if (!verificarEscopoEquipamento($equipId)) {
+        ApiResponse::forbidden('Camera nao pertence a sua secretaria.');
+    }
+
     $svc->checkLocationExists($localId);
     $fields['classif_endereco_id'] = $svc->resolveClassificacaoEndereco(
         $fields['classif_endereco_id'],

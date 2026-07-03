@@ -1,17 +1,7 @@
 <?php
 
 try {
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (!isset($_SESSION['usuario'])) {
-        ApiResponse::unauthorized();
-    }
-    if (!userHasAccess('admin')) {
-        ApiResponse::forbidden('Apenas administradores podem acessar o health check.');
-    }
+    requireApiAuth('admin');
 
     $health = [
         'status' => 'ok',

@@ -15,14 +15,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (!isset($_SESSION['usuario'])) {
-        ApiResponse::unauthorized();
-    }
+    requireApiAuth('user');
 
     $equipamentoId = isset($_GET['equipamento_id']) ? (int)$_GET['equipamento_id'] : null;
     $alarmeId = isset($_GET['alarme_id']) ? (int)$_GET['alarme_id'] : null;

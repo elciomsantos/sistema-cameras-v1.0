@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 function registerGlobalErrorHandlers(string $context = 'web'): void
 {
     static $registered = null;

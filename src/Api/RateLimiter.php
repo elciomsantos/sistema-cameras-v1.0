@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 class RateLimiter
 {
     private const STORAGE_DIR = 'ratelimit';

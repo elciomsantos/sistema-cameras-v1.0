@@ -5,15 +5,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (!isset($_SESSION['usuario'])) {
-        ApiResponse::unauthorized();
-    }
-    session_write_close();
+    requireApiAuth('user', true);
 
     $cep = preg_replace('/\D+/', '', (string)($_GET['cep'] ?? ''));
     if (strlen($cep) !== 8) {

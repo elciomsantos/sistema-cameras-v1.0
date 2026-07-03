@@ -5,14 +5,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET e permitido', [], 405);
     }
 
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (!isset($_SESSION['usuario'])) {
-        ApiResponse::unauthorized('Autenticacao necessaria para acessar anexos.');
-    }
+    requireApiAuth('user');
 
     $id = isset($_GET['id']) ? max(1, (int)$_GET['id']) : 0;
     if (!$id) {

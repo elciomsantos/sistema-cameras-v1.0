@@ -22,16 +22,7 @@ class AlarmeService
 
     public static function requireAccess(): void
     {
-        configureSessionSecurity();
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (!isset($_SESSION['usuario'])) {
-            ApiResponse::unauthorized();
-        }
-        if (!userHasAccess('supervisor')) {
-            ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
-        }
+        requireApiAuth('supervisor');
     }
 
     public static function parseJsonInput(): array

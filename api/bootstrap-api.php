@@ -70,6 +70,26 @@ function requireApiAccessForEndpoint(string $endpoint): void
     }
 }
 
+function requireApiAuth(string $minAccess = 'user', bool $writeClose = false): void
+{
+    configureSessionSecurity();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    if (!isset($_SESSION['usuario'])) {
+        ApiResponse::unauthorized();
+    }
+
+    if (!userHasAccess($minAccess)) {
+        ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
+    }
+
+    if ($writeClose) {
+        session_write_close();
+    }
+}
+
 function executeApiRequest(?string $endpointOverride = null): void
 {
     registerGlobalErrorHandlers('api');

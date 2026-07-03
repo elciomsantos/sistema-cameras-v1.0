@@ -265,18 +265,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Método não permitido.');
     }
 
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    if (!isset($_SESSION['usuario'])) {
-        ApiResponse::unauthorized();
-    }
-
-    if (!userHasAccess('supervisor')) {
-        ApiResponse::forbidden('Perfil sem permissao para acessar este recurso.');
-    }
+    requireApiAuth('supervisor');
 
     $db = db();
 

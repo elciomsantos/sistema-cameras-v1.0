@@ -147,12 +147,17 @@ function executeApiRequest(?string $endpointOverride = null): void
     $isSameOrigin = false;
 
     $serverScheme = isHttpsRequest() ? 'https' : 'http';
-    $serverName = $_SERVER['SERVER_NAME'] ?? '';
+    $serverHost = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '';
+    if ($serverHost === '' || preg_match('/[<>(){}|\\^~\[\]`\x00-\x1f\x7f]/', $serverHost)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Invalid host']);
+        exit;
+    }
     $serverPort = (string)($_SERVER['SERVER_PORT'] ?? '80');
     $defaultPort = ($serverScheme === 'https') ? '443' : '80';
     $expectedOrigin = ($serverPort === $defaultPort)
-        ? "{$serverScheme}://{$serverName}"
-        : "{$serverScheme}://{$serverName}:{$serverPort}";
+        ? "{$serverScheme}://{$serverHost}"
+        : "{$serverScheme}://{$serverHost}:{$serverPort}";
 
     if (!empty($allowedOrigin)) {
         if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {

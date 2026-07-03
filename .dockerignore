@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+node_modules
+vendor
+storage/ratelimit
+storage/cep_cache
+public/uploads
+tests
+docs
+*.md
+.DS_Store
+Thumbs.db

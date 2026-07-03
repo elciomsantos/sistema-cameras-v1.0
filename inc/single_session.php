@@ -9,8 +9,10 @@ function getSessionClientIp(): string
 
 function getSessionUserAgent(): string
 {
-    $ua = trim($_SERVER['HTTP_USER_AGENT'] ?? 'unknown');
-    return mb_substr($ua, 0, 255);
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+    $ua = preg_replace('/[^\x20-\x7E\xC0-\xFF]/', '', $ua);
+    $ua = trim(mb_substr($ua, 0, 255));
+    return $ua !== '' ? $ua : 'unknown';
 }
 
 function hashSessionToken(string $token): string

@@ -19,6 +19,48 @@ CREATE TABLE niveis_acesso (
 INSERT INTO niveis_acesso (nome) VALUES ('admin'), ('supervisor'), ('user');
 
 -- =====================================================
+-- TIPOS DE SECRETARIA
+-- =====================================================
+CREATE TABLE tipos_secretaria (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB COMMENT='Tipos de entidade (secretaria, autarquia, etc)';
+
+INSERT INTO tipos_secretaria (nome) VALUES ('secretaria'), ('autarquia'), ('fundacao'), ('orgao');
+
+-- =====================================================
+-- SECRETARIAS/ENTIDADES (UNIFICADA)
+-- =====================================================
+CREATE TABLE secretarias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(150) NOT NULL UNIQUE,
+    sigla VARCHAR(20) NOT NULL UNIQUE,
+    tipo_id INT NOT NULL,
+    ativo TINYINT(1) DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_secretarias_tipo FOREIGN KEY (tipo_id) REFERENCES tipos_secretaria(id) ON DELETE RESTRICT
+) ENGINE=InnoDB COMMENT='Secretarias e órgãos';
+
+CREATE INDEX idx_secretarias_tipo ON secretarias(tipo_id);
+CREATE FULLTEXT INDEX ftx_secretarias_nome ON secretarias(nome);
+
+INSERT INTO secretarias (nome, sigla, tipo_id) VALUES
+-- Secretarias
+('SECRETARIA DE DEFESA SOCIAL', 'SMDS', 1),
+('SECRETARIA MUNICIPAL DE EDUCAÇÃO', 'SME', 1),
+('SECRETARIA MUNICIPAL DE SAÚDE', 'SMS', 1),
+('SECRETARIA MUNICIPAL DE CULTURA', 'SMC', 1),
+('SECRETARIA MUNICIPAL DE ASSISTÊNCIA SOCIAL', 'SMAS', 1),
+('SECRETARIA MUNICIPAL DO MEIO AMBIENTE', 'SEMA', 1),
+('SECRETARIA MUNICIPAL DE OBRAS', 'SMO', 1),
+-- AUTARQUIAS E FUNDAÇÕES
+('ACESF', 'ACESF', 2),
+('FUNDAÇÃO DO ESPORTE DE LONDRINA', 'FEL', 3),
+-- ÓRGÃOS
+('PREFEITURA MUNICIPAL DE LONDRINA', 'PML', 4);
+
+-- =====================================================
 -- USUÁRIOS DO SISTEMA
 -- =====================================================
 CREATE TABLE usuarios (
@@ -27,9 +69,9 @@ CREATE TABLE usuarios (
     usuario VARCHAR(50) NOT NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     nivel_acesso_id INT NOT NULL,
+    secretaria_id INT NULL,
     senha_temporaria TINYINT(1) NOT NULL DEFAULT 0,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
-    secretaria_id INT NULL AFTER nivel_acesso_id,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuarios_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
@@ -64,13 +106,6 @@ CREATE INDEX idx_user_sessions_active ON user_sessions(active, updated_at);
 CREATE INDEX idx_user_sessions_last_seen ON user_sessions(last_seen);
 CREATE INDEX idx_user_sessions_expires ON user_sessions(expires_at);
 
-CREATE TABLE tipos_secretaria (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL UNIQUE
-) ENGINE=InnoDB COMMENT='Tipos de entidade (secretaria, autarquia, etc)';
-
-INSERT INTO tipos_secretaria (nome) VALUES ('secretaria'), ('autarquia'), ('fundacao'), ('orgao');
-
 -- =====================================================
 -- TABELAS AUXILIARES (SEM DEPENDÊNCIAS)
 -- =====================================================
@@ -104,7 +139,7 @@ INSERT INTO status_os (nome) VALUES
 -- Cache de geocodificação (usado por api/v2/api_geocode.php)
 CREATE TABLE geocode_cache (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    query_hash CHAR(32) NOT NULL COMMENT 'MD5 hash da query normalizada',
+    query_hash CHAR(64) NOT NULL COMMENT 'SHA-256 hash da query normalizada',
     query TEXT NOT NULL COMMENT 'Query original do usuário',
     response JSON NOT NULL COMMENT 'Resposta parseada do geocodificador (lat, lon, display_name)',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -203,39 +238,6 @@ INSERT INTO tipo_cameras (nome) VALUES
 ('SPEED DOME'),
 ('LPR'),
 ('FACIAL');
-
--- =====================================================
--- SECRETARIAS/ENTIDADES (UNIFICADA)
--- =====================================================
-CREATE TABLE secretarias (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL UNIQUE,
-    sigla VARCHAR(20) NOT NULL UNIQUE,
-    tipo_id INT NOT NULL,
-    ativo TINYINT(1) DEFAULT 1,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_secretarias_tipo FOREIGN KEY (tipo_id) REFERENCES tipos_secretaria(id) ON DELETE RESTRICT
-) ENGINE=InnoDB COMMENT='Secretarias e órgãos';
-
-CREATE INDEX idx_secretarias_tipo ON secretarias(tipo_id);
-CREATE FULLTEXT INDEX ftx_secretarias_nome ON secretarias(nome);
-
-INSERT INTO secretarias (nome, sigla, tipo_id) VALUES
--- Secretarias
-('SECRETARIA DE DEFESA SOCIAL', 'SMDS', 1),
-('SECRETARIA MUNICIPAL DE EDUCAÇÃO', 'SME', 1),
-('SECRETARIA MUNICIPAL DE SAÚDE', 'SMS', 1),
-('SECRETARIA MUNICIPAL DE CULTURA', 'SMC', 1),
-('SECRETARIA MUNICIPAL DE ASSISTÊNCIA SOCIAL', 'SMAS', 1),
-('SECRETARIA MUNICIPAL DO MEIO AMBIENTE', 'SEMA', 1),
-('SECRETARIA MUNICIPAL DE OBRAS', 'SMO', 1),
--- AUTARQUIAS E FUNDAÇÕES
-('ACESF', 'ACESF', 2),
-('FUNDAÇÃO DO ESPORTE DE LONDRINA', 'FEL', 3),
--- ÓRGÃOS
-('PREFEITURA MUNICIPAL DE LONDRINA', 'PML', 4);
-
 
 -- =====================================================
 -- CATALOGO DE MODELOS

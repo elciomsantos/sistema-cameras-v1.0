@@ -16,12 +16,7 @@ if (!defined('SESSION_ABSOLUTE_TIMEOUT')) {
     define('SESSION_ABSOLUTE_TIMEOUT', (int) appEnv('CAMERAS_SESSION_ABSOLUTE_TIMEOUT', '28800'));
 }
 if (!defined('CSP_ALLOW_INLINE_STYLES')) {
-    $env = appEnv('CAMERAS_ENV', 'development');
-    if ($env === 'development') {
-        define('CSP_ALLOW_INLINE_STYLES', 1);
-    } else {
-        define('CSP_ALLOW_INLINE_STYLES', (int) appEnv('CAMERAS_CSP_ALLOW_INLINE_STYLES', '0'));
-    }
+    define('CSP_ALLOW_INLINE_STYLES', (int) appEnv('CAMERAS_CSP_ALLOW_INLINE_STYLES', '0'));
 }
 if (!defined('ENVIRONMENT')) {
     define('ENVIRONMENT', appEnv('CAMERAS_ENV', 'development'));

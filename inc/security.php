@@ -85,7 +85,7 @@ function requireApiCsrf(bool $rotate = true): void
             'data' => [],
             'meta' => [
                 'timestamp' => date('Y-m-d\TH:i:s\Z'),
-                'request_id' => class_exists('ApiResponse') ? ApiResponse::getRequestId() : 'unknown'
+                'request_id' => method_exists('ApiResponse', 'getRequestId') ? ApiResponse::getRequestId() : 'unknown'
             ]
         ], JSON_UNESCAPED_UNICODE);
         exit;

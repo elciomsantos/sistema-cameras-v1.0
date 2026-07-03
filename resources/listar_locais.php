@@ -6,16 +6,17 @@ $locaisService = new LocaisService();
 
 // Carrega filtros
 $filters = [
-    'search' => trim($_GET['busca'] ?? ''),
-    'tipo_local_id' => $_GET['tipo_local_id'] ?? '',
-    'camera' => $_GET['camera'] ?? '',
+    'search' => trim(filter_input(INPUT_GET, 'busca', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? ''),
+    'tipo_local_id' => filter_input(INPUT_GET, 'tipo_local_id', FILTER_VALIDATE_INT) ?? '',
+    'camera' => filter_input(INPUT_GET, 'camera', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '',
 ];
+$filters['camera'] = in_array($filters['camera'], ['sim', 'nao'], true) ? $filters['camera'] : '';
 $usuarioSecretariaId = getUsuarioSecretariaId();
 $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
 if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
     $filters['secretaria_id'] = $usuarioSecretariaId;
 }
-$pageNum = max(1, (int)($_GET['page_num'] ?? 1));
+$pageNum = max(1, filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1);
 $perPage = 50;
 
 $tiposLocais = $locaisService->getAllTiposLocais();

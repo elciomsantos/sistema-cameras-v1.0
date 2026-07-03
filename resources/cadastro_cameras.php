@@ -61,7 +61,7 @@ unset($_SESSION['form_data']);
                                         <?php foreach ($dados['status'] as $status): ?>
                                         <option value="<?= (int)$status->id ?>"
                                             <?= isset($formData['status_id']) && $formData['status_id'] == $status->id ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($status->nome) ?>
+                                            <?= htmlspecialchars($status->nome, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>

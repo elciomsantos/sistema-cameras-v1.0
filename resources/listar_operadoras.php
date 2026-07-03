@@ -3,7 +3,7 @@ require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 
 $db = db();
-$search = trim($_GET['busca'] ?? '');
+$search = trim(filter_input(INPUT_GET, 'busca', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '');
 
 $where = '';
 $params = [];

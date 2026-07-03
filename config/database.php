@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . "/../config/config.php";
+$configPath = __DIR__ . '/../config/config.php';
+if (file_exists($configPath)) {
+    require_once $configPath;
+}
 
 class database
 {

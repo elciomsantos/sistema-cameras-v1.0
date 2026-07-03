@@ -61,6 +61,11 @@ class ApiResponse
         return self::$requestId;
     }
 
+    public static function resetRequestId(): void
+    {
+        self::$requestId = '';
+    }
+
     /**
      * Envia resposta de sucesso
      */

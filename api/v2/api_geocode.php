@@ -105,7 +105,7 @@ try {
     $db = db();
 
     // Verificar cache (TTL 30 dias)
-    $cacheHash = md5(strtolower(trim($query)));
+    $cacheHash = hash('sha256', strtolower(trim($query)));
     $cacheResult = $db->query(
         "SELECT response, created_at FROM geocode_cache WHERE query_hash = ? AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY) LIMIT 1",
         [$cacheHash]

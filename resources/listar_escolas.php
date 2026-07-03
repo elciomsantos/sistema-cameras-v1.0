@@ -4,9 +4,9 @@ requererAcesso('supervisor');
 
 $db = db();
 $locaisService = new LocaisService($db);
-$pageNum = max(1, (int)($_GET['page_num'] ?? 1));
+$pageNum = max(1, filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1);
 $perPage = 50;
-$search = trim($_GET['busca'] ?? '');
+$search = trim(filter_input(INPUT_GET, 'busca', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '');
 
 $total = $locaisService->countByTipoNome('ESCOLA', $search);
 $totalPages = max(1, ceil($total / $perPage));

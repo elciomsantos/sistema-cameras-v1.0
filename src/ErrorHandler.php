@@ -2,6 +2,11 @@
 
 function registerGlobalErrorHandlers(string $context = 'web'): void
 {
+    static $registered = null;
+    if ($registered !== null) {
+        return;
+    }
+    $registered = $context;
     set_error_handler(static function (
         int $severity,
         string $message,

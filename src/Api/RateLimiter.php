@@ -348,12 +348,41 @@ class RateLimiter
         }
     }
 
+    private function safeRmdir(string $dir): void
+    {
+        if (!is_dir($dir)) return;
+        set_error_handler(function (int $severity, string $message): bool {
+            throw new \RuntimeException($message, $severity);
+        });
+        try {
+            rmdir($dir);
+            restore_error_handler();
+        } catch (\Throwable) {
+            restore_error_handler();
+        }
+    }
+
+    private function safeFopen(string $file, string $mode)
+    {
+        set_error_handler(function (int $severity, string $message): bool {
+            throw new \RuntimeException($message, $severity);
+        });
+        try {
+            $fp = fopen($file, $mode);
+            restore_error_handler();
+            return $fp;
+        } catch (\Throwable) {
+            restore_error_handler();
+            return false;
+        }
+    }
+
     private function fileRead(string $key): ?array
     {
         $file = $this->getFilePath($key);
         if (!file_exists($file)) return null;
 
-        $fp = @fopen($file, 'r');
+        $fp = $this->safeFopen($file, 'r');
         if (!$fp) {
             $this->storageFailed = true;
             return null;
@@ -387,7 +416,7 @@ class RateLimiter
             return;
         }
 
-        $fp = @fopen($file, 'c+');
+        $fp = $this->safeFopen($file, 'c+');
         if (!$fp) {
             $this->storageFailed = true;
             return;
@@ -410,7 +439,7 @@ class RateLimiter
     private function fileReadModifyWrite(string $key, callable $callback): void
     {
         $file = $this->getFilePath($key);
-        $fp = @fopen($file, 'c+');
+        $fp = $this->safeFopen($file, 'c+');
         if (!$fp) {
             $this->storageFailed = true;
             return;
@@ -528,7 +557,7 @@ class RateLimiter
         rsort($dirs);
         foreach ($dirs as $dir) {
             if (count(scandir($dir)) === 2) {
-                @rmdir($dir);
+                $this->safeRmdir($dir);
             }
         }
     }

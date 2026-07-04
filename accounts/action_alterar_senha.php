@@ -23,6 +23,21 @@ if (!validateCsrfToken($csrfToken)) {
     exit;
 }
 
+$now = time();
+$rateKey = 'rate_limit_alterar_senha';
+if (!isset($_SESSION[$rateKey])) {
+    $_SESSION[$rateKey] = ['count' => 1, 'start' => $now];
+} elseif ($now - $_SESSION[$rateKey]['start'] > 900) {
+    $_SESSION[$rateKey] = ['count' => 1, 'start' => $now];
+} else {
+    $_SESSION[$rateKey]['count']++;
+    if ($_SESSION[$rateKey]['count'] > 5) {
+        $_SESSION['erro_alterar_senha'] = 'Muitas tentativas de alteracao. Aguarde 15 minutos.';
+        header('Location: ?page=alterar_senha');
+        exit;
+    }
+}
+
 $senha_atual = $_POST['senha_atual'] ?? '';
 $nova_senha = $_POST['nova_senha'] ?? '';
 $confirma_senha = $_POST['confirma_senha'] ?? '';

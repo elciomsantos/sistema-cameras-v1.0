@@ -84,7 +84,7 @@ self.addEventListener('fetch', event => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(() =>
-        new Response('Sem conexão. Tente novamente.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } })
+        caches.match('./offline.html').then(resp => resp || new Response('Sem conexão.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } }))
       )
     );
     return;

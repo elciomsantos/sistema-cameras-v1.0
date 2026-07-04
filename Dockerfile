@@ -48,4 +48,7 @@ RUN a2dissite 000-default.conf && echo '<VirtualHost *:80>\n\
 
 EXPOSE 80
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -sf http://localhost/ || exit 1
+
 CMD ["apache2-foreground"]

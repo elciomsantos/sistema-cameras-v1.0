@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sem Conexão - CFTV GML</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; background: #f8f9fa; color: #212529;
+        }
+        .offline-card {
+            text-align: center; padding: 3rem 2rem;
+            max-width: 420px; width: 90%;
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .offline-icon {
+            font-size: 4rem; margin-bottom: 1rem;
+            display: block; color: #6c757d;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        p { color: #6c757d; margin-bottom: 1.5rem; line-height: 1.5; }
+        .btn-retry {
+            display: inline-block; padding: 0.6rem 1.5rem;
+            background: #0d6efd; color: #fff; text-decoration: none;
+            border-radius: 6px; font-size: 0.95rem;
+        }
+        .btn-retry:hover { background: #0b5ed7; }
+    </style>
+</head>
+<body>
+    <div class="offline-card">
+        <span class="offline-icon">&#9881;</span>
+        <h1>Sem Conexão</h1>
+        <p>Você está offline. Verifique sua conexão de internet e tente novamente.</p>
+        <a class="btn-retry" href="javascript:location.reload()">Tentar Novamente</a>
+    </div>
+</body>
+</html>

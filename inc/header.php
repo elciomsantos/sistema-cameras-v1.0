@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/favicon-16x16.png" sizes="16x16" />
     <link rel="shortcut icon" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/favicon.ico" type="image/x-ico">
     <link rel="apple-touch-icon" sizes="180x180" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/apple-touch-icon.png" />
-    <link rel="manifest" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/site.webmanifest" />
+    <link rel="manifest" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/manifest.json" />
     <link rel="icon" type="image/png" sizes="512x512" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/android-chrome-512x512.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="<?= htmlspecialchars($APP_BASE_PATH ?? '', ENT_QUOTES, 'UTF-8') ?>/images/android-chrome-192x192.png" />
 

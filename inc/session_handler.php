@@ -5,6 +5,41 @@ function getRequestDatabase(): database
     return database::getInstance();
 }
 
+function sendTimeoutResponse(string $message, ?string $reason = null): never
+{
+    http_response_code(401);
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+    $payload = [
+        'status' => 'expired',
+        'success' => false,
+        'error' => 'Sessao expirada',
+        'message' => $message,
+    ];
+    if ($reason !== null) {
+        $payload['reason'] = $reason;
+    }
+    echo json_encode($payload);
+    exit;
+}
+
+function invalidateAndClearSession(): void
+{
+    $usuarioId = currentUserId();
+    $sessionToken = $_SESSION['session_token'] ?? null;
+    if ($usuarioId) {
+        try {
+            $db = getRequestDatabase();
+            invalidateUniqueSession($db, $usuarioId, $sessionToken);
+        } catch (Throwable $e) {
+            error_log('Erro ao invalidar sessao: ' . $e->getMessage());
+        }
+    }
+    clearLocalSessionState();
+}
+
 function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
 {
     if (!isset($_SESSION['usuario'])) {
@@ -13,62 +48,21 @@ function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
 
     $now = time();
     if (!isset($_SESSION['session_started_at'])) {
-        $usuarioId = currentUserId();
-        $sessionToken = $_SESSION['session_token'] ?? null;
-        if ($usuarioId) {
-            try {
-                $db = getRequestDatabase();
-                invalidateUniqueSession($db, $usuarioId, $sessionToken);
-            } catch (Throwable $e) {
-                error_log('Erro ao invalidar sessao por falta de timestamp: ' . $e->getMessage());
-            }
-        }
-        clearLocalSessionState();
+        invalidateAndClearSession();
         if ($isApi) {
-            http_response_code(401);
-            header('Content-Type: application/json; charset=UTF-8');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-            echo json_encode([
-                'status' => 'expired', 'success' => false, 'error' => 'Sessao invalida',
-                'message' => 'Sessao invalida. Realize login novamente.'
-            ]);
-            exit;
+            sendTimeoutResponse('Sessao invalida. Realize login novamente.');
         }
         header('Location: index.php?page=login&timeout=1');
         exit;
     }
+
     if (SESSION_ABSOLUTE_TIMEOUT > 0) {
         $elapsed = $now - (int)$_SESSION['session_started_at'];
         if ($elapsed >= SESSION_ABSOLUTE_TIMEOUT) {
-            $usuarioId = currentUserId();
-            $sessionToken = $_SESSION['session_token'] ?? null;
-            if ($usuarioId) {
-                try {
-                    $db = getRequestDatabase();
-                    invalidateUniqueSession($db, $usuarioId, $sessionToken);
-                } catch (Throwable $e) {
-                    error_log('Erro ao invalidar sessao por timeout absoluto: ' . $e->getMessage());
-                }
-            }
-
-            clearLocalSessionState();
-
+            invalidateAndClearSession();
             if ($isApi) {
-                http_response_code(401);
-                header('Content-Type: application/json; charset=UTF-8');
-                header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-                header('Pragma: no-cache');
-                header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
-                echo json_encode([
-                    'status' => 'expired',
-                    'success' => false,
-                    'reason' => 'absolute_timeout',
-                    'error' => 'Sessao expirada',
-                    'message' => 'Sessao encerrada por tempo maximo'
-                ]);
-                exit;
+                sendTimeoutResponse('Sessao encerrada por tempo maximo', 'absolute_timeout');
             }
-
             header('Location: index.php?page=login&timeout=1');
             exit;
         }
@@ -83,34 +77,10 @@ function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
     $time_left = $tempo_maximo - $inatividade;
 
     if ($inatividade >= $tempo_maximo) {
-        $usuarioId = currentUserId();
-        $sessionToken = $_SESSION['session_token'] ?? null;
-        if ($usuarioId) {
-            try {
-                $db = getRequestDatabase();
-                invalidateUniqueSession($db, $usuarioId, $sessionToken);
-            } catch (Throwable $e) {
-                error_log('Erro ao invalidar sessao por timeout: ' . $e->getMessage());
-            }
-        }
-
-        clearLocalSessionState();
-
+        invalidateAndClearSession();
         if ($isApi) {
-            http_response_code(401);
-            header('Content-Type: application/json; charset=UTF-8');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-            header('Pragma: no-cache');
-            header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
-            echo json_encode([
-                'status' => 'expired',
-                'success' => false,
-                'error' => 'Sessao expirada',
-                'message' => 'Sessao encerrada por inatividade'
-            ]);
-            exit;
+            sendTimeoutResponse('Sessao encerrada por inatividade');
         }
-
         header('Location: index.php?page=login&timeout=1');
         exit;
     }

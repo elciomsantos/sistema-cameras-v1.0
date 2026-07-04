@@ -1,13 +1,19 @@
 FROM php:8.2-apache
 
+LABEL org.opencontainers.image.source="https://github.com/GhostTerminals/sistema-cameras-v1.0"
+LABEL org.opencontainers.image.description="Sistema de Gerenciamento de Cameras e Alarmes"
+LABEL org.opencontainers.image.licenses="MIT"
+
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         git zip unzip curl libpng-dev libzip-dev libonig-dev \
         libxml2-dev libcurl4-openssl-dev pkg-config libssl-dev \
     && docker-php-ext-install pdo_mysql mbstring zip gd xml curl \
     && pecl install mongodb-stable 2>/dev/null || true \
-    && a2enmod rewrite
+    && a2enmod rewrite \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 

@@ -1,0 +1,49 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: cameras-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD required}
+      MYSQL_DATABASE: ${DB_NAME:-cftv_gml}
+      MYSQL_USER: ${DB_USER:-cftv_user}
+      MYSQL_PASSWORD: ${DB_PASS:?DB_PASS required}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./config/DB/cftv_gml.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY:-ghostterminals/sistema-cameras-v1.0}:${APP_TAG:-latest}
+    container_name: cameras-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      CAMERAS_ENV: production
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-cftv_gml}
+      DB_USER: ${DB_USER:-cftv_user}
+      DB_PASS: ${DB_PASS:?DB_PASS required}
+      APP_TIMEZONE: America/Sao_Paulo
+      CAMERAS_SESSION_TIMEOUT: 3600
+      CAMERAS_SESSION_ABSOLUTE_TIMEOUT: 28800
+      CAMERAS_CSP_ALLOW_INLINE_STYLES: 0
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_uploads:/var/www/html/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  app_storage:
+  app_uploads:

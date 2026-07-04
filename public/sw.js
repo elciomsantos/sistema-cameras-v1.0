@@ -28,6 +28,8 @@ self.addEventListener('install', event => {
           console.error('[SW] Falha ao pré-carregar sw-assets.json:', err);
           await cache.addAll([
             './index.php',
+            './offline.html',
+            './manifest.json',
             './images/favicon-32x32.png',
             './images/favicon-16x16.png',
             './images/apple-touch-icon.png'

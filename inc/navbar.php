@@ -65,7 +65,7 @@
                         <li><a class="dropdown-item" href="?page=listarUsuario"><i class="fas fa-users me-2"></i>Listar Usuarios</a></li>
                         <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="?page=listar_locais"><i class="fas fa-map-marker-alt me-2"></i>Painel de Locais</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_locais"><i class="fas fa-map-marker-alt me-2"></i>Listar Locais</a></li>
                         <li><a class="dropdown-item" href="?page=cadastro_locais"><i class="fas fa-plus me-2"></i>Cadastro de Local</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="?page=listar_escolas"><i class="fas fa-school me-2"></i>Escolas</a></li>

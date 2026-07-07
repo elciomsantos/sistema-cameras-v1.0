@@ -123,7 +123,6 @@ function fd(string $key): string
                                 </select>
                             </div>
 
-
                             <!-- Linha 3: Secretaria, Horário, Telefone e Email -->
                             <div class="col-md-6">
                                 <label for="secretaria_id" class="form-label">Secretaria</label>
@@ -149,7 +148,13 @@ function fd(string $key): string
                                 <label for="telefone" class="form-label">Telefone</label>
                                 <input type="text" class="form-control form-control-sm" id="telefone" name="telefone"
                                     value="<?= fd('telefone') ?>"
-                                    placeholder="Ex: (43) 3375-0112 ramal 50112">
+                                    placeholder="Ex: (43) 3375-0112">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ramal" class="form-label">Ramal</label>
+                                <input type="text" class="form-control form-control-sm" id="ramal" name="ramal"
+                                    value="<?= fd('ramal') ?>"
+                                    placeholder="Ex: 50112">
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">E-mail</label>
@@ -204,13 +209,13 @@ function fd(string $key): string
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <label for="cidade" class="form-label">Cidade</label>
                                 <input type="text" class="form-control form-control-sm" id="cidade" name="cidade"
                                     value="<?= fd('cidade') ?>"
                                     placeholder="Londrina">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <label for="bairro" class="form-label">Bairro</label>
                                 <input type="text" class="form-control form-control-sm" id="bairro" name="bairro"
                                     value="<?= fd('bairro') ?>"
@@ -300,6 +305,13 @@ function fd(string $key): string
                 });
             });
         })(document.querySelector('form.needs-validation'));
+
+        <?php if ($mensagem_sucesso): ?>
+        setTimeout(function() {
+            var el = document.getElementById('tipo_local_id');
+            if (el) el.focus();
+        }, 100);
+        <?php endif; ?>
 
         var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
 

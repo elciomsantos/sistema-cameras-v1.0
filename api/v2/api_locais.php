@@ -9,17 +9,26 @@ try {
 
     $db = db();
 
+    $q = trim($_GET['q'] ?? '');
+
     $secretariaId = getUsuarioSecretariaId();
     $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
 
-    if ($nivel === 'admin' || $secretariaId === null) {
-        $result = $db->query("SELECT id, nome FROM locais ORDER BY nome");
-    } else {
-        $result = $db->query(
-            "SELECT id, nome FROM locais WHERE secretaria_id = ? ORDER BY nome",
-            [$secretariaId]
-        );
+    $where = ['1=1'];
+    $params = [];
+
+    if ($q !== '') {
+        $where[] = 'UPPER(nome) LIKE UPPER(?)';
+        $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
     }
+
+    if ($nivel !== 'admin' && $secretariaId !== null) {
+        $where[] = 'secretaria_id = ?';
+        $params[] = $secretariaId;
+    }
+
+    $sql = "SELECT id, nome FROM locais WHERE " . implode(' AND ', $where) . " ORDER BY nome LIMIT 20";
+    $result = $db->query($sql, $params);
 
     if ($result['status'] === 'success') {
         ApiResponse::success([

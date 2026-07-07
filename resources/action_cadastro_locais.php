@@ -40,6 +40,7 @@ if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
 $regiao_id = $v->get('regiao_id');
 $horario_funcionamento = mb_strtoupper(trim($v->get('horario_funcionamento', '')));
 $telefone = trim($v->get('telefone', ''));
+$ramal = trim($v->get('ramal', ''));
 $tem_alarme = $v->get('tem_alarme') ? 1 : 0;
 $alarme_conta = $tem_alarme ? ((int)($v->get('alarme_conta', 0)) ?: null) : null;
 $tem_camera = $v->get('tem_camera') ? 1 : 0;
@@ -68,6 +69,7 @@ if ($v->fails()) {
             'secretaria_id' => $secretaria_id ? (int)$secretaria_id : null,
             'horario_funcionamento' => $horario_funcionamento ?: null,
             'telefone' => $telefone ?: null,
+            'ramal' => $ramal ?: null,
             'tem_alarme' => $tem_alarme,
             'alarme_conta' => $alarme_conta,
             'tem_camera' => $tem_camera,
@@ -85,8 +87,9 @@ if ($v->fails()) {
         enableAuditTriggers($db, 'web');
         $newId = $locaisService->create($insertData);
         if ($newId > 0) {
-            $_SESSION['sucesso'] = 'Local cadastrado com sucesso.';
-            header('Location: index.php?page=listar_locais');
+            $_SESSION['mensagem_sucesso_cadastro_local'] = 'Local cadastrado com sucesso.';
+            unset($_SESSION['form_data_cadastro_local']);
+            header('Location: index.php?page=cadastro_locais');
             exit;
         }
         $_SESSION['mensagem_erro_cadastro_local'] = 'Erro ao cadastrar local.';
@@ -95,7 +98,7 @@ if ($v->fails()) {
 
 $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
     'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-    'horario_funcionamento', 'telefone', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf',
+    'horario_funcionamento', 'telefone', 'ramal', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf',
     'cidade', 'bairro', 'classificacao_endereco_id',
     'logradouro', 'numero', 'descricao_posicao',
     'latitude', 'longitude',

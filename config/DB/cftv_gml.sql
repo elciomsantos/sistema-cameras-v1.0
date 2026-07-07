@@ -324,17 +324,24 @@ CREATE TABLE tipos_locais (
 ) ENGINE=InnoDB COMMENT='Classificacao semantica do local (rua, praca, predio, etc)';
 
 INSERT INTO tipos_locais (nome) VALUES
+('ESCOLA'),
+('CMEI'),
+('CEI'),
+('UBS'),
+('UPA'),
+('PRONTO ATENDIMENTO'),
 ('PRACA'),
 ('RUA'),
 ('AVENIDA'),
 ('PREDIO PUBLICO'),
 ('PREDIO PRIVADO'),
 ('PARQUE'),
-('TERMINAL'),
+('TERMINAL URBANO'),
+('TERMINAL RODOVIÁRIO'),
+('ESTRADA RURAL'),
 ('AREA RURAL'),
-('OUTRO'),
-('ESCOLA'),
-('CMEI');
+('OUTRO');
+
 
 -- =====================================================
 -- CLASSIFICAÇÃO DE ENDEREÇOS (TIPO DE LOGRADOURO)
@@ -373,12 +380,14 @@ CREATE TABLE locais (
     classificacao_endereco_id INT NULL COMMENT 'Tipo de logradouro (RUA/AVENIDA/etc)',
     tem_alarme TINYINT(1) NOT NULL DEFAULT 0
         COMMENT 'Indica se o local possui central de alarme (0=Não, 1=Sim)',
+    tem_camera TINYINT(1) NOT NULL DEFAULT 0
+        COMMENT 'Indica se o local possui  camera (0=Não, 1=Sim)',
     latitude DECIMAL(10,8) NULL,
     longitude DECIMAL(11,8) NULL,
-    alarme_conta INT NULL COMMENT 'Conta do alarme',
     regiao_id INT NULL COMMENT 'FK para regioes',
     horario_funcionamento VARCHAR(255) NULL COMMENT 'Horario de funcionamento do local',
     telefone VARCHAR(50) NULL COMMENT 'Telefone do local',
+    ramal VARCHAR(50) NULL COMMENT 'Ramal do local',
     email VARCHAR(150) NULL COMMENT 'E-mail do local',
     secretaria_id INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -619,7 +628,7 @@ CREATE TABLE central_alarmes (
     quant_repetidor INT,
     qtde_sensores INT,
     documentacao VARCHAR(50),
-    monitorada VARCHAR(50),
+    monitorada VARCHAR(50), -- sem função deletar 
     numero_sei VARCHAR(50),
     data_atualizacao DATE,
     observacao TEXT,

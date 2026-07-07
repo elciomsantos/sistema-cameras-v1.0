@@ -196,7 +196,7 @@ class LocaisService
     public function create(array $data): int
     {
         $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-            'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf', 'cidade', 'bairro',
+            'horario_funcionamento', 'telefone', 'ramal', 'email', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf', 'cidade', 'bairro',
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
 
@@ -233,7 +233,7 @@ class LocaisService
     public function update(int $id, array $data): bool
     {
         $allowedFields = ['tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-            'horario_funcionamento', 'telefone', 'email', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf', 'cidade', 'bairro',
+            'horario_funcionamento', 'telefone', 'ramal', 'email', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf', 'cidade', 'bairro',
             'classificacao_endereco_id', 'logradouro', 'numero', 'descricao_posicao',
             'latitude', 'longitude'];
 
@@ -293,6 +293,13 @@ class LocaisService
                 $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) > 0';
             } elseif ($filters['camera'] === 'nao') {
                 $where[] = '(SELECT COUNT(*) FROM equipamentos e WHERE e.local_id = l.id AND e.deleted_at IS NULL AND e.tipo_equipamento_id IN (1,2)) = 0';
+            }
+        }
+        if (!empty($filters['tem_alarme'])) {
+            if ($filters['tem_alarme'] === 'sim') {
+                $where[] = 'l.tem_alarme = 1';
+            } elseif ($filters['tem_alarme'] === 'nao') {
+                $where[] = 'l.tem_alarme = 0';
             }
         }
     }

@@ -24,8 +24,10 @@ if (!empty($_POST['filters'])) {
     $input = $_POST['filters'];
     parse_str($input, $parsed);
     $filters = [
-        'search' => trim($parsed['busca'] ?? ''),
+        'nome' => trim($parsed['nome'] ?? ''),
+        'regiao_id' => preg_replace('/[^0-9]/', '', $parsed['regiao_id'] ?? ''),
         'tipo_local_id' => preg_replace('/[^0-9]/', '', $parsed['tipo_local_id'] ?? ''),
+        'tem_alarme' => in_array(trim($parsed['tem_alarme'] ?? ''), ['sim', 'nao', ''], true) ? trim($parsed['tem_alarme'] ?? '') : '',
         'camera' => in_array(trim($parsed['camera'] ?? ''), ['sim', 'nao', ''], true) ? trim($parsed['camera'] ?? '') : '',
     ];
 }

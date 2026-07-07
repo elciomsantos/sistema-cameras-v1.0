@@ -78,3 +78,6 @@ public/assets/*-????????.*
 
 # Rate limit runtime data
 storage/ratelimit/
+
+# CEP cache
+storage/cep_cache/

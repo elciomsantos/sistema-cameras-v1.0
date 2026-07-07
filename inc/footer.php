@@ -371,4 +371,25 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
+<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
+(function() {
+    var cls = document.body.className;
+    if (!cls.match(/\bpage-(cadastro_|editar_)/)) return;
+    function upper(el) {
+        try {
+            if (el.readOnly || el.disabled) return;
+            var type = (el.type || '').toLowerCase();
+            if (['email', 'number', 'tel', 'password', 'url', 'hidden', 'file'].indexOf(type) !== -1) return;
+            var start = el.selectionStart;
+            var end = el.selectionEnd;
+            el.value = el.value.toUpperCase();
+            if (start !== null && end !== null) el.setSelectionRange(start, end);
+        } catch(e) {}
+    }
+    document.querySelectorAll('input:not([type]), input[type="text"], input[type="search"], textarea').forEach(upper);
+    document.addEventListener('input', function(e) {
+        upper(e.target);
+    });
+})();
+</script>
 <?php endif; ?>

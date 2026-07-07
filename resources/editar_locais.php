@@ -5,8 +5,6 @@ requererAcesso('supervisor');
 
 $db = db();
 $locaisService = new LocaisService($db);
-$lookupService = new LookupService($db);
-
 // PRG: flash success from session (cleared after redirect)
 $mensagem_sucesso = $_SESSION['mensagem_sucesso_editar_local'] ?? '';
 unset($_SESSION['mensagem_sucesso_editar_local']);
@@ -37,8 +35,6 @@ $ufs = [
     'MA','MT','MS','MG','PA','PB','PR','PE','PI',
     'RJ','RN','RS','RO','RR','SC','SP','SE','TO'
 ];
-
-$contasAlarmes = $lookupService->getContasAlarmes();
 
 $mensagem_erro = $_SESSION['mensagem_erro_editar_local'] ?? '';
 unset($_SESSION['mensagem_erro_editar_local']);
@@ -80,7 +76,8 @@ unset($_SESSION['form_data_editar_local']);
 
                         <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-tag me-2"></i>Identificacao</h5>
                         <div class="row g-3 mb-4">
-                            <div class="col-md-2">
+                            <!-- Linha 1: Tipo de Local e Nome do Local -->
+                            <div class="col-md-3">
                                 <label for="tipo_local_id" class="form-label">Tipo de Local *</label>
                                 <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required>
                                     <option value="">Selecione...</option>
@@ -91,13 +88,13 @@ unset($_SESSION['form_data_editar_local']);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <label for="nome" class="form-label">Nome do Local *</label>
                                 <input type="text" class="form-control form-control-sm" id="nome" name="nome" required
                                     value="<?= htmlspecialchars($formData['nome'] ?? $local->nome ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Ex: ESCOLA MUNICIPAL PROF JOÃO">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="regiao_id" class="form-label">Regiao</label>
                                 <select class="form-select form-select-sm" id="regiao_id" name="regiao_id">
                                     <option value="">Selecione...</option>
@@ -108,7 +105,46 @@ unset($_SESSION['form_data_editar_local']);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-2 d-flex align-items-end">
+
+                            <!-- Linha 3: Secretaria, Horário, Telefone, Ramal e Email -->
+                            <div class="col-md-6">
+                                <label for="secretaria_id" class="form-label">Secretaria</label>
+                                <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id">
+                                    <option value="">Nenhuma</option>
+                                    <?php foreach ($secretarias as $s): ?>
+                                    <option value="<?= (int)$s->id ?>" <?= ((isset($formData['secretaria_id']) ? (int)$formData['secretaria_id'] : (int)$local->secretaria_id) === (int)$s->id) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="horario_funcionamento" class="form-label">Horario de Funcionamento</label>
+                                <input type="text" class="form-control form-control-sm" id="horario_funcionamento" name="horario_funcionamento"
+                                    value="<?= htmlspecialchars($formData['horario_funcionamento'] ?? $local->horario_funcionamento ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    placeholder="Ex: Seg a Sex 08:00-18:00">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="telefone" class="form-label">Telefone</label>
+                                <input type="text" class="form-control form-control-sm" id="telefone" name="telefone"
+                                    value="<?= htmlspecialchars($formData['telefone'] ?? $local->telefone ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    placeholder="Ex: (43) 3375-0112">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ramal" class="form-label">Ramal</label>
+                                <input type="text" class="form-control form-control-sm" id="ramal" name="ramal"
+                                    value="<?= htmlspecialchars($formData['ramal'] ?? $local->ramal ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    placeholder="Ex: 50112">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                    value="<?= htmlspecialchars($formData['email'] ?? $local->email ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                    placeholder="exemplo@dominio.com">
+                            </div>
+
+                            <!-- Linha 2: Alarmes e Câmeras -->
+                            <div class="col-md-3 d-flex align-items-end">
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" id="tem_alarme" name="tem_alarme" value="1"
                                         <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? 'checked' : '' ?>>
@@ -126,33 +162,8 @@ unset($_SESSION['form_data_editar_local']);
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-3 <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? '' : 'd-none' ?>" id="alarmeContaWrapper">
-                                <label for="alarme_conta" class="form-label">Conta do Alarme</label>
-                                <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
-                                    <option value="">Selecione...</option>
-                                    <?php foreach ($contasAlarmes as $c): ?>
-                                    <option value="<?= (int)$c->conta ?>" <?= ((isset($formData['alarme_conta']) ? (int)$formData['alarme_conta'] : ($local->alarme_conta ?? 0)) === (int)$c->conta) ? 'selected' : '' ?>>
-                                        <?= (int)$c->conta ?> - <?= htmlspecialchars($c->local, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
                             <div class="col-md-6">
-                                <label for="secretaria_id" class="form-label">Secretaria</label>
-                                <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id">
-                                    <option value="">Nenhuma</option>
-                                    <?php foreach ($secretarias as $s): ?>
-                                    <option value="<?= (int)$s->id ?>" <?= ((isset($formData['secretaria_id']) ? (int)$formData['secretaria_id'] : (int)$local->secretaria_id) === (int)$s->id) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="horario_funcionamento" class="form-label">Horario de Funcionamento</label>
-                                <input type="text" class="form-control form-control-sm" id="horario_funcionamento" name="horario_funcionamento"
-                                    value="<?= htmlspecialchars($formData['horario_funcionamento'] ?? $local->horario_funcionamento ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                    placeholder="Ex: Seg a Sex 08:00-18:00">
+                                <!-- Espaço vazio para alinhamento -->
                             </div>
                         </div>
 
@@ -169,7 +180,7 @@ unset($_SESSION['form_data_editar_local']);
                                     </button>
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-1">
                                 <label for="uf" class="form-label">UF</label>
                                 <select class="form-select form-select-sm" id="uf" name="uf">
                                     <option value="">Selecione</option>
@@ -178,13 +189,13 @@ unset($_SESSION['form_data_editar_local']);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="cidade" class="form-label">Cidade</label>
                                 <input type="text" class="form-control form-control-sm" id="cidade" name="cidade"
                                     value="<?= htmlspecialchars($formData['cidade'] ?? $local->cidade ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                     placeholder="Londrina">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <label for="bairro" class="form-label">Bairro</label>
                                 <input type="text" class="form-control form-control-sm" id="bairro" name="bairro"
                                     value="<?= htmlspecialchars($formData['bairro'] ?? $local->bairro ?? '', ENT_QUOTES, 'UTF-8') ?>"

@@ -33,7 +33,7 @@ $db = db();
 
 enableAuditTriggers($db, 'web');
 
-$sql = "UPDATE usuarios SET ativo = 1 WHERE id = :id";
+$sql = "UPDATE usuarios SET ativo = 1 WHERE id = :id AND deleted_at IS NULL";
 $params = [':id' => $id];
 $result = $db->query($sql, $params);
 

@@ -67,11 +67,13 @@ CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
     usuario VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(150) NULL UNIQUE,
     senha VARCHAR(255) NOT NULL,
     nivel_acesso_id INT NOT NULL,
     secretaria_id INT NULL,
     senha_temporaria TINYINT(1) NOT NULL DEFAULT 0,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
+    deleted_at DATETIME NULL COMMENT 'Data de exclusao logica (soft delete)',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_usuarios_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
@@ -80,6 +82,7 @@ CREATE TABLE usuarios (
 
 CREATE INDEX idx_usuarios_nivel_acesso ON usuarios(nivel_acesso_id);
 CREATE INDEX idx_usuarios_secretaria ON usuarios(secretaria_id);
+CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
 
 -- =====================================================
 -- SESSAO UNICA POR USUARIO
@@ -1360,6 +1363,8 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     nome_original VARCHAR(255) NOT NULL,
     nome_arquivo VARCHAR(255) NOT NULL COMMENT 'Nome no disco (hash)',
     caminho VARCHAR(500) NOT NULL,
+    conteudo MEDIUMBLOB NULL COMMENT 'Conteudo binario do anexo (armazenamento em BD quando FS e read-only)',
+    conteudo_comprimido TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=conteudo esta gzdeflate-comprimido',
     mime_type VARCHAR(100) NOT NULL,
     tamanho INT UNSIGNED NOT NULL COMMENT 'Tamanho em bytes',
     descricao VARCHAR(500) NULL,

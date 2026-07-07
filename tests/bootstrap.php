@@ -25,6 +25,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Modo de teste: suprime exit e headers em ApiResponse para permitir asserts
+if (class_exists('ApiResponse', true)) {
+    ApiResponse::setTestMode(true);
+}
+
 function getTestDatabase(): database
 {
     static $db = null;

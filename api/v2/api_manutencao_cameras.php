@@ -295,7 +295,8 @@ try {
     }
 
     if ($method === 'POST') {
-        $jsonInput = json_decode(file_get_contents('php://input'), true);
+        $rawBody = file_get_contents('php://input');
+        $jsonInput = json_decode($rawBody, true);
         $payload = is_array($jsonInput) ? $jsonInput : [];
         $action = strtolower(trim((string)($payload['action'] ?? 'create_os')));
         $usuarioId = (int)($_SESSION['usuario']->id ?? 0);
@@ -315,9 +316,15 @@ try {
 
             $equipamentoId = max(1, (int)($payload['equipamento_id'] ?? 0));
             $problemas = trim((string)($payload['problemas'] ?? ''));
-            $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
-            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
-                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            $dataHora = trim((string)($payload['data_hora'] ?? ''));
+            if ($dataHora === '') {
+                $dataHora = date('Y-m-d H:i:s');
+            } else {
+                $dt = \DateTime::createFromFormat('Y-m-d\TH:i', $dataHora) ?: \DateTime::createFromFormat('Y-m-d H:i:s', $dataHora);
+                if (!$dt) {
+                    ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DDTHH:MM ou YYYY-MM-DD HH:MM:SS.');
+                }
+                $dataHora = $dt->format('Y-m-d H:i:s');
             }
             $numeroOs = trim((string)($payload['numero_os'] ?? '')) ?: null;
             $localServico = trim((string)($payload['local_servico'] ?? '')) ?: null;
@@ -412,9 +419,15 @@ try {
             $osId = max(1, (int)($payload['os_id'] ?? 0));
             $equipamentoId = max(1, (int)($payload['equipamento_id'] ?? 0));
             $descricao = trim((string)($payload['descricao'] ?? ''));
-            $dataHora = trim((string)($payload['data_hora'] ?? date('Y-m-d H:i:s')));
-            if (!\DateTime::createFromFormat('Y-m-d H:i:s', $dataHora)) {
-                ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DD HH:MM:SS.');
+            $dataHora = trim((string)($payload['data_hora'] ?? ''));
+            if ($dataHora === '') {
+                $dataHora = date('Y-m-d H:i:s');
+            } else {
+                $dt = \DateTime::createFromFormat('Y-m-d\TH:i', $dataHora) ?: \DateTime::createFromFormat('Y-m-d H:i:s', $dataHora);
+                if (!$dt) {
+                    ApiResponse::error('VALIDATION_ERROR', 'Formato de data/hora inválido. Use YYYY-MM-DDTHH:MM ou YYYY-MM-DD HH:MM:SS.');
+                }
+                $dataHora = $dt->format('Y-m-d H:i:s');
             }
             $procedimentoId = max(0, (int)($payload['procedimento_id'] ?? 0)) ?: null;
             $statusId = max(0, (int)($payload['status_id'] ?? 0)) ?: null;

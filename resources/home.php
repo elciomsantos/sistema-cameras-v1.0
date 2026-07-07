@@ -132,8 +132,8 @@ requererAcesso('user');
                     <small><span id="progress-cameras">0</span>/<span id="progress-total">0</span> c&acirc;meras operacionais</small>
                 </div>
                 <div class="progress progress-sm">
-                    <div class="progress-bar progress-bar-custom" id="progress-bar" role="progressbar" aria-valuenow="0"
-                        aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                    <div class="progress-bar progress-bar-custom progress-bar-start" id="progress-bar" role="progressbar" aria-valuenow="0"
+                        aria-valuemin="0" aria-valuemax="100">
                     </div>
                 </div>
                 <div class="mt-2">

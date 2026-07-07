@@ -237,12 +237,23 @@ function initAnexoSection(container: HTMLElement | null): void {
 
         let htmlContent = '<p class="mb-2">Deseja realmente excluir este anexo?</p>'
         htmlContent += '<p class="fw-bold mb-2 text-break">' + escapeHtml(nome) + '</p>'
+
+        const confirmContainer = document.createElement('div')
+        confirmContainer.innerHTML = htmlContent
+
         if (isImage && url) {
-            htmlContent += '<img src="' + escapeHtml(url) + '" alt="' + escapeHtml(nome) + '" class="img-thumbnail mb-2" style="max-height:120px;object-fit:cover" onerror="this.style.display=\'none\'">'
+            const img = document.createElement('img')
+            img.src = url
+            img.alt = nome
+            img.className = 'img-thumbnail mb-2 upload-img-preview'
+            img.addEventListener('error', function () {
+                img.style.display = 'none'
+            })
+            confirmContainer.appendChild(img)
         }
 
         if (typeof showConfirm === 'function') {
-            showConfirm('Excluir anexo?', htmlContent, 'Sim, excluir').then(function (confirmed: boolean) {
+            showConfirm('Excluir anexo?', confirmContainer.innerHTML, 'Sim, excluir').then(function (confirmed: boolean) {
                 if (confirmed) doDelete(container, id, nome)
             })
         } else if (confirm('Excluir "' + nome + '"?')) {

@@ -61,6 +61,12 @@
     display: none !important;
 }
 
+.local-suggestions {
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
 .relatorio-cameras-page .loading-overlay {
     display: flex;
     position: fixed;

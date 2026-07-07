@@ -88,12 +88,12 @@ try {
 
     $db->commit();
 
-    // Excluir arquivo fisico apos commit do DB
-    if ($caminhoAbsoluto !== false && is_file($caminhoAbsoluto) && !unlink($caminhoAbsoluto)) {
+    // Excluir arquivo fisico apos commit do DB, apenas se existir (FS pode ser read-only/banco-only)
+    if ($caminhoAbsoluto !== false && is_file($caminhoAbsoluto) && !@unlink($caminhoAbsoluto)) {
         error_log('[api_excluir_anexo] Nao foi possivel excluir o arquivo: ' . $caminhoAbsoluto);
     }
 
-    ApiResponse::success(['message' => 'Anexo excluído com sucesso.']);
+    ApiResponse::success(['message' => 'Anexo excluido com sucesso.']);
 
 } catch (Throwable $e) {
     if (isset($db) && $db instanceof database && $db->inTransaction()) {

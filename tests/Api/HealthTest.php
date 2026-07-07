@@ -29,11 +29,13 @@ class HealthTest extends TestCase
         $this->assertEquals(401, $httpCode, 'Protected endpoint should require auth');
     }
 
-    public function testInvalidMethodReturns405(): void
+    public function testInvalidMethodReturns401(): void
     {
+        // Arquitetura auth-first: sem sessão, qualquer método é rejeitado com 401
+        // antes de validar o método aceito pelo endpoint.
         $httpCode = $this->requestStatus('/index.php?page=api/api_health', 'POST');
 
-        $this->assertEquals(405, $httpCode, 'POST on GET-only endpoint should return 405');
+        $this->assertEquals(401, $httpCode, 'POST on GET-only endpoint without auth returns 401');
     }
 
     private function requestStatus(string $path, string $method = 'GET'): int

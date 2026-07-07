@@ -10,7 +10,7 @@ $db = db();
 
 function listarUsuarios($dbConn) {
     try {
-        $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.ativo, u.created_at AS data FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id ORDER BY u.id DESC";
+        $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.ativo, u.created_at AS data FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.deleted_at IS NULL ORDER BY u.id DESC";
         $result = $dbConn->query($sql);
         
         if ($result['status'] === 'success') {

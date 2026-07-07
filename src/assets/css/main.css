@@ -1248,3 +1248,83 @@ body.dark-mode .anexos-progress-container .progress {
 body.dark-mode .global-loader-message {
     color: #e9ecef;
 }
+
+/* ============================================
+   CLASSES UTILITÁRIAS (substituem inline styles)
+   CSP style-src-attr 'none' — todo estilo via classes
+   ============================================ */
+
+/* Inicialização escondida (JS revela conforme lógica da página) */
+.hidden-init { display: none; }
+
+/* ProgressBar fina */
+.progress-thin { height: 6px; }
+.progress-bar-start { width: 0%; }
+
+/* Labels compactos (cadastro/editar cameras e alarmes) */
+.label-brown {
+    color: #5d4037;
+    font-size: 0.88rem;
+}
+.label-compact {
+    white-space: nowrap;
+    font-size: 0.88rem;
+}
+.form-text-brown { color: #8d6e63; }
+
+/* Padding extras (não cobertos por Bootstrap) */
+.pt-30 { padding-top: 30px; }
+
+/* Badge roxo (região em listar_locais) */
+.badge-purple { background-color: #6f42c1; }
+
+/* Cabeçalhos de tabela — cinza claro + largura mín. por coluna */
+.th-bg-light { background-color: #f8f9fa; }
+.th-min-100 { min-width: 100px; background-color: #f8f9fa; }
+.th-min-120 { min-width: 120px; background-color: #f8f9fa; }
+.th-min-130 { min-width: 130px; background-color: #f8f9fa; }
+.th-min-140 { min-width: 140px; background-color: #f8f9fa; }
+.th-min-150 { min-width: 150px; background-color: #f8f9fa; }
+.th-min-180 { min-width: 180px; background-color: #f8f9fa; }
+.th-min-200 { min-width: 200px; background-color: #f8f9fa; }
+.th-actions-40 { width: 40px; background-color: #f8f9fa; }
+
+/* Dropdown de configuração de colunas (relatorios_*) */
+.menu-colunas-dropdown {
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Exibição de senha temporária (accounts/editarUsuario) */
+.temp-password-display {
+    font-size: 1.4rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-family: monospace;
+}
+
+/* Skeleton loaders (theme-manager.ts) — substituem inline styles */
+.sk-flex-gap {
+    display: flex;
+    gap: 1rem;
+}
+.sk-flex-gap-mb {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.sk-flex-1 { flex: 1; }
+.sk-avatar-list {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+.sk-text-60 { width: 60%; }
+.sk-text-40 { width: 40%; }
+
+/* Preview de imagem em upload (file-upload.ts) */
+.upload-img-preview {
+    max-height: 120px;
+    object-fit: cover;
+}

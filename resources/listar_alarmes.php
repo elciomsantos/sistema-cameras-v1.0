@@ -111,7 +111,7 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
     <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 </div>
 
-<div id="listarAlarmesConfig" style="display:none;" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>"></div>
+<div id="listarAlarmesConfig" class="hidden-init" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>"></div>
 <?php
 $vitePageJs = vite_asset('listar-alarmes');
 $viteImports = vite_entry_imports('listar-alarmes');

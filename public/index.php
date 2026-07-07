@@ -40,16 +40,14 @@ if (!defined('BASE_URL')) {
 }
 
 $isProduction = defined('ENVIRONMENT') && ENVIRONMENT === 'production';
-$scriptEvalPolicy = $isProduction ? "" : " 'unsafe-inline'";
 $cspNonce = rtrim(strtr(base64_encode(random_bytes(16)), '+/', '-_'), '=');
 $CSP_NONCE = $cspNonce;
 
-$inlineStylePolicy = (defined('CSP_ALLOW_INLINE_STYLES') && CSP_ALLOW_INLINE_STYLES) ? " 'unsafe-inline'" : '';
 $cspPolicy = "default-src 'self'; "
-    . "script-src 'self' 'nonce-{$cspNonce}'{$scriptEvalPolicy} https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
+    . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
     . "style-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
     . "style-src-elem 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
-    . "style-src-attr{$inlineStylePolicy}; "
+    . "style-src-attr 'none'; "
     . "img-src 'self' data: blob:; "
     . "font-src 'self' data: https://cdnjs.cloudflare.com; "
     . "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
@@ -129,8 +127,15 @@ require_once __DIR__ . '/../config/config.php';
 $pages_permitidas = require_once __DIR__ . '/../inc/pages.php';
 require_once __DIR__ . '/../inc/check_access.php';
 
-// [3] Redirecionar nao logados para login (exceto paginas publicas e API)
-$publicPages = ['login', 'login_submit', 'action_login_submit', 'nao_autorizado'];
+// [5] Whitelist de paginas (exceto rotas api/, validadas no bootstrap-api.php)
+// (roda ANTES do redirect de login para que pgs nao-autenticadas em endpoints
+// invalidos devolvam 404 e nao sejam convertidas para 'login')
+if (!str_starts_with($page, 'api/') && !in_array($page, $pages_permitidas, true)) {
+    $page = '404';
+}
+
+// [3] Redirecionar nao logados para login (exceto paginas publicas, 404 e API)
+$publicPages = ['login', 'login_submit', 'action_login_submit', 'nao_autorizado', '404'];
 if (!isset($_SESSION['usuario']) && !in_array($page, $publicPages, true) && !str_starts_with($page, 'api/')) {
     $page = 'login';
 }
@@ -138,11 +143,6 @@ if (!isset($_SESSION['usuario']) && !in_array($page, $publicPages, true) && !str
 // [4] Logado tentando login → home
 if (isset($_SESSION['usuario']) && $page === 'login') {
     $page = 'home';
-}
-
-// [5] Whitelist de paginas
-if (!in_array($page, $pages_permitidas, true)) {
-    $page = '404';
 }
 
 // [6] API
@@ -198,11 +198,17 @@ if (isset($routes[$page])) {
 $scriptPath = resolvePageScriptPath($page);
 if ($scriptPath === null) {
     $scriptPath = resolvePageScriptPath('404');
+    $page = '404';
 }
 if ($scriptPath === null) {
     http_response_code(404);
     echo 'Pagina nao encontrada.';
     exit;
+}
+
+// Pagina 404 deve retornar o status HTTP correspondente
+if ($page === '404') {
+    http_response_code(404);
 }
 
 // [10] Renderizar com layout (buffering global ja ativo desde o inicio)

@@ -17,9 +17,33 @@ $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
 $isScopedUser = $nivel !== 'admin' && $usuarioSecretariaId !== null;
 
 $ufs = [
-    'AC','AL','AP','AM','BA','CE','DF','ES','GO',
-    'MA','MT','MS','MG','PA','PB','PR','PE','PI',
-    'RJ','RN','RS','RO','RR','SC','SP','SE','TO'
+    'AC',
+    'AL',
+    'AP',
+    'AM',
+    'BA',
+    'CE',
+    'DF',
+    'ES',
+    'GO',
+    'MA',
+    'MT',
+    'MS',
+    'MG',
+    'PA',
+    'PB',
+    'PR',
+    'PE',
+    'PI',
+    'RJ',
+    'RN',
+    'RS',
+    'RO',
+    'RR',
+    'SC',
+    'SP',
+    'SE',
+    'TO'
 ];
 
 // PRG: flash data from session (cleared after redirect)
@@ -31,7 +55,8 @@ $mensagem_sucesso = $_SESSION['mensagem_sucesso_cadastro_local'] ?? '';
 unset($_SESSION['mensagem_erro_cadastro_local'], $_SESSION['mensagem_sucesso_cadastro_local']);
 
 // Helper: get form value from flash or empty
-function fd(string $key): string {
+function fd(string $key): string
+{
     global $formData;
     return htmlspecialchars($formData[$key] ?? '', ENT_QUOTES, 'UTF-8');
 }
@@ -68,69 +93,53 @@ function fd(string $key): string {
 
                         <h5 class="border-bottom pb-2 mb-3"><i class="fas fa-tag me-2"></i>Identificacao</h5>
                         <div class="row g-3 mb-4">
-                            <div class="col-md-2">
+                            <!-- Linha 1: Tipo de Local e Nome do Local -->
+                            <div class="col-md-3">
                                 <label for="tipo_local_id" class="form-label">Tipo de Local *</label>
                                 <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required>
                                     <option value="">Selecione...</option>
                                     <?php foreach ($tiposLocais as $t): ?>
-                                    <option value="<?= (int)$t->id ?>" <?= (isset($formData['tipo_local_id']) && (int)$formData['tipo_local_id'] === (int)$t->id) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($t->nome, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
+                                        <option value="<?= (int)$t->id ?>" <?= (isset($formData['tipo_local_id']) && (int)$formData['tipo_local_id'] === (int)$t->id) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($t->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-6">
                                 <label for="nome" class="form-label">Nome do Local *</label>
                                 <input type="text" class="form-control form-control-sm" id="nome" name="nome" required
                                     value="<?= fd('nome') ?>"
                                     placeholder="Ex: ESCOLA MUNICIPAL PROF JOÃO">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="regiao_id" class="form-label">Regiao</label>
                                 <select class="form-select form-select-sm" id="regiao_id" name="regiao_id">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($regioes as $r): ?>
-                                    <option value="<?= (int)$r->id ?>" <?= (isset($formData['regiao_id']) && (int)$formData['regiao_id'] === (int)$r->id) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($r->nome, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
+                                        <option value="<?= (int)$r->id ?>" <?= (isset($formData['regiao_id']) && (int)$formData['regiao_id'] === (int)$r->id) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($r->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="tem_alarme" name="tem_alarme" value="1"
-                                        <?= (isset($formData['tem_alarme'])) ? 'checked' : '' ?>>
-                                    <label class="form-check-label" for="tem_alarme">
-                                        Local possui alarme
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= (isset($formData['tem_alarme'])) ? 'block' : 'none' ?>;">
-                                <label for="alarme_conta" class="form-label">Conta do Alarme</label>
-                                <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
-                                    <option value="">Selecione...</option>
-                                    <?php foreach ($contasAlarmes as $c): ?>
-                                    <option value="<?= (int)$c->conta ?>" <?= (isset($formData['alarme_conta']) && (int)$formData['alarme_conta'] === (int)$c->conta) ? 'selected' : '' ?>>
-                                        <?= (int)$c->conta ?> - <?= htmlspecialchars($c->local, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+
+
+                            <!-- Linha 3: Secretaria, Horário, Telefone e Email -->
                             <div class="col-md-6">
                                 <label for="secretaria_id" class="form-label">Secretaria</label>
                                 <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id" <?= $isScopedUser ? 'disabled' : '' ?>>
                                     <option value="">Nenhuma</option>
                                     <?php foreach ($secretarias as $s): ?>
-                                    <option value="<?= (int)$s->id ?>" <?= (isset($formData['secretaria_id']) && (int)$formData['secretaria_id'] === (int)$s->id) || ($isScopedUser && (int)$s->id === $usuarioSecretariaId) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
+                                        <option value="<?= (int)$s->id ?>" <?= (isset($formData['secretaria_id']) && (int)$formData['secretaria_id'] === (int)$s->id) || ($isScopedUser && (int)$s->id === $usuarioSecretariaId) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                                 <?php if ($isScopedUser): ?>
-                                <input type="hidden" name="secretaria_id" value="<?= $usuarioSecretariaId ?>">
+                                    <input type="hidden" name="secretaria_id" value="<?= $usuarioSecretariaId ?>">
                                 <?php endif; ?>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="horario_funcionamento" class="form-label">Horario de Funcionamento</label>
                                 <input type="text" class="form-control form-control-sm" id="horario_funcionamento" name="horario_funcionamento"
                                     value="<?= fd('horario_funcionamento') ?>"
@@ -142,11 +151,34 @@ function fd(string $key): string {
                                     value="<?= fd('telefone') ?>"
                                     placeholder="Ex: (43) 3375-0112 ramal 50112">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="email" class="form-label">E-mail</label>
                                 <input type="email" class="form-control form-control-sm" id="email" name="email"
                                     value="<?= fd('email') ?>"
                                     placeholder="exemplo@dominio.com">
+                            </div>
+
+                            <!-- Linha 2: Alarmes e Câmeras -->
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="tem_alarme" name="tem_alarme" value="1"
+                                        <?= (isset($formData['tem_alarme'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="tem_alarme">
+                                        Local possui alarme
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="tem_camera" name="tem_camera" value="1"
+                                        <?= (isset($formData['tem_camera'])) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="tem_camera">
+                                        Local possui camera
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Espaço vazio para alinhamento -->
                             </div>
                         </div>
 
@@ -168,7 +200,7 @@ function fd(string $key): string {
                                 <select class="form-select form-select-sm" id="uf" name="uf">
                                     <option value="">Selecione</option>
                                     <?php foreach ($ufs as $uf): ?>
-                                    <option value="<?= $uf ?>" <?= (isset($formData['uf']) && $formData['uf'] === $uf) ? 'selected' : '' ?>><?= $uf ?></option>
+                                        <option value="<?= $uf ?>" <?= (isset($formData['uf']) && $formData['uf'] === $uf) ? 'selected' : '' ?>><?= $uf ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -189,9 +221,9 @@ function fd(string $key): string {
                                 <select class="form-select form-select-sm" id="classificacao_endereco_id" name="classificacao_endereco_id">
                                     <option value="">Selecione</option>
                                     <?php foreach ($classificacoes as $c): ?>
-                                    <option value="<?= (int)$c->id ?>" <?= (isset($formData['classificacao_endereco_id']) && (int)$formData['classificacao_endereco_id'] === (int)$c->id) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($c->nome, ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
+                                        <option value="<?= (int)$c->id ?>" <?= (isset($formData['classificacao_endereco_id']) && (int)$formData['classificacao_endereco_id'] === (int)$c->id) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($c->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -254,159 +286,177 @@ function fd(string $key): string {
 </div>
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-document.addEventListener('DOMContentLoaded', function() {
-    aplicarUppercaseUniversal(document.querySelector('form'));
+    document.addEventListener('DOMContentLoaded', function() {
+        (function(form) {
+            if (!form) return;
+            form.querySelectorAll('input[type="text"], textarea, input:not([type])').forEach(function(field) {
+                if (field.dataset.uppercase === 'false') return;
+                if (field.dataset.uppercaseBound) return;
+                field.dataset.uppercaseBound = 'true';
+                field.addEventListener('input', function() {
+                    var pos = this.selectionStart;
+                    this.value = this.value.toUpperCase();
+                    this.setSelectionRange(pos, pos);
+                });
+            });
+        })(document.querySelector('form.needs-validation'));
 
-    var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
+        var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
 
-    var temAlarmeCheckbox = document.getElementById('tem_alarme');
-    var alarmeContaWrapper = document.getElementById('alarmeContaWrapper');
-    if (temAlarmeCheckbox && alarmeContaWrapper) {
-        temAlarmeCheckbox.addEventListener('change', function() {
-            alarmeContaWrapper.style.display = this.checked ? 'block' : 'none';
-            var select = alarmeContaWrapper.querySelector('select');
-            if (select) select.required = this.checked;
+        var temAlarmeCheckbox = document.getElementById('tem_alarme');
+        var alarmeContaWrapper = document.getElementById('alarmeContaWrapper');
+        if (temAlarmeCheckbox && alarmeContaWrapper) {
+            temAlarmeCheckbox.addEventListener('change', function() {
+                alarmeContaWrapper.style.display = this.checked ? 'block' : 'none';
+                var select = alarmeContaWrapper.querySelector('select');
+                if (select) select.required = this.checked;
+            });
+        }
+
+        // --- Helper: set select option by text ---
+        function setSelectByText(selectId, text) {
+            var sel = document.getElementById(selectId);
+            if (!sel || !text) return;
+            var upper = text.toUpperCase().trim();
+            for (var i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].text.toUpperCase().trim() === upper) {
+                    sel.selectedIndex = i;
+                    return;
+                }
+            }
+        }
+
+        // --- CEP Mask + Lookup ---
+        var cepInput = document.getElementById('cep');
+        cepInput.addEventListener('input', function(e) {
+            var value = e.target.value.replace(/\D/g, '').substring(0, 8);
+            e.target.value = value.length > 5 ? value.substring(0, 5) + '-' + value.substring(5) : value;
+
+            // Se o CEP foi alterado (digitando), limpa endereco anterior
+            var raw = value;
+            if (raw.length === 0 || raw.length < 8) {
+                document.getElementById('logradouro').value = '';
+                document.getElementById('bairro').value = '';
+                document.getElementById('cidade').value = '';
+            }
         });
-    }
 
-    // --- Helper: set select option by text ---
-    function setSelectByText(selectId, text) {
-        var sel = document.getElementById(selectId);
-        if (!sel || !text) return;
-        var upper = text.toUpperCase().trim();
-        for (var i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].text.toUpperCase().trim() === upper) {
-                sel.selectedIndex = i;
+        function buscarCep() {
+            var cep = cepInput.value.replace(/\D/g, '');
+            if (cep.length !== 8) {
+                if (typeof showToast === 'function') showToast('Informe um CEP valido com 8 digitos.', 'warning');
+                cepInput.focus();
                 return;
             }
-        }
-    }
 
-    // --- CEP Mask + Lookup ---
-    var cepInput = document.getElementById('cep');
-    cepInput.addEventListener('input', function(e) {
-        var value = e.target.value.replace(/\D/g, '').substring(0, 8);
-        e.target.value = value.length > 5 ? value.substring(0, 5) + '-' + value.substring(5) : value;
+            fetch(API_BASE + 'api_cep_lookup&cep=' + cep)
+                .then(function(r) {
+                    return r.json();
+                })
+                .then(function(data) {
+                    if (data.success && data.data) {
+                        var d = data.data;
 
-        // Se o CEP foi alterado (digitando), limpa endereco anterior
-        var raw = value;
-        if (raw.length === 0 || raw.length < 8) {
-            document.getElementById('logradouro').value = '';
-            document.getElementById('bairro').value = '';
-            document.getElementById('cidade').value = '';
-        }
-    });
+                        var logradouroCompleto = (d.logradouro || '').trim();
+                        var partes = logradouroCompleto.split(/\s+/);
+                        var tipo = partes.length > 1 ? partes[0].replace('.', '').toUpperCase() : '';
+                        var via = partes.length > 1 ? partes.slice(1).join(' ') : logradouroCompleto;
 
-    function buscarCep() {
-        var cep = cepInput.value.replace(/\D/g, '');
-        if (cep.length !== 8) {
-            if (typeof showToast === 'function') showToast('Informe um CEP valido com 8 digitos.', 'warning');
-            cepInput.focus();
-            return;
-        }
+                        if (tipo) setSelectByText('classificacao_endereco_id', tipo);
+                        document.getElementById('logradouro').value = (via || '').toUpperCase();
+                        document.getElementById('bairro').value = (d.bairro || '').toUpperCase();
+                        document.getElementById('cidade').value = (d.cidade || '').toUpperCase();
 
-        fetch(API_BASE + 'api_cep_lookup&cep=' + cep)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success && data.data) {
-                    var d = data.data;
-
-                    var logradouroCompleto = (d.logradouro || '').trim();
-                    var partes = logradouroCompleto.split(/\s+/);
-                    var tipo = partes.length > 1 ? partes[0].replace('.', '').toUpperCase() : '';
-                    var via = partes.length > 1 ? partes.slice(1).join(' ') : logradouroCompleto;
-
-                    if (tipo) setSelectByText('classificacao_endereco_id', tipo);
-                    document.getElementById('logradouro').value = (via || '').toUpperCase();
-                    document.getElementById('bairro').value = (d.bairro || '').toUpperCase();
-                    document.getElementById('cidade').value = (d.cidade || '').toUpperCase();
-
-                    var ufSelect = document.getElementById('uf');
-                    if (d.uf) {
-                        for (var i = 0; i < ufSelect.options.length; i++) {
-                            if (ufSelect.options[i].value === d.uf) {
-                                ufSelect.selectedIndex = i;
-                                break;
+                        var ufSelect = document.getElementById('uf');
+                        if (d.uf) {
+                            for (var i = 0; i < ufSelect.options.length; i++) {
+                                if (ufSelect.options[i].value === d.uf) {
+                                    ufSelect.selectedIndex = i;
+                                    break;
+                                }
                             }
                         }
+
+                        if (typeof showToast === 'function') showToast('Endereco preenchido a partir do CEP.', 'success');
+                    } else {
+                        if (typeof showToast === 'function') showToast('CEP nao encontrado.', 'warning');
                     }
-
-                    if (typeof showToast === 'function') showToast('Endereco preenchido a partir do CEP.', 'success');
-                } else {
-                    if (typeof showToast === 'function') showToast('CEP nao encontrado.', 'warning');
-                }
-            })
-            .catch(function(err) {
-                console.error('CEP lookup failed:', err);
-                if (typeof showToast === 'function') showToast('Erro ao consultar CEP.', 'danger');
-            });
-    }
-
-    document.getElementById('btnBuscarCep').addEventListener('click', buscarCep);
-    cepInput.addEventListener('blur', buscarCep);
-
-    // --- Geocode (Buscar Coordenadas) ---
-    var btnGeo = document.getElementById('btnBuscarCoordenadas');
-    btnGeo.addEventListener('click', function() {
-        var getVal = function(id) { return (document.getElementById(id) || {}).value || ''; };
-
-        var tipoLog = getVal('classificacao_endereco_id');
-        var tipoText = '';
-        var sel = document.getElementById('classificacao_endereco_id');
-        if (sel) {
-            for (var i = 0; i < sel.options.length; i++) {
-                if (sel.options[i].value === tipoLog) {
-                    tipoText = sel.options[i].text;
-                    break;
-                }
-            }
+                })
+                .catch(function(err) {
+                    console.error('CEP lookup failed:', err);
+                    if (typeof showToast === 'function') showToast('Erro ao consultar CEP.', 'danger');
+                });
         }
 
-        var logradouro = getVal('logradouro');
-        var numero = getVal('numero');
-        var bairro = getVal('bairro');
-        var cidade = getVal('cidade');
-        var uf = getVal('uf');
+        document.getElementById('btnBuscarCep').addEventListener('click', buscarCep);
+        cepInput.addEventListener('blur', buscarCep);
 
-        if (!logradouro || !bairro || !cidade || !uf) {
-            if (typeof showToast === 'function') {
-                showToast('Preencha logradouro, bairro, cidade e UF antes de buscar coordenadas.', 'warning');
-            }
-            return;
-        }
+        // --- Geocode (Buscar Coordenadas) ---
+        var btnGeo = document.getElementById('btnBuscarCoordenadas');
+        btnGeo.addEventListener('click', function() {
+            var getVal = function(id) {
+                return (document.getElementById(id) || {}).value || '';
+            };
 
-        var query = [tipoText, logradouro, numero, bairro, cidade, uf, 'Brasil'].filter(Boolean).join(', ');
-
-        btnGeo.disabled = true;
-        btnGeo.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-        fetch(API_BASE + 'api_geocode&q=' + encodeURIComponent(query))
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success && data.data && data.data.lat && data.data.lon) {
-                    document.getElementById('latitude').value = Number(data.data.lat).toFixed(6);
-                    document.getElementById('longitude').value = Number(data.data.lon).toFixed(6);
-                    if (typeof showToast === 'function') {
-                        showToast('Coordenadas preenchidas automaticamente.', 'success');
-                    }
-                } else {
-                    if (typeof showToast === 'function') {
-                        showToast('Endereco nao encontrado para geolocalizacao.', 'warning');
+            var tipoLog = getVal('classificacao_endereco_id');
+            var tipoText = '';
+            var sel = document.getElementById('classificacao_endereco_id');
+            if (sel) {
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === tipoLog) {
+                        tipoText = sel.options[i].text;
+                        break;
                     }
                 }
-            })
-            .catch(function(err) {
-                console.error('Geocode failed:', err);
+            }
+
+            var logradouro = getVal('logradouro');
+            var numero = getVal('numero');
+            var bairro = getVal('bairro');
+            var cidade = getVal('cidade');
+            var uf = getVal('uf');
+
+            if (!logradouro || !bairro || !cidade || !uf) {
                 if (typeof showToast === 'function') {
-                    showToast('Erro ao buscar coordenadas.', 'danger');
+                    showToast('Preencha logradouro, bairro, cidade e UF antes de buscar coordenadas.', 'warning');
                 }
-            })
-            .finally(function() {
-                btnGeo.disabled = false;
-                btnGeo.innerHTML = '<i class="fas fa-map-pin me-1"></i>Geo';
-            });
+                return;
+            }
+
+            var query = [tipoText, logradouro, numero, bairro, cidade, uf, 'Brasil'].filter(Boolean).join(', ');
+
+            btnGeo.disabled = true;
+            btnGeo.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            fetch(API_BASE + 'api_geocode&q=' + encodeURIComponent(query))
+                .then(function(r) {
+                    return r.json();
+                })
+                .then(function(data) {
+                    if (data.success && data.data && data.data.lat && data.data.lon) {
+                        document.getElementById('latitude').value = Number(data.data.lat).toFixed(6);
+                        document.getElementById('longitude').value = Number(data.data.lon).toFixed(6);
+                        if (typeof showToast === 'function') {
+                            showToast('Coordenadas preenchidas automaticamente.', 'success');
+                        }
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast('Endereco nao encontrado para geolocalizacao.', 'warning');
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Geocode failed:', err);
+                    if (typeof showToast === 'function') {
+                        showToast('Erro ao buscar coordenadas.', 'danger');
+                    }
+                })
+                .finally(function() {
+                    btnGeo.disabled = false;
+                    btnGeo.innerHTML = '<i class="fas fa-map-pin me-1"></i>Geo';
+                });
+        });
     });
-});
 </script>
 
 <?php
@@ -414,7 +464,7 @@ $vitePageJs = vite_asset('cadastro-locais');
 if ($vitePageJs):
     $viteImports = vite_entry_imports('cadastro-locais');
     foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
+        <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+    <?php endforeach; ?>
+    <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>

@@ -73,7 +73,7 @@ try {
                         <button type="button" id="btnColunas" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-columns me-1"></i>Colunas
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end p-2" id="menuColunas" style="min-width:200px;max-height:300px;overflow-y:auto">
+                        <ul class="dropdown-menu dropdown-menu-end p-2 menu-colunas-dropdown" id="menuColunas">
                         </ul>
                     </div>
                     <a href="?page=action_logout" class="btn btn-outline-danger ms-auto">

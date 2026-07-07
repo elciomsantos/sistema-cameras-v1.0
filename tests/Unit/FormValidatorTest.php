@@ -26,7 +26,7 @@ class FormValidatorTest extends TestCase
         $v = new \FormValidator(['nome' => '']);
         $v->required('nome', 'Nome');
         $this->assertTrue($v->fails());
-        $this->assertStringContainsString('nome', $v->firstError());
+        $this->assertStringContainsString('Nome', $v->firstError());
     }
 
     public function testRequiredMissingField(): void

@@ -116,7 +116,7 @@ class RequestValidator
         }
 
         // Aplicar validador built-in
-        $methodName = 'validate' . ucfirst($ruleName);
+        $methodName = 'validate' . str_replace('_', '', ucwords($ruleName, '_'));
         if (method_exists($this, $methodName)) {
             if (!$this->$methodName($field, $value, $params)) {
                 $this->addError($field, $ruleName, $params);

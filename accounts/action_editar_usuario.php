@@ -27,7 +27,7 @@ if (!$id_usuario) {
 
 $db = db();
 
-$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id";
+$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id AND u.deleted_at IS NULL";
 $result = $db->query($sql, [':id' => $id_usuario]);
 
 if ($result['status'] !== 'success' || count($result['data']) === 0) {

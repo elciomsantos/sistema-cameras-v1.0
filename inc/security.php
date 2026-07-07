@@ -17,11 +17,15 @@ define('LOGIN_WINDOW_SECONDS', 900);
 define('LOGIN_LOCK_SECONDS', 900);
 
 define('CSRF_TOKEN_WINDOW_SIZE', 3);
+define('CSRF_FORM_TTL_SECONDS', 180);
 
 function getCsrfToken(): string
 {
     $tokens = $_SESSION['csrf_tokens'] ?? [];
-    $current = $tokens[array_key_last($tokens)] ?? null;
+    $current = null;
+    if (!empty($tokens)) {
+        $current = $tokens[array_key_last($tokens)] ?? null;
+    }
     if (!$current) {
         $current = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
         $_SESSION['csrf_tokens'] = [$current];
@@ -37,13 +41,26 @@ function validateCsrfToken(?string $token): bool
     }
 
     $tokens = $_SESSION['csrf_tokens'] ?? [];
+    $validations = $_SESSION['csrf_token_validations'] ?? [];
+    $now = time();
+    foreach ($validations as $tok => $ts) {
+        if ($ts + CSRF_FORM_TTL_SECONDS < $now) {
+            unset($validations[$tok]);
+        }
+    }
     foreach ($tokens as $i => $t) {
         if (hash_equals($t, $token)) {
-            unset($_SESSION['csrf_tokens'][$i]);
-            $_SESSION['csrf_tokens'] = array_values($_SESSION['csrf_tokens']);
+            $validations[$t] = $validations[$t] ?? $now;
+            $_SESSION['csrf_token_validations'] = $validations;
             return true;
         }
     }
+    // Form HTML: token pode ja ter sido consumido por AJAX mas ainda dentro do TTL
+    if (isset($validations[$token]) && $validations[$token] + CSRF_FORM_TTL_SECONDS >= $now) {
+        $_SESSION['csrf_token_validations'] = $validations;
+        return true;
+    }
+    $_SESSION['csrf_token_validations'] = $validations;
 
     return false;
 }
@@ -76,6 +93,7 @@ function requireApiCsrf(bool $rotate = true): void
 
     $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (!validateCsrfToken($token)) {
+        error_log('[CSRF] Falha na validacao. Token: ' . substr($token, 0, 16) . '... | Session keys: ' . implode(',', array_keys($_SESSION['csrf_tokens'] ?? [])) . ' | Method: ' . $_SERVER['REQUEST_METHOD']);
         http_response_code(422);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
@@ -90,6 +108,18 @@ function requireApiCsrf(bool $rotate = true): void
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    // AJAX: consome token imediatamente (rotaciona)
+    // Mantem em csrf_token_validations para form HTML still-validate within TTL
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    foreach ($tokens as $i => $t) {
+        if (hash_equals($t, $token)) {
+            unset($_SESSION['csrf_tokens'][$i]);
+            $_SESSION['csrf_tokens'] = array_values($_SESSION['csrf_tokens']);
+            break;
+        }
+    }
+    // (nao limpa validations[$token] — form HTML ainda pode revalidar dentro do TTL)
 
     if ($rotate) {
         rotateCsrfToken();

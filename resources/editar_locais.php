@@ -91,7 +91,7 @@ unset($_SESSION['form_data_editar_local']);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-3">
                                 <label for="nome" class="form-label">Nome do Local *</label>
                                 <input type="text" class="form-control form-control-sm" id="nome" name="nome" required
                                     value="<?= htmlspecialchars($formData['nome'] ?? $local->nome ?? '', ENT_QUOTES, 'UTF-8') ?>"
@@ -108,7 +108,7 @@ unset($_SESSION['form_data_editar_local']);
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-3 d-flex align-items-end">
+                            <div class="col-md-2 d-flex align-items-end">
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" id="tem_alarme" name="tem_alarme" value="1"
                                         <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? 'checked' : '' ?>>
@@ -117,7 +117,16 @@ unset($_SESSION['form_data_editar_local']);
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-3" id="alarmeContaWrapper" style="display: <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? 'block' : 'none' ?>;">
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="tem_camera" name="tem_camera" value="1"
+                                        <?= (isset($formData['tem_camera']) ? $formData['tem_camera'] : ($local->tem_camera ?? 0)) ? 'checked' : '' ?>>
+                                    <label class="form-check-label" for="tem_camera">
+                                        Local possui camera
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 <?= (isset($formData['tem_alarme']) ? $formData['tem_alarme'] : ($local->tem_alarme ?? 0)) ? '' : 'd-none' ?>" id="alarmeContaWrapper">
                                 <label for="alarme_conta" class="form-label">Conta do Alarme</label>
                                 <select class="form-select form-select-sm" id="alarme_conta" name="alarme_conta">
                                     <option value="">Selecione...</option>
@@ -252,7 +261,19 @@ unset($_SESSION['form_data_editar_local']);
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 document.addEventListener('DOMContentLoaded', function() {
-    aplicarUppercaseUniversal(document.querySelector('form'));
+    (function(form) {
+        if (!form) return;
+        form.querySelectorAll('input[type="text"], textarea, input:not([type])').forEach(function(field) {
+            if (field.dataset.uppercase === 'false') return;
+            if (field.dataset.uppercaseBound) return;
+            field.dataset.uppercaseBound = 'true';
+            field.addEventListener('input', function() {
+                var pos = this.selectionStart;
+                this.value = this.value.toUpperCase();
+                this.setSelectionRange(pos, pos);
+            });
+        });
+    })(document.querySelector('form.needs-validation'));
 
     var API_BASE = window.APP_API_BASE || (window.BASE_URL || '/') + 'index.php?page=api/';
 

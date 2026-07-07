@@ -41,7 +41,7 @@ header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="locais_' . date('Y-m-d') . '.csv"');
 $output = fopen('php://output', 'w');
 fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
-fputcsv($output, ['Nome', 'Tipo', 'Regiao', 'Logradouro', 'Numero', 'Bairro', 'Cidade', 'UF', 'CEP', 'Secretaria', 'Tem Alarme', 'Cameras', 'Outros Equip.', 'Horario Funcionamento']);
+fputcsv($output, ['Nome', 'Tipo', 'Regiao', 'Logradouro', 'Numero', 'Bairro', 'Cidade', 'UF', 'CEP', 'Secretaria', 'Tem Alarme', 'Tem Camera', 'Cameras', 'Outros Equip.', 'Horario Funcionamento']);
 foreach ($allLocais as $l) {
     fputcsv($output, [
         $l->nome ?? '',
@@ -55,6 +55,7 @@ foreach ($allLocais as $l) {
         $l->cep ?? '',
         $l->sigla ?? '',
         ($l->tem_alarme ?? 0) ? 'Sim' : 'Nao',
+        ($l->tem_camera ?? 0) ? 'Sim' : 'Nao',
         (int)($l->total_cameras ?? 0),
         (int)($l->total_outros ?? 0),
         $l->horario_funcionamento ?? '',

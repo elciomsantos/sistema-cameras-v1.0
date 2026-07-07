@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
   const apiUrl: string = `${window.APP_API_BASE}api_relatorios_cameras`;
   const itensPorPagina: number = 50;
+  const locaisList: Array<{id: number; nome: string}> = (window as any).LOCAIS_LIST || [];
   let paginaAtual: number = 1;
   let totalItens: number = 0;
   let _resizeObserver: ResizeObserver | null = null;
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
         pesquisa: (document.getElementById('pesquisa') as HTMLInputElement).value,
         status: (document.getElementById('status') as HTMLSelectElement).value,
         regiao: (document.getElementById('regiao') as HTMLSelectElement).value,
-        local: (document.getElementById('local') as HTMLSelectElement).value
+        local: (document.getElementById('local_id') as HTMLInputElement).value
       };
 
       const queryString = construirQueryString(filtros, pagina);
@@ -498,7 +499,60 @@ document.addEventListener('DOMContentLoaded', function (): void {
     }
   });
 
-  ['status', 'regiao', 'local'].forEach(id => {
+  const localInput = document.getElementById('local') as HTMLInputElement;
+  const localHidden = document.getElementById('local_id') as HTMLInputElement;
+  const localSuggestions = document.getElementById('localSuggestions') as HTMLElement;
+
+  localInput.addEventListener('input', function () {
+    const term = this.value.trim();
+    if (term.length < 3) {
+      localSuggestions.classList.add('d-none');
+      return;
+    }
+    const lower = term.toLowerCase();
+    const filtered = locaisList.filter(l => l.nome.toLowerCase().includes(lower));
+    if (filtered.length === 0) {
+      localSuggestions.classList.add('d-none');
+      return;
+    }
+    localSuggestions.innerHTML = filtered.map(l =>
+      `<button type="button" class="list-group-item list-group-item-action" data-id="${l.id}" data-nome="${escapeHtml(l.nome)}">${escapeHtml(l.nome)}</button>`
+    ).join('');
+    localSuggestions.classList.remove('d-none');
+  });
+
+  localSuggestions.addEventListener('click', function (e: Event) {
+    const target = e.target as HTMLElement;
+    const btn = target.closest('.list-group-item') as HTMLElement | null;
+    if (!btn) return;
+    localInput.value = btn.dataset.nome || '';
+    localHidden.value = btn.dataset.id || '';
+    localSuggestions.classList.add('d-none');
+    buscarDados();
+  });
+
+  document.addEventListener('click', function (e: Event) {
+    if (!(e.target as HTMLElement).closest('#local, #localSuggestions')) {
+      localSuggestions.classList.add('d-none');
+    }
+  });
+
+  localInput.addEventListener('blur', function () {
+    setTimeout(() => {
+      if (this.value.trim() === '') {
+        localHidden.value = '';
+      }
+    }, 200);
+  });
+
+  // Clear hidden when user types (removes selection)
+  localInput.addEventListener('keydown', function () {
+    if (localHidden.value) {
+      localHidden.value = '';
+    }
+  });
+
+  ['status', 'regiao'].forEach(id => {
     document.getElementById(id)!.addEventListener('change', function () {
       buscarDados();
     });

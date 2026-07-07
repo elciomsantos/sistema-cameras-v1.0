@@ -123,6 +123,8 @@ try {
         LEFT JOIN equipamentos_totem etot ON etot.equipamento_id = e.id
         LEFT JOIN classificacao_enderecos ce ON l.classificacao_endereco_id = ce.id
         LEFT JOIN tipo_cameras tc ON e.tipo_camera_id = tc.id
+        LEFT JOIN regioes rg ON e.regiao_id = rg.id
+        LEFT JOIN procedimentos pr ON e.procedimento_id = pr.id
         LEFT JOIN (
             SELECT equipamento_id, MIN(os_status_id) AS manutencao_status
             FROM equipamentos_manutencoes
@@ -159,6 +161,10 @@ try {
                 e.transmissao_id,
                 e.origem_link_id,
                 e.patrimonio,
+                e.regiao_id,
+                e.procedimento_id,
+                rg.nome AS regiao_nome,
+                pr.nome AS procedimento_nome,
                 ec.mosaico,
                 ec.coordenadas,
                 ec.numero_ruas,

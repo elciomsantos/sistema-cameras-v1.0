@@ -143,7 +143,7 @@ unset($_SESSION['form_data']);
                                         </div>
 
                                         <div id="containerAlarmeConta" class="<?= $temAlarme ? 'visivel' : '' ?>">
-                                            <label class="form-label required mb-1" for="alarmeConta" style="color:#5d4037; font-size:0.88rem;">
+                                            <label class="form-label required mb-1 label-brown" for="alarmeConta">
                                                 Número da conta do alarme
                                             </label>
                                             <input type="text" name="alarme_conta" id="alarmeConta"
@@ -152,7 +152,7 @@ unset($_SESSION['form_data']);
                                                 placeholder="Ex: 12345"
                                                 maxlength="50"
                                                 <?= $temAlarme ? '' : 'disabled' ?>>
-                                            <div class="form-text" style="color:#8d6e63;">Número da conta cadastrada na empresa de monitoramento</div>
+                                            <div class="form-text form-text-brown">Número da conta cadastrada na empresa de monitoramento</div>
                                         </div>
                                     </div>
                                 </div>
@@ -181,10 +181,10 @@ unset($_SESSION['form_data']);
                                     <div class="invalid-feedback">Selecione a marca</div>
                                 </div>
 
-                                <div class="col-md-2 d-flex align-items-center justify-content-center" style="padding-top: 30px;">
+                                <div class="col-md-2 d-flex align-items-center justify-content-center pt-30">
                                     <div class="form-check mb-0">
                                         <input class="form-check-input" type="checkbox" id="toggleModeloExistente">
-                                        <label class="form-check-label" for="toggleModeloExistente" style="white-space: nowrap; font-size:0.88rem;">
+                                        <label class="form-check-label label-compact" for="toggleModeloExistente">
                                             Usar modelo existente
                                         </label>
                                     </div>
@@ -267,7 +267,7 @@ unset($_SESSION['form_data']);
                             </div>
 
                             <!-- Campos específicos LPR -->
-                            <div id="secaoEspecificaLPR" style="display:none">
+                            <div id="secaoEspecificaLPR" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-car me-1"></i>Especificações LPR</h6>
                                 <div class="row g-4">
@@ -302,7 +302,7 @@ unset($_SESSION['form_data']);
                             </div>
 
                             <!-- Campos específicos DVR -->
-                            <div id="secaoEspecificaDVR" style="display:none">
+                            <div id="secaoEspecificaDVR" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-hdd me-1"></i>Especificações DVR</h6>
                                 <div class="row g-4">
@@ -329,7 +329,7 @@ unset($_SESSION['form_data']);
                             </div>
 
                             <!-- Campos específicos Totem -->
-                            <div id="secaoEspecificaTotem" style="display:none">
+                            <div id="secaoEspecificaTotem" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-desktop me-1"></i>Especificações Totem</h6>
                                 <div class="row g-4">
@@ -538,7 +538,7 @@ unset($_SESSION['form_data']);
                                 <div class="col-md-6">
                                     <label class="form-label">Data de Instalação</label>
                                     <input type="date" name="data_instalacao" class="form-control"
-                                        value="<?= htmlspecialchars($formData['data_instalacao'] ?? date('Y-m-d', ENT_QUOTES, 'UTF-8')) ?>">
+                                        value="<?= htmlspecialchars($formData['data_instalacao'] ?? date('Y-m-d'), ENT_QUOTES, 'UTF-8') ?>">
                                 </div>
 
                                 <div class="col-12">
@@ -583,8 +583,8 @@ unset($_SESSION['form_data']);
                                 <div class="d-flex justify-content-between mb-1">
                                     <small class="anexos-progress-text">Enviando...</small>
                                 </div>
-                                <div class="progress" style="height:6px;">
-                                    <div class="anexos-progress progress-bar" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress progress-thin">
+                                    <div class="anexos-progress progress-bar progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
                             <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>

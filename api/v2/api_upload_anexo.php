@@ -125,9 +125,19 @@ try {
     $uploadDir = APP_ROOT . '/storage/uploads/' . $subdir . '/';
     $caminhoAbsoluto = $uploadDir . $nomeArquivo;
 
-    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-        ApiResponse::internalError('Falha ao criar diretório de upload.');
+    // Flag: se consegue salvar em FS (storage/), usa o FS; senão guardará no BD.
+    $salvarEmDisco = is_dir($uploadDir) && is_writable($uploadDir);
+    if (!$salvarEmDisco) {
+        if (!is_dir($uploadDir)) {
+            $salvarEmDisco = @mkdir($uploadDir, 0755, true) && is_writable($uploadDir);
+        }
+        if (!$salvarEmDisco) {
+            // Sem FS writable — guardar no BD
+            $uploadDir = null;
+        }
     }
+
+    $conteudoBinario = null;
 
     $imageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
     if (in_array($detectedMime, $imageMimes, true)) {
@@ -152,10 +162,32 @@ try {
             ApiResponse::error('VALIDATION_ERROR', 'Imagem invalida ou corrompida.');
         }
         $quality = ($detectedMime === 'image/jpeg') ? 90 : -1;
-        $saved = @$saver($src, $caminhoAbsoluto, $quality);
-        imagedestroy($src);
-        if (!$saved) {
-            ApiResponse::internalError('Falha ao processar imagem.');
+        if ($salvarEmDisco) {
+            // Salvar diretamente no FS
+            $saved = @$saver($src, $caminhoAbsoluto, $quality);
+            if (!$saved) {
+                @imagedestroy($src);
+                ApiResponse::internalError('Falha ao salvar imagem no disco.');
+            }
+        } else {
+            // Salvar em memoria (buffer) para BD
+            $tmpPath = tempnam(sys_get_temp_dir(), 'anexo_');
+            $saved = @$saver($src, $tmpPath, $quality);
+            @imagedestroy($src);
+            if (!$saved) {
+                @unlink($tmpPath);
+                ApiResponse::internalError('Falha ao processar imagem (memoria).');
+            }
+            $conteudoBinario = file_get_contents($tmpPath);
+            @unlink($tmpPath);
+            if ($conteudoBinario === false) {
+                ApiResponse::internalError('Falha ao ler imagem processada.');
+            }
+            // Atualiza tamanho real apos reprocessamento
+            $file['size'] = strlen($conteudoBinario);
+        }
+        if (is_resource($src) || (is_object($src) && get_class($src) === 'GdImage')) {
+            @imagedestroy($src);
         }
     } else {
         $headerValidators = [
@@ -167,24 +199,43 @@ try {
         ];
         $expectedHeader = $headerValidators[$detectedMime] ?? null;
         if ($expectedHeader !== null) {
-            $fh = fopen($file['tmp_name'], 'rb');
-            $actualHeader = $fh !== false ? fread($fh, strlen($expectedHeader)) : '';
-            if ($fh !== false) { fclose($fh); }
+            $fh = @fopen($file['tmp_name'], 'rb');
+            $actualHeader = $fh !== false ? @fread($fh, strlen($expectedHeader)) : '';
+            if ($fh !== false) { @fclose($fh); }
             if ($actualHeader !== $expectedHeader) {
                 ApiResponse::error('VALIDATION_ERROR', 'Arquivo invalido ou corrompido.');
             }
         }
-        if (!move_uploaded_file($file['tmp_name'], $caminhoAbsoluto)) {
-            ApiResponse::internalError('Falha ao salvar arquivo no servidor.');
+        if ($salvarEmDisco) {
+            if (!move_uploaded_file($file['tmp_name'], $caminhoAbsoluto)) {
+                ApiResponse::internalError('Falha ao salvar arquivo no servidor.');
+            }
+        } else {
+            // Conteudo para BD
+            $conteudoBinario = file_get_contents($file['tmp_name']);
+            if ($conteudoBinario === false) {
+                ApiResponse::internalError('Falha ao ler arquivo para armazenamento.');
+            }
         }
     }
 
     $caminhoRelativo = 'uploads/' . $subdir . '/' . $nomeArquivo;
     $anexoId = 0;
 
+    // Comprimir conteudo binario se valer a pena ( so se conteudo em BD )
+    $conteudoComprimido = 0;
+    if ($conteudoBinario !== null && function_exists('gzdeflate')) {
+        $compressed = @gzdeflate($conteudoBinario, 6);
+        // So usa o comprimido se for significativamente menor ( evita overheads em arquivos pequenos )
+        if ($compressed !== false && strlen($compressed) < strlen($conteudoBinario)) {
+            $conteudoBinario = $compressed;
+            $conteudoComprimido = 1;
+        }
+    }
+
     $db->beginTransaction();
     try {
-        $result = $db->insert('equipamentos_anexos', [
+        $insertData = [
             'equipamento_id' => $equipamentoId,
             'alarme_id' => $alarmeId,
             'manutencao_camera_id' => $manutencaoCameraId,
@@ -198,7 +249,13 @@ try {
             'descricao' => $descricao ?: null,
             'created_by' => currentUserId(),
             'created_at' => date('Y-m-d H:i:s'),
-        ]);
+        ];
+        if ($conteudoBinario !== null) {
+            $insertData['conteudo'] = $conteudoBinario;
+            $insertData['conteudo_comprimido'] = $conteudoComprimido;
+        }
+
+        $result = $db->insert('equipamentos_anexos', $insertData);
 
         if ($result['status'] !== 'success') {
             throw new RuntimeException('Falha ao inserir anexo no banco.');
@@ -208,7 +265,7 @@ try {
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) { $db->rollback(); }
-        if (is_file($caminhoAbsoluto)) { unlink($caminhoAbsoluto); }
+        if ($salvarEmDisco && isset($caminhoAbsoluto) && is_file($caminhoAbsoluto)) { @unlink($caminhoAbsoluto); }
         error_log('Erro ao inserir anexo: ' . $e->getMessage());
         ApiResponse::internalError('Erro ao registrar anexo no banco de dados.');
     }

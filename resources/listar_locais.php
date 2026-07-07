@@ -138,6 +138,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                             <th>Sec.</th>
                             <th class="text-center">Cameras</th>
                             <th class="text-center">Alarme</th>
+                            <th class="text-center">Camera</th>
                             <th class="text-center">Acoes</th>
                         </tr>
                     </thead>
@@ -146,7 +147,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                         <tr>
                             <td><strong><?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?></strong></td>
                             <td><span class="badge bg-secondary"><?= htmlspecialchars($l->tipo_local_nome ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
-                            <td><span class="badge" style="background-color:#6f42c1;"><?= htmlspecialchars($l->regiao_nome ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
+                            <td><span class="badge badge-purple"><?= htmlspecialchars($l->regiao_nome ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
                             <td><?= htmlspecialchars(
                                 trim(($l->logradouro ?? '') . ($l->numero ? ', ' . $l->numero : '')),
                                 ENT_QUOTES, 'UTF-8'
@@ -162,6 +163,13 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                             </td>
                             <td class="text-center">
                                 <?php if ($l->tem_alarme ?? 0): ?>
+                                    <span class="badge bg-success">Sim</span>
+                                <?php else: ?>
+                                    <span class="badge bg-secondary">Nao</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
+                                <?php if ($l->tem_camera ?? 0): ?>
                                     <span class="badge bg-success">Sim</span>
                                 <?php else: ?>
                                     <span class="badge bg-secondary">Nao</span>

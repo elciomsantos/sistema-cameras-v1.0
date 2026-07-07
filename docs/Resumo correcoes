@@ -1,0 +1,7 @@
+Erro ao alterar o status cadsatro 
+cameras
+
+
+Resumo do problema e correção:
+Causa: A query UPDATE locais em api/v2/api_editar_camera.php:82-90 usava COALESCE(NULLIF(?, ''), coluna) para pular campos não alterados. Quando o parâmetro era um inteiro (ex: classificacao_endereco_id = 2), o MySQL em strict mode tentava converter '' para DECIMAL para comparar com o inteiro, gerando o erro Truncated incorrect DECIMAL value: ''.
+Correção: Substituído COALESCE(NULLIF(?, ''), coluna) por COALESCE(?, coluna) — como extractCommonData() já converte campos vazios para null, o comportamento é equivalente: COALESCE(null, coluna) mantém o valor existente, e COALESCE(valor, coluna) atualiza a coluna.

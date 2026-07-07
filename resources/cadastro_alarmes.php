@@ -199,8 +199,8 @@ $regiaoList = array_map(fn($r) => (array)$r, $lookup->getRegioesList());
                         <div class="d-flex justify-content-between mb-1">
                             <small class="anexos-progress-text">Enviando...</small>
                         </div>
-                        <div class="progress" style="height:6px;">
-                            <div class="anexos-progress progress-bar" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress progress-thin">
+                            <div class="anexos-progress progress-bar progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                     <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>

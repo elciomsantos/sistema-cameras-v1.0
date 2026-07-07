@@ -23,7 +23,19 @@ class RateLimiter
         $this->configs = $configs;
 
         if (!is_dir($this->storagePath)) {
-            mkdir($this->storagePath, 0755, true);
+            if (!@mkdir($this->storagePath, 0755, true) && !is_dir($this->storagePath)) {
+                $this->storageFailed = true;
+                $fallbackPath = sys_get_temp_dir() . '/cftv_gml_ratelimit/ratelimit';
+                if (!is_dir($fallbackPath)) {
+                    @mkdir($fallbackPath, 0755, true);
+                }
+                if (is_dir($fallbackPath)) {
+                    $this->storagePath = $fallbackPath;
+                    $this->storageFailed = false;
+                } else {
+                    $this->storagePath = '';
+                }
+            }
         }
     }
 
@@ -40,7 +52,7 @@ class RateLimiter
         $window = $config[1];
 
         if ($this->storageFailed) {
-            return false;
+            return true;
         }
 
         if ($this->strategy === 'token_bucket') {
@@ -232,6 +244,7 @@ class RateLimiter
 
     private function countInWindow(string $key, int $window): int
     {
+        if ($this->storageFailed) return 0;
         $data = $this->read($key);
         if (!$data || empty($data['timestamps'])) return 0;
 
@@ -281,6 +294,9 @@ class RateLimiter
 
     private function read(string $key): ?array
     {
+        if ($this->storageFailed) {
+            return null;
+        }
         if ($this->canUseDatabase()) {
             return $this->dbRead($key);
         }
@@ -289,6 +305,9 @@ class RateLimiter
 
     private function write(string $key, array $data): void
     {
+        if ($this->storageFailed) {
+            return;
+        }
         if ($this->canUseDatabase()) {
             $this->dbWrite($key, $data);
         } else {
@@ -438,6 +457,7 @@ class RateLimiter
 
     private function fileReadModifyWrite(string $key, callable $callback): void
     {
+        if ($this->storageFailed) return;
         $file = $this->getFilePath($key);
         $fp = $this->safeFopen($file, 'c+');
         if (!$fp) {
@@ -481,7 +501,9 @@ class RateLimiter
         $dir = $this->storagePath . '/' . $prefix;
 
         if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+                $this->storageFailed = true;
+            }
         }
         return $dir . '/' . $hash . '.json';
     }

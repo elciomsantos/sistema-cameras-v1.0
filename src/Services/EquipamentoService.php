@@ -55,6 +55,7 @@ class EquipamentoService
             'numero' => trim((string)($data['numero'] ?? '')) ?: null,
             'tem_alarme' => !empty($data['tem_alarme']) ? 1 : 0,
             'alarme_conta' => !empty($data['alarme_conta']) ? (int)$data['alarme_conta'] : null,
+            'tem_camera' => !empty($data['tem_camera']) ? 1 : 0,
             'patrimonio' => $this->validateStringLength($data['patrimonio'] ?? null, 150),
             'numero_serie' => $this->validateStringLength($data['serie_mac'] ?? null, 150),
             'observacao' => !empty($data['observacao']) ? trim($data['observacao']) : null,
@@ -134,6 +135,74 @@ class EquipamentoService
         }
     }
 
+    /**
+     * Verifica duplicidade de equipamento ativo por patrimonio ou numero de serie.
+     * Ignora equipamentos com deleted_at IS NOT NULL (soft-delete) e o proprio
+     * registro em edicao quando $excludeId e informado.
+     *
+     * @param string|null $patrimonio   Patrimonio normalizado ( trim ) ou null.
+     * @param string|null $numeroSerie  Numero de serie normalizado ( trim ) ou null.
+     * @param int|null    $excludeId    ID do equipamento a ignorar ( edicao ).
+     * @return array{duplicado: bool, campo: string|null, equipamento_id: int|null, valor: string|null}
+     */
+    public function checkDuplicidade(?string $patrimonio, ?string $numeroSerie, ?int $excludeId = null): array
+    {
+        $result = ['duplicado' => false, 'campo' => null, 'equipamento_id' => null, 'valor' => null];
+
+        $patrimonio = ($patrimonio === null || $patrimonio === '') ? null : trim($patrimonio);
+        $numeroSerie = ($numeroSerie === null || $numeroSerie === '') ? null : trim($numeroSerie);
+
+        if ($patrimonio === null && $numeroSerie === null) {
+            return $result;
+        }
+
+        $conditions = [];
+        $params = [];
+
+        if ($patrimonio !== null) {
+            $conditions[] = 'patrimonio = ?';
+            $params[] = $patrimonio;
+        }
+        if ($numeroSerie !== null) {
+            $conditions[] = 'numero_serie = ?';
+            $params[] = $numeroSerie;
+        }
+
+        $sql = "SELECT id, patrimonio, numero_serie FROM equipamentos "
+            . "WHERE deleted_at IS NULL AND ("
+            . implode(' OR ', $conditions)
+            . ")";
+
+        if ($excludeId !== null && $excludeId > 0) {
+            $sql .= " AND id <> ?";
+            $params[] = $excludeId;
+        }
+        $sql .= " LIMIT 1";
+
+        $query = $this->db->query($sql, $params);
+        if ($query['status'] !== 'success' || empty($query['data'])) {
+            return $result;
+        }
+
+        $row = $query['data'][0];
+        $campo = null;
+        $valor = null;
+        if ($patrimonio !== null && $row->patrimonio === $patrimonio) {
+            $campo = 'patrimonio';
+            $valor = $patrimonio;
+        } elseif ($numeroSerie !== null && $row->numero_serie === $numeroSerie) {
+            $campo = 'numero_serie';
+            $valor = $numeroSerie;
+        }
+
+        return [
+            'duplicado' => true,
+            'campo' => $campo,
+            'equipamento_id' => (int)$row->id,
+            'valor' => $valor,
+        ];
+    }
+
     public function resolveLocation(array $data, int $secretariaId, string $nomeLocal): int
     {
         $localId = max(0, (int)($data['local_id'] ?? 0)) ?: null;
@@ -200,8 +269,8 @@ class EquipamentoService
         }
 
         $this->db->query(
-            "UPDATE locais SET tem_alarme = ?, alarme_conta = ?, logradouro = ?, bairro = ?, cidade = ?, uf = ?, cep = ?, numero = ?, descricao_posicao = ?, tipo_local_id = ?, classificacao_endereco_id = ?, regiao_id = ?, horario_funcionamento = ? WHERE id = ?",
-            [$fields['tem_alarme'], $fields['alarme_conta'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento'], $localId]
+            "UPDATE locais SET tem_alarme = ?, alarme_conta = ?, tem_camera = ?, logradouro = ?, bairro = ?, cidade = ?, uf = ?, cep = ?, numero = ?, descricao_posicao = ?, tipo_local_id = ?, classificacao_endereco_id = ?, regiao_id = ?, horario_funcionamento = ? WHERE id = ?",
+            [$fields['tem_alarme'], $fields['alarme_conta'], $fields['tem_camera'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento'], $localId]
         );
     }
 
@@ -530,7 +599,7 @@ class EquipamentoService
 
     public function setAppUserContext(?int $userId): void
     {
-        $this->db->setUserContext($userId ?? 0, 'api');
+        $this->db->setUserContext($userId, 'api');
     }
 
     public function resetAppUserContext(): void

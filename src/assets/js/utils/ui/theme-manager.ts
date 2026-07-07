@@ -111,9 +111,9 @@ class SkeletonLoader {
 
             case 'avatar':
                 return [
-                    '<div style="display: flex; gap: 1rem;">',
+                    '<div class="sk-flex-gap">',
                     '<div class="skeleton skeleton-avatar"></div>',
-                    '<div style="flex: 1;">',
+                    '<div class="sk-flex-1">',
                     '<div class="skeleton skeleton-heading"></div>',
                     '<div class="skeleton skeleton-text"></div>',
                     '</div>',
@@ -124,11 +124,11 @@ class SkeletonLoader {
                 return [
                     '<div class="skeleton-card">',
                     Array(lines).fill(null).map(() => [
-                        '<div style="display: flex; gap: 1rem; margin-bottom: 1rem;">',
-                        '<div class="skeleton" style="width: 40px; height: 40px; border-radius: 50%;"></div>',
-                        '<div style="flex: 1;">',
-                        '<div class="skeleton skeleton-text" style="width: 60%;"></div>',
-                        '<div class="skeleton skeleton-text" style="width: 40%;"></div>',
+                        '<div class="sk-flex-gap-mb">',
+                        '<div class="skeleton sk-avatar-list"></div>',
+                        '<div class="sk-flex-1">',
+                        '<div class="skeleton skeleton-text sk-text-60"></div>',
+                        '<div class="skeleton skeleton-text sk-text-40"></div>',
                         '</div>',
                         '</div>'
                     ].join('')).join(''),

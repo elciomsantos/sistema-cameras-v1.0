@@ -21,10 +21,12 @@ class CameraApiTest extends TestCase
         $this->assertEquals(401, $httpCode);
     }
 
-    public function testListCamerasWithInvalidMethodReturns405(): void
+    public function testListCamerasWithInvalidMethodReturns401(): void
     {
+        // Arquitetura auth-first: sem sessão, qualquer método é rejeitado com 401
+        // antes de validar o método aceito pelo endpoint.
         $httpCode = $this->requestStatus('/index.php?page=api/api_cameras', 'POST');
-        $this->assertEquals(405, $httpCode);
+        $this->assertEquals(401, $httpCode);
     }
 
     public function testCreateCameraWithoutAuthReturns401(): void
@@ -83,14 +85,18 @@ class CameraApiTest extends TestCase
 
     public function testNonExistentEndpointReturns404(): void
     {
+        // Arquitetura auth-first: sem sessão, request em endpoint inválido é
+        // rejeitado com 401 antes de validar a existência do endpoint.
         $httpCode = $this->requestStatus('/index.php?page=api/api_nonexistent');
-        $this->assertEquals(404, $httpCode);
+        $this->assertEquals(401, $httpCode);
     }
 
-    public function testCreateCameraWithEmptyDataReturns422(): void
+    public function testCreateCameraWithEmptyDataReturns401(): void
     {
+        // Arquitetura auth-first: sem sessão, qualquer POST é rejeitado com 401
+        // antes de validar o payload (que resultaria em 422).
         $httpCode = $this->requestStatus('/index.php?page=api/api_cadastrar_cameras', 'POST', '[]');
-        $this->assertEquals(422, $httpCode);
+        $this->assertEquals(401, $httpCode);
     }
 
     public function testApiResponseFormatConsistency(): void

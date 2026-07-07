@@ -33,7 +33,7 @@ if ($id === (int)$_SESSION['usuario']->id) {
 
 enableAuditTriggers($db, 'web');
 
-$sql = "UPDATE usuarios SET ativo = 0 WHERE id = :id";
+$sql = "UPDATE usuarios SET ativo = 0 WHERE id = :id AND deleted_at IS NULL";
 $params = [':id' => $id];
 $result = $db->query($sql, $params);
 

@@ -137,10 +137,10 @@ try {
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="col-md-2 d-flex align-items-center justify-content-center" style="padding-top: 30px;">
+                            <div class="col-md-2 d-flex align-items-center justify-content-center pt-30">
                                 <div class="form-check mb-0">
                                     <input class="form-check-input" type="checkbox" id="toggleModeloExistente" checked>
-                                    <label class="form-check-label" for="toggleModeloExistente" style="white-space: nowrap; font-size:0.88rem;">Usar modelo existente</label>
+                                    <label class="form-check-label label-compact" for="toggleModeloExistente">Usar modelo existente</label>
                                 </div>
                             </div>
                             <div class="col-md-5">
@@ -155,7 +155,7 @@ try {
                             </div>
 
                             <!-- Campos específicos LPR -->
-                            <div id="secaoEditLPR" style="display:none">
+                            <div id="secaoEditLPR" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-car me-1"></i>Especificações LPR</h6>
                                 <div class="row g-3">
@@ -188,7 +188,7 @@ try {
                             </div>
 
                             <!-- Campos específicos DVR -->
-                            <div id="secaoEditDVR" style="display:none">
+                            <div id="secaoEditDVR" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-hdd me-1"></i>Especificações DVR</h6>
                                 <div class="row g-3">
@@ -214,7 +214,7 @@ try {
                             </div>
 
                             <!-- Campos específicos Totem -->
-                            <div id="secaoEditTotem" style="display:none">
+                            <div id="secaoEditTotem" class="hidden-init">
                                 <hr>
                                 <h6 class="text-primary mb-3"><i class="fas fa-desktop me-1"></i>Especificações Totem</h6>
                                 <div class="row g-3">
@@ -241,7 +241,7 @@ try {
                                 </div>
                             </div>
 
-                            </div></div></div>
+                            </div></div>
 
                         <!-- Localização e Vínculo -->
                         <div class="card alarme-section-card mb-3">
@@ -304,7 +304,7 @@ try {
                                             </label>
                                         </div>
                                         <div id="containerAlarmeConta">
-                                            <label class="form-label required mb-1" for="alarmeConta" style="color:#5d4037; font-size:0.88rem;">
+                                            <label class="form-label required mb-1 label-brown" for="alarmeConta">
                                                 Número da conta do alarme
                                             </label>
                                             <input type="text" name="alarme_conta" id="alarmeConta"
@@ -312,7 +312,7 @@ try {
                                                 placeholder="Ex: 12345"
                                                 maxlength="50"
                                                 disabled>
-                                            <div class="form-text" style="color:#8d6e63;">Número da conta cadastrada na empresa de monitoramento</div>
+                                            <div class="form-text form-text-brown">Número da conta cadastrada na empresa de monitoramento</div>
                                         </div>
                                     </div>
                                 </div>
@@ -444,8 +444,8 @@ try {
                                 <div class="d-flex justify-content-between mb-1">
                                     <small class="anexos-progress-text">Enviando...</small>
                                 </div>
-                                <div class="progress" style="height:6px;">
-                                    <div class="anexos-progress progress-bar" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                <div class="progress progress-thin">
+                                    <div class="anexos-progress progress-bar progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                             </div>
                             <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>

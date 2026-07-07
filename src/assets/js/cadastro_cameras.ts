@@ -226,9 +226,20 @@ class CadastroCamera {
         const secaoDVR = document.getElementById("secaoEspecificaDVR") as HTMLElement;
         const secaoTotem = document.getElementById("secaoEspecificaTotem") as HTMLElement;
 
-        if (secaoLPR) secaoLPR.style.display = (tipoId === 2 || tipoCameraId === 3) ? "" : "none";
-        if (secaoDVR) secaoDVR.style.display = tipoId === 3 ? "" : "none";
-        if (secaoTotem) secaoTotem.style.display = tipoId === 4 ? "" : "none";
+        const toggle = (el: HTMLElement | null, show: boolean): void => {
+            if (!el) return;
+            if (show) {
+                el.classList.remove('hidden-init');
+                el.style.display = '';
+            } else {
+                el.classList.add('hidden-init');
+                el.style.display = 'none';
+            }
+        };
+
+        toggle(secaoLPR, tipoId === 2 || tipoCameraId === 3);
+        toggle(secaoDVR, tipoId === 3);
+        toggle(secaoTotem, tipoId === 4);
     }
 
     async carregarModelosExistentes(marcaId: string): Promise<void> {
@@ -423,23 +434,23 @@ class CadastroCamera {
                 tipoLogradouroField.value = tipo;
             }
             if (logradouroField && via) {
-                logradouroField.value = via;
+                logradouroField.value = via.toUpperCase();
                 this.validateField(logradouroField);
             }
             if (bairroField && data.bairro) {
-                bairroField.value = data.bairro;
+                bairroField.value = data.bairro.toUpperCase();
                 this.validateField(bairroField);
             }
             if (cidadeField && data.cidade) {
-                cidadeField.value = data.cidade;
+                cidadeField.value = data.cidade.toUpperCase();
                 this.validateField(cidadeField);
             }
             if (ufField && data.uf) {
-                ufField.value = data.uf;
+                ufField.value = data.uf.toUpperCase();
                 this.validateField(ufField);
             }
             if (complementoField && data.complemento && !complementoField.value) {
-                complementoField.value = data.complemento;
+                complementoField.value = data.complemento.toUpperCase();
             }
 
             if (!silent) {

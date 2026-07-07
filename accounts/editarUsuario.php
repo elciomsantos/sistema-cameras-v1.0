@@ -67,7 +67,7 @@ if ($senhaTemporariaExibida !== null) {
                                 <i class="fas fa-exclamation-triangle fa-lg"></i>
                                 <strong>Nova senha temporaria gerada:</strong>
                             </div>
-                            <div class="mt-2 p-3 bg-dark text-warning rounded text-center" style="font-size:1.4rem;font-weight:bold;letter-spacing:2px;font-family:monospace">
+                            <div class="mt-2 p-3 bg-dark text-warning rounded text-center temp-password-display">
                                 <?= htmlspecialchars($senhaTemporariaExibida, ENT_QUOTES, 'UTF-8') ?>
                             </div>
                             <div class="mt-2 small text-muted">

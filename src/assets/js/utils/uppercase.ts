@@ -18,4 +18,6 @@ function aplicarUppercaseUniversal(formOrSelector: string | Element | null): voi
         });
     });
 }
+
+window.aplicarUppercaseUniversal = aplicarUppercaseUniversal;
 export {};

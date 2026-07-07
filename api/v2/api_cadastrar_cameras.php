@@ -33,6 +33,16 @@ try {
         $data['tipo_logradouro'] ?? null
     );
 
+    // Verifica duplicidade por patrimonio ou numero de serie ( entre ativos )
+    $dup = $svc->checkDuplicidade($fields['patrimonio'], $fields['numero_serie']);
+    if ($dup['duplicado']) {
+        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimônio' : 'Número de série';
+        ApiResponse::error(
+            'CONFLICT',
+            "Já existe um equipamento cadastrado com este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade não permitida."
+        );
+    }
+
     $localId = $svc->resolveLocation($data, $fields['secretaria_id'], $nomeLocal);
     $svc->updateLocationFields($localId, $data);
 

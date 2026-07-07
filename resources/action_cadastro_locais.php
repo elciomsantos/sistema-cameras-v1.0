@@ -42,6 +42,7 @@ $horario_funcionamento = mb_strtoupper(trim($v->get('horario_funcionamento', '')
 $telefone = trim($v->get('telefone', ''));
 $tem_alarme = $v->get('tem_alarme') ? 1 : 0;
 $alarme_conta = $tem_alarme ? ((int)($v->get('alarme_conta', 0)) ?: null) : null;
+$tem_camera = $v->get('tem_camera') ? 1 : 0;
 $cep = preg_replace('/\D+/', '', (string)($v->get('cep', '')));
 $uf = strtoupper(trim($v->get('uf', '')));
 $cidade = mb_strtoupper(trim($v->get('cidade', '')));
@@ -69,6 +70,7 @@ if ($v->fails()) {
             'telefone' => $telefone ?: null,
             'tem_alarme' => $tem_alarme,
             'alarme_conta' => $alarme_conta,
+            'tem_camera' => $tem_camera,
             'cep' => $cep ?: null,
             'uf' => $uf ?: null,
             'cidade' => $cidade ?: null,
@@ -93,7 +95,7 @@ if ($v->fails()) {
 
 $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
     'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
-    'horario_funcionamento', 'telefone', 'tem_alarme', 'alarme_conta', 'cep', 'uf',
+    'horario_funcionamento', 'telefone', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf',
     'cidade', 'bairro', 'classificacao_endereco_id',
     'logradouro', 'numero', 'descricao_posicao',
     'latitude', 'longitude',

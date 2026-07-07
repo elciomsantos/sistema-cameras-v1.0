@@ -64,14 +64,12 @@ try {
                     </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 position-relative">
                     <label for="local" class="form-label">Local</label>
-                    <select class="form-select" id="local" name="local">
-                        <option value="">Todos</option>
-                        <?php foreach ($locaisList as $local): ?>
-                        <option value="<?= (int)$local->id ?>"><?= htmlspecialchars($local->nome, ENT_QUOTES, 'UTF-8') ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <input type="text" class="form-control" id="local" name="local"
+                           placeholder="Digite o nome do local..." autocomplete="off">
+                    <input type="hidden" id="local_id" name="local_id" value="">
+                    <div id="localSuggestions" class="list-group position-absolute w-100 d-none local-suggestions"></div>
                 </div>
             </div>
 
@@ -90,7 +88,7 @@ try {
                         <button type="button" id="btnColunas" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-columns me-1"></i>Colunas
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end p-2" id="menuColunas" style="min-width:200px;max-height:300px;overflow-y:auto">
+                        <ul class="dropdown-menu dropdown-menu-end p-2 menu-colunas-dropdown" id="menuColunas">
                         </ul>
                     </div>
                     <a href="?page=action_logout" class="btn btn-outline-danger ms-auto">
@@ -162,6 +160,9 @@ try {
     <div class="mt-3">Carregando dados...</div>
 </div>
 
+<script nonce="<?= $CSP_NONCE ?>">
+window.LOCAIS_LIST = <?= json_encode(array_map(fn($l) => ['id' => (int)$l->id, 'nome' => $l->nome], $locaisList)) ?>;
+</script>
 <?php
 $vitePageJs = vite_asset('relatorios-cameras');
 $viteImports = vite_entry_imports('relatorios-cameras');

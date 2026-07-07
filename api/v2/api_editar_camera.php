@@ -39,12 +39,34 @@ try {
         ApiResponse::forbidden('Camera nao pertence a sua secretaria.');
     }
 
+    // Verifica duplicidade por patrimonio ou numero de serie ( entre ativos, excluindo o proprio )
+    $dup = $svc->checkDuplicidade($fields['patrimonio'], $fields['numero_serie'], $equipId);
+    if ($dup['duplicado']) {
+        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimônio' : 'Número de série';
+        ApiResponse::error(
+            'CONFLICT',
+            "Outro equipamento já usa este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade não permitida."
+        );
+    }
+
     $svc->checkLocationExists($localId);
     $fields['classif_endereco_id'] = $svc->resolveClassificacaoEndereco(
         $fields['classif_endereco_id'],
         $data['tipo_logradouro'] ?? null
     );
 
+    // Preserve existing model when not submitted (e.g., user only changed status)
+    if (empty($data['modelo_existente']) && empty($data['novo_modelo_nome'])) {
+        $current = db()->query(
+            "SELECT modelo_id FROM equipamentos WHERE id = ?",
+            [$equipId]
+        );
+        if ($current['status'] === 'success' && !empty($current['data'])) {
+            $data['modelo_existente'] = (int)$current['data'][0]->modelo_id;
+        } else {
+            ApiResponse::error('VALIDATION_ERROR', 'Não foi possível recuperar o modelo do equipamento.');
+        }
+    }
     $modeloId = $svc->resolveModelo($fields['marca_id'], $fields['tipo_id'], $data);
     $svc->validateCoordenadas($fields['coordenadas']);
     $svc->validateTipoSpecific($fields['tipo_id'], $fields['dvr_modelo'], $fields['totem_quantidade_cameras']);
@@ -61,11 +83,11 @@ try {
             "UPDATE locais SET
                 tem_alarme = ?,
                 alarme_conta = ?,
-                classificacao_endereco_id = COALESCE(NULLIF(?, ''), classificacao_endereco_id),
-                logradouro = COALESCE(NULLIF(?, ''), logradouro), bairro = COALESCE(NULLIF(?, ''), bairro),
-                cidade = COALESCE(NULLIF(?, ''), cidade), uf = COALESCE(NULLIF(?, ''), uf),
-                cep = COALESCE(NULLIF(?, ''), cep), numero = COALESCE(NULLIF(?, ''), numero),
-                descricao_posicao = COALESCE(NULLIF(?, ''), descricao_posicao) WHERE id = ?",
+                classificacao_endereco_id = COALESCE(?, classificacao_endereco_id),
+                logradouro = COALESCE(?, logradouro), bairro = COALESCE(?, bairro),
+                cidade = COALESCE(?, cidade), uf = COALESCE(?, uf),
+                cep = COALESCE(?, cep), numero = COALESCE(?, numero),
+                descricao_posicao = COALESCE(?, descricao_posicao) WHERE id = ?",
             [$fields['tem_alarme'], $fields['alarme_conta'], $fields['classif_endereco_id'], $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $fields['descricao_posicao'], $localId]
         );
 
@@ -88,6 +110,7 @@ try {
         error_log('[api_editar_camera] Rollback falhou: ' . $rollbackEx->getMessage());
     }
 
-    error_log('[api_editar_camera] ' . $e->getMessage());
-    ApiResponse::internalError('Erro ao editar câmera.');
+    $msg = $e->getMessage();
+    error_log('[api_editar_camera] ' . $msg . ' | File: ' . $e->getFile() . ':' . $e->getLine());
+    ApiResponse::internalError('Erro ao editar câmera: ' . $msg);
 }

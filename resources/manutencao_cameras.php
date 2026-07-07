@@ -205,8 +205,8 @@ requererAcesso('supervisor');
                         <input type="file" class="anexos-file-input d-none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
                     </div>
                     <div class="anexos-progress-container d-none mt-2">
-                        <div class="progress" style="height:6px">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress progress-thin">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                         <small class="anexos-progress-text text-muted mt-1 d-block"></small>
                     </div>
@@ -295,57 +295,57 @@ requererAcesso('supervisor');
                 <table class="table table-hover table-striped table-bordered align-middle">
                     <thead>
                         <tr>
-                            <th class="text-center" style="width: 40px; background-color: #f8f9fa;">
+                            <th class="text-center th-actions-40">
                                 <input type="checkbox" id="selectAllHistorico" class="form-check-input">
                             </th>
-                            <th style="min-width: 100px; background-color: #f8f9fa;">
+                            <th class="th-min-100">
                                 <button type="button" class="sort-header-btn" data-sort="numero_os">
                                     Nº OS <span data-sort-indicator="numero_os">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 150px; background-color: #f8f9fa;">
+                            <th class="th-min-150">
                                 <button type="button" class="sort-header-btn" data-sort="data_hora">
                                     Data <span data-sort-indicator="data_hora">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 140px; background-color: #f8f9fa;">
+                            <th class="th-min-140">
                                 Hora
                             </th>
-                            <th style="min-width: 180px; background-color: #f8f9fa;">
+                            <th class="th-min-180">
                                 <button type="button" class="sort-header-btn" data-sort="camera">
                                     Tipo <span data-sort-indicator="camera">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 130px; background-color: #f8f9fa;">IP</th>
-                            <th style="min-width: 120px; background-color: #f8f9fa;">Modelo</th>
-                            <th style="min-width: 150px; background-color: #f8f9fa;">Local</th>
-                            <th style="min-width: 140px; background-color: #f8f9fa;">Endereço</th>
-                            <th style="min-width: 140px; background-color: #f8f9fa;">
+                            <th class="th-min-130">IP</th>
+                            <th class="th-min-120">Modelo</th>
+                            <th class="th-min-150">Local</th>
+                            <th class="th-min-140">Endereço</th>
+                            <th class="th-min-140">
                                 <button type="button" class="sort-header-btn" data-sort="procedimento">
                                     Procedimento <span data-sort-indicator="procedimento">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 100px; background-color: #f8f9fa;">
+                            <th class="th-min-100">
                                 <button type="button" class="sort-header-btn" data-sort="status">
                                     Status <span data-sort-indicator="status">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 120px; background-color: #f8f9fa;">
+                            <th class="th-min-120">
                                 <button type="button" class="sort-header-btn" data-sort="tecnico">
                                     Técnico <span data-sort-indicator="tecnico">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 200px; background-color: #f8f9fa;">
+                            <th class="th-min-200">
                                 <button type="button" class="sort-header-btn" data-sort="descricao">
                                     Descrição <span data-sort-indicator="descricao">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 200px; background-color: #f8f9fa;">
+                            <th class="th-min-200">
                                 <button type="button" class="sort-header-btn" data-sort="pecas_previstas">
                                     Peças Utilizadas <span data-sort-indicator="pecas_previstas">↕️</span>
                                 </button>
                             </th>
-                            <th style="min-width: 120px; background-color: #f8f9fa;">
+                            <th class="th-min-120">
                                 <button type="button" class="sort-header-btn" data-sort="usuario">
                                     Usuário <span data-sort-indicator="usuario">↕️</span>
                                 </button>

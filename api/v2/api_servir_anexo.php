@@ -15,7 +15,7 @@ try {
     $db = db();
 
     $result = $db->query(
-        "SELECT id, caminho, mime_type, nome_original FROM equipamentos_anexos WHERE id = :id",
+        "SELECT id, caminho, mime_type, nome_original, conteudo, conteudo_comprimido, tamanho FROM equipamentos_anexos WHERE id = :id",
         [':id' => $id]
     );
 
@@ -30,6 +30,45 @@ try {
         ApiResponse::forbidden('Anexo nao pertence a sua secretaria.');
     }
 
+    // Prioridade 1: conteudo armazenado diretamente no BD
+    if ($anexo->conteudo !== null) {
+        $conteudo = $anexo->conteudo;
+        // Se o driver PDO retornar resource, converter para string
+        if (is_resource($conteudo)) {
+            $conteudo = stream_get_contents($conteudo);
+        }
+        if ($conteudo === false || $conteudo === null || $conteudo === '') {
+            ApiResponse::notFound('arquivo');
+        }
+        // Descomprimir se necessario
+        if ((int)($anexo->conteudo_comprimido ?? 0) === 1 && function_exists('gzinflate')) {
+            $inflated = @gzinflate($conteudo);
+            if ($inflated !== false) {
+                $conteudo = $inflated;
+            }
+        }
+        $mimeType = $anexo->mime_type ?? 'application/octet-stream';
+        $allowedServeMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'application/pdf'];
+        if (!in_array($mimeType, $allowedServeMimes, true)) {
+            $mimeType = 'application/octet-stream';
+        }
+        $nomeOriginal = $anexo->nome_original ?? 'anexo';
+        // tamanho armazenado = bytes do arquivo ORIGINAL (nao do comprimido)
+        $tamanho = $anexo->tamanho ?? strlen($conteudo);
+
+        header_remove('Content-Type');
+        header('Content-Type: ' . $mimeType);
+        $filenameSanitized = preg_replace('/[\x00-\x1F\x7F<>"\/\\\\|:?*]/', '', $nomeOriginal);
+        header('Content-Disposition: attachment; filename="' . $filenameSanitized . '"');
+        header('Content-Length: ' . $tamanho);
+        header('Cache-Control: private, max-age=3600');
+        header('X-Content-Type-Options: nosniff');
+
+        echo $conteudo;
+        exit;
+    }
+
+    // Prioridade 2: arquivo em disco (storage/uploads/ ou legacy public/uploads/)
     $caminhoRelativo = $anexo->caminho ?? '';
 
     $uploadsBase = realpath(APP_ROOT . '/storage/uploads');

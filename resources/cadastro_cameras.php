@@ -69,24 +69,8 @@ unset($_SESSION['form_data']);
                                 </div>
 
                                 <div class="col-md-8">
-                                    <label class="form-label required">Nome/Local da Câmera</label>
-                                    <input type="text" name="nome_local" class="form-control" maxlength="255" required
-                                        value="<?= htmlspecialchars($formData['nome_local'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                        placeholder="Ex: Escola Municipal, Praça Central, Cmei, Via Pública">
-                                    <div class="invalid-feedback">Informe o nome/local da câmera</div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Descrição do Local de Instalação</label>
-                                    <input type="text" name="descricao_posicao" class="form-control" maxlength="255"
-                                        value="<?= htmlspecialchars($formData['descricao_posicao'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                        placeholder="Ex: Corredor Central, Sala 01">
-                                    <div class="form-text">Detalhe onde o equipamento está instalado</div>
-                                </div>
-
-                                <div class="col-md-6">
                                     <label class="form-label required">Tipo de Local</label>
-                                    <select name="tipo_local_id" class="form-select" required>
+                                    <select name="tipo_local_id" id="tipo_local_id" class="form-select" required>
                                         <option value="">Selecione...</option>
                                         <?php foreach ($dados['tipos_locais'] as $tipoLocal): ?>
                                         <option value="<?= (int)$tipoLocal->id ?>"
@@ -96,6 +80,25 @@ unset($_SESSION['form_data']);
                                         <?php endforeach; ?>
                                     </select>
                                     <div class="invalid-feedback">Selecione o tipo de local</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label required">Nome/Local da Câmera</label>
+                                    <div class="position-relative">
+                                        <input type="text" name="nome_local" id="nome_local" class="form-control" maxlength="255" required
+                                            value="<?= htmlspecialchars($formData['nome_local'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                            placeholder="Ex: Escola Municipal, Praça Central, Cmei, Via Pública"
+                                            autocomplete="off">
+                                    </div>
+                                    <div class="invalid-feedback">Informe o nome/local da câmera</div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Descrição do Local de Instalação</label>
+                                    <input type="text" name="descricao_posicao" class="form-control" maxlength="255"
+                                        value="<?= htmlspecialchars($formData['descricao_posicao'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                        placeholder="Ex: Corredor Central, Sala 01">
+                                    <div class="form-text">Detalhe onde o equipamento está instalado</div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -615,6 +618,88 @@ if ($vitePageJs):
 <?php endforeach; ?>
 <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
 <?php endif; ?>
+
+<style nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
+.autocomplete-dropdown-camera {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 1060;
+    max-height: 250px; overflow-y: auto;
+    background: #fff; border: 1px solid #ced4da; border-top: none;
+    border-radius: 0 0 4px 4px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    min-width: 100%;
+}
+.autocomplete-dropdown-camera .dropdown-item {
+    padding: 8px 12px; cursor: pointer; font-size: .875rem;
+    border-bottom: 1px solid #f0f0f0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.autocomplete-dropdown-camera .dropdown-item:last-child { border-bottom: none; }
+.autocomplete-dropdown-camera .dropdown-item:hover,
+.autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
+</style>
+<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
+document.addEventListener('DOMContentLoaded', function() {
+    var input = document.getElementById('nome_local');
+    var tipoSelect = document.getElementById('tipo_local_id');
+    if (!input || !tipoSelect) return;
+
+    var apiUrlBase = <?= json_encode(BASE_URL . '/index.php?page=api/api_locais') ?>;
+    var dropdown = document.createElement('div');
+    dropdown.className = 'autocomplete-dropdown-camera';
+    dropdown.style.display = 'none';
+    var wrapper = input.parentNode;
+    wrapper.style.position = 'relative';
+    wrapper.appendChild(dropdown);
+
+    function getTipoLocalId() { return parseInt(tipoSelect.value, 10) || 0; }
+
+    input.addEventListener('input', function() {
+        clearTimeout(this._timer);
+        var val = this.value.trim();
+        if (val.length < 3 || !getTipoLocalId()) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        this._timer = setTimeout(function() {
+            fetch(apiUrlBase + '&q=' + encodeURIComponent(val) + '&tipo_local_id=' + getTipoLocalId())
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    dropdown.innerHTML = '';
+                    var items = data.data && data.data.data ? data.data.data : (Array.isArray(data.data) ? data.data : []);
+                    if (items.length > 0) {
+                        items.forEach(function(item) {
+                            var el = document.createElement('div');
+                            el.className = 'dropdown-item';
+                            el.textContent = item.nome;
+                            el.dataset.value = item.nome;
+                            el.addEventListener('click', function() {
+                                input.value = this.dataset.value;
+                                dropdown.style.display = 'none';
+                            });
+                            dropdown.appendChild(el);
+                        });
+                        dropdown.style.display = 'block';
+                    } else {
+                        dropdown.style.display = 'none';
+                    }
+                })
+                .catch(function() { dropdown.style.display = 'none'; });
+        }, 300);
+    });
+
+    tipoSelect.addEventListener('change', function() {
+        input.value = '';
+        dropdown.style.display = 'none';
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!wrapper.contains(e.target)) dropdown.style.display = 'none';
+    });
+
+    input.addEventListener('blur', function() {
+        setTimeout(function() { dropdown.style.display = 'none'; }, 200);
+    });
+});
+</script>
 
 
 

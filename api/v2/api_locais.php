@@ -10,6 +10,7 @@ try {
     $db = db();
 
     $q = trim($_GET['q'] ?? '');
+    $tipoLocalId = filter_input(INPUT_GET, 'tipo_local_id', FILTER_VALIDATE_INT);
 
     $secretariaId = getUsuarioSecretariaId();
     $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
@@ -20,6 +21,11 @@ try {
     if ($q !== '') {
         $where[] = 'UPPER(nome) LIKE UPPER(?)';
         $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
+    }
+
+    if ($tipoLocalId) {
+        $where[] = 'tipo_local_id = ?';
+        $params[] = $tipoLocalId;
     }
 
     if ($nivel !== 'admin' && $secretariaId !== null) {

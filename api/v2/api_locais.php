@@ -19,17 +19,17 @@ try {
     $params = [];
 
     if ($q !== '') {
-        $where[] = 'UPPER(nome) LIKE UPPER(?)';
+        $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
         $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
     }
 
     if ($tipoLocalId) {
-        $where[] = 'tipo_local_id = ?';
+        $where[] = 'l.tipo_local_id = ?';
         $params[] = $tipoLocalId;
     }
 
     if ($nivel !== 'admin' && $secretariaId !== null) {
-        $where[] = 'secretaria_id = ?';
+        $where[] = 'l.secretaria_id = ?';
         $params[] = $secretariaId;
     }
 

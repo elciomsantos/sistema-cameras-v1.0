@@ -650,6 +650,53 @@ document.addEventListener('DOMContentLoaded', function() {
     wrapper.style.position = 'relative';
     wrapper.appendChild(dropdown);
 
+    function carregarDadosLocal(d) {
+        if (d.descricao_posicao) {
+            var desc = document.querySelector('[name="descricao_posicao"]');
+            if (desc) desc.value = d.descricao_posicao;
+        }
+        if (d.regiao_id) {
+            var reg = document.querySelector('[name="regiao_id"]');
+            if (reg) reg.value = d.regiao_id;
+        }
+        if (d.secretaria_id) {
+            var sec = document.querySelector('[name="secretaria_id"]');
+            if (sec) sec.value = d.secretaria_id;
+        }
+        if (d.cep) {
+            var cep = document.querySelector('[name="cep"]');
+            if (cep) cep.value = d.cep;
+        }
+        if (d.uf) {
+            var uf = document.querySelector('[name="uf"]');
+            if (uf) uf.value = d.uf;
+        }
+        if (d.cidade) {
+            var cidade = document.querySelector('[name="cidade"]');
+            if (cidade) cidade.value = d.cidade;
+        }
+        if (d.bairro) {
+            var bairro = document.querySelector('[name="bairro"]');
+            if (bairro) bairro.value = d.bairro;
+        }
+        if (d.tipo_logradouro) {
+            var tl = document.querySelector('[name="tipo_logradouro"]');
+            if (tl) tl.value = d.tipo_logradouro;
+        }
+        if (d.logradouro) {
+            var logr = document.querySelector('[name="logradouro"]');
+            if (logr) logr.value = d.logradouro;
+        }
+        if (d.numero) {
+            var num = document.querySelector('[name="numero"]');
+            if (num) num.value = d.numero;
+        }
+        if (d.latitude && d.longitude) {
+            var coord = document.querySelector('[name="coordenadas"]');
+            if (coord) coord.value = d.latitude + ', ' + d.longitude;
+        }
+    }
+
     function getTipoLocalId() { return parseInt(tipoSelect.value, 10) || 0; }
 
     input.addEventListener('input', function() {
@@ -674,7 +721,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             el.addEventListener('click', function() {
                                 input.value = this.dataset.value;
                                 dropdown.style.display = 'none';
+                                var loc = this.dataset;
+                                carregarDadosLocal(loc);
                             });
+                            el.dataset.logradouro = item.logradouro || '';
+                            el.dataset.bairro = item.bairro || '';
+                            el.dataset.cidade = item.cidade || '';
+                            el.dataset.uf = item.uf || '';
+                            el.dataset.cep = item.cep || '';
+                            el.dataset.numero = item.numero || '';
+                            el.dataset.descricao_posicao = item.descricao_posicao || '';
+                            el.dataset.regiao_id = item.regiao_id || '';
+                            el.dataset.secretaria_id = item.secretaria_id || '';
+                            el.dataset.tipo_logradouro = item.tipo_logradouro_nome || '';
+                            el.dataset.latitude = item.latitude || '';
+                            el.dataset.longitude = item.longitude || '';
                             dropdown.appendChild(el);
                         });
                         dropdown.style.display = 'block';

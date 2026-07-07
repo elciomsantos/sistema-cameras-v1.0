@@ -348,10 +348,10 @@ INSERT INTO tipos_locais (nome) VALUES
 -- =====================================================
 CREATE TABLE classificacao_enderecos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL UNIQUE
+    descricao VARCHAR(100) NOT NULL UNIQUE
 ) ENGINE=InnoDB COMMENT='Tipo de logradouro do endereco (RUA/AVENIDA/etc)';
 
-INSERT INTO classificacao_enderecos (nome) VALUES
+INSERT INTO classificacao_enderecos (descricao) VALUES
 ('RUA'),
 ('AVENIDA'),
 ('TRAVESSA'),
@@ -1269,7 +1269,7 @@ SELECT
     ts.nome AS secretaria_tipo,
     l.nome AS local,
     tl.nome AS tipo_local,
-    ce.nome AS classificacao_endereco,
+    ce.descricao AS classificacao_endereco,
 
     m.nome AS marca,
     cm.nome AS modelo,

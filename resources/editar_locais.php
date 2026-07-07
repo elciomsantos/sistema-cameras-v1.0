@@ -207,7 +207,7 @@ unset($_SESSION['form_data_editar_local']);
                                     <option value="">Selecione</option>
                                     <?php foreach ($classificacoes as $c): ?>
                                     <option value="<?= (int)$c->id ?>" <?= ((isset($formData['classificacao_endereco_id']) ? (int)$formData['classificacao_endereco_id'] : (int)($local->classificacao_endereco_id ?? 0)) === (int)$c->id) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($c->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        <?= htmlspecialchars($c->descricao, ENT_QUOTES, 'UTF-8') ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>

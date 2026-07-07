@@ -22,8 +22,13 @@ class LookupService
         if (!in_array($tableName, $this->allowedTables, true)) {
             return [];
         }
-        $order = $tableName === 'transmissoes' ? 'tipo' : 'nome';
-        $result = $this->db->query("SELECT * FROM {$tableName} ORDER BY {$order}");
+        $orderCol = 'nome';
+        if ($tableName === 'transmissoes') {
+            $orderCol = 'tipo';
+        } elseif ($tableName === 'classificacao_enderecos') {
+            $orderCol = 'descricao';
+        }
+        $result = $this->db->query("SELECT * FROM {$tableName} ORDER BY {$orderCol}");
         return $result['status'] === 'success' ? $result['data'] : [];
     }
 

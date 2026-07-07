@@ -130,7 +130,7 @@ class LocaisService
 
     public function getAllClassificacoesEnderecos(): array
     {
-        $result = $this->db->query("SELECT id, nome FROM classificacao_enderecos ORDER BY nome");
+        $result = $this->db->query("SELECT id, descricao FROM classificacao_enderecos ORDER BY descricao");
         return $result['status'] === 'success' ? $result['data'] : [];
     }
 

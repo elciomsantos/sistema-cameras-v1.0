@@ -282,7 +282,7 @@ class EquipamentoService
         if ($tipoLogradouro === null || $tipoLogradouro === '') {
             return null;
         }
-        $ceResult = $this->db->query("SELECT id FROM classificacao_enderecos WHERE UPPER(nome) = UPPER(?) LIMIT 1", [trim($tipoLogradouro)]);
+        $ceResult = $this->db->query("SELECT id FROM classificacao_enderecos WHERE UPPER(descricao) = UPPER(?) LIMIT 1", [trim($tipoLogradouro)]);
         if ($ceResult['status'] === 'success' && !empty($ceResult['data'])) {
             return (int)$ceResult['data'][0]->id;
         }

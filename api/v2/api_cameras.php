@@ -178,7 +178,7 @@ try {
                 l.cep AS local_cep,
                 l.numero AS local_numero,
                 l.descricao_posicao,
-                ce.nome AS tipo_logradouro,
+                ce.descricao AS tipo_logradouro,
                 l.tem_alarme,
                 l.alarme_conta,
                 sec.nome AS secretaria_nome,

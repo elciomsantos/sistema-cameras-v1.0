@@ -127,7 +127,7 @@ try {
             t.tipo AS transmissao_nome,
             ol.nome AS origem_link_nome,
             tc.nome AS tipo_camera_nome,
-            ce.nome AS tipo_logradouro,
+            ce.descricao AS tipo_logradouro,
             ec.mosaico,
             ec.coordenadas,
             ec.numero_ruas,

@@ -31,7 +31,7 @@ function loadManutencaoPayload(
                 l.cidade AS local_cidade,
                 l.uf AS local_uf,
                 l.cep AS local_cep,
-                ce.nome AS tipo_logradouro,
+                ce.descricao AS tipo_logradouro,
                 EXISTS (SELECT 1 FROM equipamentos_manutencoes em WHERE em.equipamento_id = e.id AND em.os_status_id IN (1, 2)) AS em_manutencao,
                 e.ip,
                 e.numero_serie,

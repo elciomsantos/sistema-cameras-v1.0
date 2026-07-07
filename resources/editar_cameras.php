@@ -374,8 +374,8 @@ try {
                                 <select name="tipo_logradouro" class="form-select">
                                     <option value="">Selecione...</option>
                                     <?php foreach ($dados['classificacao_enderecos'] as $item): ?>
-                                        <option value="<?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?>">
-                                            <?= htmlspecialchars($item->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        <option value="<?= htmlspecialchars($item->descricao, ENT_QUOTES, 'UTF-8') ?>">
+                                            <?= htmlspecialchars($item->descricao, ENT_QUOTES, 'UTF-8') ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

@@ -200,7 +200,7 @@ unset($_SESSION['form_data']);
                                             value="<?= htmlspecialchars($formData['novo_modelo_nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
                                             placeholder="Ex: IPC-HDW5842T-ZE, DS-2CD2143G0-I">
                                         <input type="hidden" name="modelo_id" id="modelo_id"
-                                            value="<?= $formData['modelo_id'] ?? '' ?>">
+                                            value="<?= htmlspecialchars($formData['modelo_id'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                                     </div>
                                     <div class="invalid-feedback">Informe o modelo da câmera</div>
                                 </div>

@@ -160,7 +160,7 @@ try {
     <div class="mt-3">Carregando dados...</div>
 </div>
 
-<script nonce="<?= $CSP_NONCE ?>">
+<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 window.LOCAIS_LIST = <?= json_encode(array_map(fn($l) => ['id' => (int)$l->id, 'nome' => $l->nome], $locaisList)) ?>;
 </script>
 <?php

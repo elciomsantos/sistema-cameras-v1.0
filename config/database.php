@@ -1,5 +1,9 @@
 <?php
 
+namespace OberonBox\Database;
+
+use \PDO;
+
 declare(strict_types=1);
 
 $configPath = __DIR__ . '/../config/config.php';
@@ -7,7 +11,7 @@ if (file_exists($configPath)) {
     require_once $configPath;
 }
 
-class database
+class Database
 {
     private static ?self $instance = null;
     private \PDO $pdo;

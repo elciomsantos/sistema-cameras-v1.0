@@ -39,7 +39,18 @@ try {
             FROM locais l
             LEFT JOIN classificacao_enderecos ce ON ce.id = l.classificacao_endereco_id
             WHERE " . implode(' AND ', $where) . "
-            ORDER BY l.nome LIMIT 20";
+            ORDER BY 
+                CASE 
+                    WHEN UPPER(l.nome) = UPPER(?) THEN 0
+                    WHEN UPPER(l.nome) LIKE UPPER(CONCAT(?, '%')) THEN 1
+                    WHEN UPPER(l.nome) LIKE UPPER(CONCAT('%', ?, '%')) THEN 2
+                    ELSE 3
+                END,
+                l.nome
+            LIMIT 20";
+    $params[] = $q;
+    $params[] = $q;
+    $params[] = $q;
     $result = $db->query($sql, $params);
 
     if ($result['status'] === 'success') {

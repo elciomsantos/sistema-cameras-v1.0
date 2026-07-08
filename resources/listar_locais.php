@@ -127,21 +127,8 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
             </form>
 
             <div class="row g-2 mb-3">
-                <div class="col-auto">
-                    <button type="button" onclick="exportCsv()" class="btn btn-success btn-sm">
-                        <i class="fas fa-file-csv me-1"></i>Exportar CSV
-                    </button>
                 </div>
             </div>
-        <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            function exportCsv() {
-                var fd = new FormData(document.getElementById('formFiltrosLocais'));
-                var fd2 = new FormData(document.getElementById('formFiltrosExtrasLocais'));
-                for (var pair of fd2.entries()) { fd.append(pair[0], pair[1]); }
-                var q = new URLSearchParams(fd).toString();
-                window.location.href = '?page=api/exportar_locais&format=csv&' + q;
-            }
-        </script>
 
         <p class="text-muted small">Total: <strong><?= $total ?></strong> locais encontrados</p>
         <?php if (!empty($locais)): ?>

@@ -13,25 +13,32 @@ if ($isAdmin) {
     if ($r['status'] === 'success') $totalUsers = (int)($r['data'][0]->total ?? 0);
 }
 
-// Count escolas
-$totalEscolas = 0;
-$r = $db->query("SELECT COUNT(*) as total FROM locais WHERE nome LIKE '%ESCOLA%'");
-if ($r['status'] === 'success') $totalEscolas = (int)($r['data'][0]->total ?? 0);
-
-// Count CMEIs
-$totalCmeis = 0;
-$r = $db->query("SELECT COUNT(*) as total FROM locais WHERE nome LIKE '%CMEI%'");
-if ($r['status'] === 'success') $totalCmeis = (int)($r['data'][0]->total ?? 0);
+// Contagens de locais por tipo (via JOIN em tipos_locais - case insensitive sem LIKE)
+// Uma unica query com LEFT JOIN + GROUP BY faz todas as contagens relevantes em 1 round-trip
+$contagensLocais = ['escolas' => 0, 'cmeis' => 0, 'proprios' => 0];
+$r = $db->query(
+    "SELECT tl.nome AS tipo, COUNT(l.id) AS total
+     FROM locais l
+     INNER JOIN tipos_locais tl ON tl.id = l.tipo_local_id
+     WHERE l.deleted_at IS NULL
+       AND tl.nome IN ('ESCOLA', 'CMEI', 'PREDIO PUBLICO')
+     GROUP BY tl.nome"
+);
+if ($r['status'] === 'success') {
+    foreach ($r['data'] as $row) {
+        if ($row->tipo === 'ESCOLA')         $contagensLocais['escolas']  = (int)$row->total;
+        elseif ($row->tipo === 'CMEI')      $contagensLocais['cmeis']    = (int)$row->total;
+        elseif ($row->tipo === 'PREDIO PUBLICO') $contagensLocais['proprios'] = (int)$row->total;
+    }
+}
+$totalEscolas  = $contagensLocais['escolas'];
+$totalCmeis    = $contagensLocais['cmeis'];
+$totalProprios = $contagensLocais['proprios'];
 
 // Count operadoras
 $totalOperadoras = 0;
 $r = $db->query("SELECT COUNT(*) as total FROM origem_link");
 if ($r['status'] === 'success') $totalOperadoras = (int)($r['data'][0]->total ?? 0);
-
-// Count proprios publicos
-$totalProprios = 0;
-$r = $db->query("SELECT COUNT(*) as total FROM locais WHERE tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = 'PREDIO PUBLICO')");
-if ($r['status'] === 'success') $totalProprios = (int)($r['data'][0]->total ?? 0);
 ?>
 
 <div class="container-fluid mt-4">

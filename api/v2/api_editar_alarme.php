@@ -14,6 +14,10 @@ try {
     $id = $params['id'];
     unset($params['id']);
 
+    if (!verificarEscopoAlarme($id)) {
+        ApiResponse::forbidden('Alarme nao pertence a sua secretaria.');
+    }
+
     $svc->atualizar($id, $params);
 
     ApiResponse::success([

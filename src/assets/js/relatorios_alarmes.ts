@@ -238,12 +238,13 @@ document.addEventListener('DOMContentLoaded', function (): void {
   }
 
   function mostrarErro(mensagem: string): void {
+    const safeMsg = escapeHtml(mensagem)
     corpoTabela.innerHTML = `
             <tr>
                 <td colspan="25" class="text-center text-danger py-5">
                     <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
                     <h5>Erro ao carregar dados</h5>
-                    <p class="text-muted">${mensagem}</p>
+                    <p class="text-muted">${safeMsg}</p>
                     <button class="btn btn-sm btn-primary mt-2" onclick="location.reload()">
                         <i class="fas fa-sync-alt"></i> Tentar novamente
                     </button>

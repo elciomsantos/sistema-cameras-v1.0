@@ -16,6 +16,7 @@ return [
 
     // MODULO: ADMIN (pasta /accounts e /resources)
     'administracao',
+    'admin_tabelas',
     'cadastroUsuario',
     'listarUsuario',
     'editarUsuario',
@@ -47,6 +48,7 @@ return [
     'manutencao_cameras',
     'manutencao_alarmes',
     'auditoria_cameras',
+    'notificacoes',
 
     // ENDPOINTS AJAX (pasta /api)
     'api/api_cadastrar_cameras',
@@ -76,5 +78,6 @@ return [
     'api/api_listar_anexos',
     'api/api_excluir_anexo',
     'api/api_servir_anexo',
+    'api/api_notificacoes',
 
 ];

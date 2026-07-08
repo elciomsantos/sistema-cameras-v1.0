@@ -5,7 +5,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('supervisor', true);
+    requireApiAuth('user', true);
 
     $validator = new RequestValidator($_GET);
     $validator->validate([
@@ -40,6 +40,12 @@ try {
     $where = [];
     $params = [];
 
+    $usuarioSecretariaId = getUsuarioSecretariaId();
+    if ($usuarioSecretariaId !== null && resolveUserAccessLevel($_SESSION['usuario'] ?? null) === 'user') {
+        $where[] = 'EXISTS (SELECT 1 FROM locais l WHERE l.alarme_conta = a.conta AND l.secretaria_id = :secretaria_id)';
+        $params[':secretaria_id'] = $usuarioSecretariaId;
+    }
+
     if ($id > 0) {
         $where[] = 'a.id = :id';
         $params[':id'] = $id;
@@ -64,37 +70,52 @@ try {
 
     if ($busca !== '') {
         $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
-        $paramVal = '%' . $likeSafe . '%';
+        $buscaParam = '%' . $likeSafe . '%';
 
-        if (ctype_digit($busca)) {
-            $where[] = '(a.conta = :busca_conta OR
-                       a.local LIKE :busca1 OR
-                       a.endereco LIKE :busca2 OR
-                       a.observacao LIKE :busca3 OR
-                       a.numero_sei LIKE :busca4 OR
-                       a.ip LIKE :busca5 OR
-                       a.ip_dvr LIKE :busca6)';
-            $params[':busca_conta'] = (int)$busca;
-            $params[':busca1'] = $paramVal;
-            $params[':busca2'] = $paramVal;
-            $params[':busca3'] = $paramVal;
-            $params[':busca4'] = $paramVal;
-            $params[':busca5'] = $paramVal;
-            $params[':busca6'] = $paramVal;
+        $buscaParts = [];
+        $isIp = filter_var($busca, FILTER_VALIDATE_IP);
+
+        if ($isIp) {
+            $ipParts = [];
+            if (filter_var($busca, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                $ipParts[] = 'INET_ATON(a.ip) = INET_ATON(:busca_ip)';
+                $ipParts[] = 'INET_ATON(a.ip_dvr) = INET_ATON(:busca_ip2)';
+            } else {
+                $ipParts[] = 'a.ip = :busca_ip';
+                $ipParts[] = 'a.ip_dvr = :busca_ip2';
+            }
+            $params[':busca_ip'] = $busca;
+            $params[':busca_ip2'] = $busca;
+            $buscaParts[] = '(' . implode(' OR ', $ipParts) . ')';
         } else {
-            $where[] = '(a.local LIKE :busca1 OR
-                       a.endereco LIKE :busca2 OR
-                       a.observacao LIKE :busca3 OR
-                       a.numero_sei LIKE :busca4 OR
-                       a.ip LIKE :busca5 OR
-                       a.ip_dvr LIKE :busca6)';
-            $params[':busca1'] = $paramVal;
-            $params[':busca2'] = $paramVal;
-            $params[':busca3'] = $paramVal;
-            $params[':busca4'] = $paramVal;
-            $params[':busca5'] = $paramVal;
-            $params[':busca6'] = $paramVal;
+            $buscaParts[] = '(a.ip LIKE :busca_ip_like OR a.ip_dvr LIKE :busca_ip_like2 OR a.mac LIKE :busca_mac)';
+            $params[':busca_ip_like'] = $buscaParam;
+            $params[':busca_ip_like2'] = $buscaParam;
+            $params[':busca_mac'] = $buscaParam;
+
+            if (ctype_digit($busca)) {
+                $buscaParts[] = 'a.conta = :busca_conta';
+                $params[':busca_conta'] = (int)$busca;
+            }
+
+            $buscaParts[] = 'a.numero_sei LIKE :busca_sei';
+            $params[':busca_sei'] = $buscaParam;
+
+            $buscaParts[] = 'CAST(a.id AS CHAR) LIKE :busca_id';
+            $params[':busca_id'] = $buscaParam;
+
+            if (strlen($busca) >= 3) {
+                $buscaParts[] = 'MATCH(a.local, a.endereco, a.observacao) AGAINST(:busca_fulltext IN BOOLEAN MODE)';
+                $params[':busca_fulltext'] = $busca . '*';
+            } else {
+                $buscaParts[] = '(a.local LIKE :busca_local OR a.endereco LIKE :busca_end OR a.observacao LIKE :busca_obs)';
+                $params[':busca_local'] = $buscaParam;
+                $params[':busca_end'] = $buscaParam;
+                $params[':busca_obs'] = $buscaParam;
+            }
         }
+
+        $where[] = '(' . implode(' OR ', $buscaParts) . ')';
     }
 
     $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where));

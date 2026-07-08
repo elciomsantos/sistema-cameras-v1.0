@@ -88,15 +88,17 @@ function loadAnexos(container: HTMLElement): void {
 
             let html = '<div class="row g-2">'
             anexos.forEach(function (a: AnexoData) {
+                const safeId = escapeHtml(String(a.id))
+                const safeTamanho = escapeHtml(a.tamanho_formatado || formatSize(a.tamanho))
                 html += '<div class="col-6 col-md-4 col-lg-3">'
-                html += '<div class="anexo-item card card-body p-2 text-center" data-id="' + a.id + '">'
+                html += '<div class="anexo-item card card-body p-2 text-center" data-id="' + safeId + '">'
                 html += '<a href="' + escapeHtml(a.url) + '" target="_blank" class="anexo-link d-block mb-1" title="' + escapeHtml(a.nome_original) + '">'
                 html += '<span class="anexo-preview-placeholder"></span>'
                 html += '</a>'
                 html += '<small class="anexo-nome text-truncate d-block" title="' + escapeHtml(a.nome_original) + '">' + escapeHtml(a.nome_original) + '</small>'
-                html += '<small class="text-muted">' + (a.tamanho_formatado || formatSize(a.tamanho)) + '</small>'
+                html += '<small class="text-muted">' + safeTamanho + '</small>'
                 if (container.classList.contains('anexos-editable')) {
-                    html += '<button type="button" class="btn btn-sm btn-outline-danger mt-1 anexo-btn-excluir" data-id="' + a.id + '" data-nome="' + escapeHtml(a.nome_original) + '" data-url="' + escapeHtml(a.url) + '" data-tipo="' + escapeHtml(a.mime_type || '') + '"><i class="fas fa-trash-alt"></i></button>'
+                    html += '<button type="button" class="btn btn-sm btn-outline-danger mt-1 anexo-btn-excluir" data-id="' + safeId + '" data-nome="' + escapeHtml(a.nome_original) + '" data-url="' + escapeHtml(a.url) + '" data-tipo="' + escapeHtml(a.mime_type || '') + '"><i class="fas fa-trash-alt"></i></button>'
                 }
                 html += '</div></div>'
             })

@@ -269,100 +269,8 @@ unset($_SESSION['form_data']);
                                 </div>
                             </div>
 
-                            <!-- Campos específicos LPR -->
-                            <div id="secaoEspecificaLPR" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-car me-1"></i>Especificações LPR</h6>
-                                <div class="row g-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Sentido da Via</label>
-                                        <input type="text" name="lpr_sentido_via" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            maxlength="50" placeholder="Ex: CRESCENTE, DECRESCENTE">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Faixa Monitorada</label>
-                                        <input type="text" name="lpr_faixa_monitorada" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            maxlength="50" placeholder="Ex: FAIXA 1, FAIXA 2">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="lpr_leitura_noturna" id="lprLeituraNoturna" value="1"
-                                                <?= !empty($formData['lpr_leitura_noturna']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="lprLeituraNoturna">
-                                                Leitura Noturna
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">URL de Acesso</label>
-                                        <input type="url" name="lpr_url_acesso" class="form-control"
-                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            maxlength="2083" placeholder="https://...">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Campos específicos DVR -->
-                            <div id="secaoEspecificaDVR" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-hdd me-1"></i>Especificações DVR</h6>
-                                <div class="row g-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label required">Modelo</label>
-                                        <input type="text" name="dvr_modelo" class="form-control" required
-                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            maxlength="80" placeholder="Ex: DVR 1104, DS-7104">
-                                        <div class="invalid-feedback">Informe o modelo do DVR</div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Canais</label>
-                                        <input type="number" name="dvr_canais" class="form-control"
-                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            min="1" placeholder="Ex: 4, 8, 16">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Armazenamento (TB)</label>
-                                        <input type="number" name="dvr_armazenamento_tb" class="form-control"
-                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            min="0" step="0.01" placeholder="Ex: 2.00">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Campos específicos Totem -->
-                            <div id="secaoEspecificaTotem" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-desktop me-1"></i>Especificações Totem</h6>
-                                <div class="row g-4">
-                                    <div class="col-md-4">
-                                        <label class="form-label required">Quantidade de Câmeras</label>
-                                        <input type="number" name="totem_quantidade_cameras" class="form-control" required
-                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            min="1" placeholder="Ex: 4">
-                                        <div class="invalid-feedback">Informe a quantidade de câmeras</div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="totem_tem_facial" id="totemTemFacial" value="1"
-                                                <?= !empty($formData['totem_tem_facial']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="totemTemFacial">
-                                                <i class="fas fa-face-smile me-1"></i>Reconhecimento Facial
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="totem_tem_lpr" id="totemTemLpr" value="1"
-                                                <?= !empty($formData['totem_tem_lpr']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="totemTemLpr">
-                                                <i class="fas fa-car me-1"></i>Leitor de Placa (LPR)
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php include __DIR__ . '/../inc/partials/camera-especificacoes.php'; ?>
+                            
 
                         </div></div>
 
@@ -454,24 +362,12 @@ unset($_SESSION['form_data']);
                                     <label class="form-label">Tipo Logradouro</label>
                                     <select name="tipo_logradouro" id="tipo_logradouro" class="form-select">
                                         <option value="">Selecione...</option>
-                                        <option value="RUA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'RUA' ? 'selected' : '' ?>>Rua
-                                        </option>
-                                        <option value="AVENIDA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'AVENIDA' ? 'selected' : '' ?>>
-                                            Avenida</option>
-                                        <option value="ALAMEDA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'ALAMEDA' ? 'selected' : '' ?>>
-                                            Alameda</option>
-                                        <option value="TRAVESSA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'TRAVESSA' ? 'selected' : '' ?>>
-                                            Travessa</option>
-                                        <option value="RODOVIA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'RODOVIA' ? 'selected' : '' ?>>
-                                            Rodovia</option>
-                                        <option value="ESTRADA"
-                                            <?= ($formData['tipo_logradouro'] ?? '') === 'ESTRADA' ? 'selected' : '' ?>>
-                                            Estrada</option>
+                                        <?php foreach ($dados['classificacao_enderecos'] ?? [] as $item): ?>
+                                            <option value="<?= htmlspecialchars($item->descricao, ENT_QUOTES, 'UTF-8') ?>"
+                                                <?= ($formData['tipo_logradouro'] ?? '') === $item->descricao ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($item->descricao, ENT_QUOTES, 'UTF-8') ?>
+                                            </option>
+                                        <?php endforeach; ?>
                                     </select>
                                 </div>
 
@@ -569,30 +465,7 @@ unset($_SESSION['form_data']);
                         </div>
                     </form>
 
-                    <!-- Anexos (fotos / documentos) - aparece apos salvar -->
-                    <div class="anexos-section-pending card alarme-section-card mb-3 mt-4 anexos-editable" id="anexosSection">
-                        <div class="card-header alarme-section-header d-flex align-items-center gap-2">
-                            <i class="fas fa-paperclip"></i>
-                            <span>Anexos</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="anexos-dropzone text-center p-4 border border-dashed rounded mb-3">
-                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                <p class="mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-                                <small class="text-muted">Imagens, PDF, Word, Excel (max 10MB)</small>
-                                <input type="file" class="anexos-file-input d-none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-                            </div>
-                            <div class="anexos-progress-container d-none mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="anexos-progress-text">Enviando...</small>
-                                </div>
-                                <div class="progress progress-thin">
-                                    <div class="anexos-progress progress-bar progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                            <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>
-                        </div>
-                    </div>
+                    <?php $pending = true; include __DIR__ . '/../inc/partials/anexos-section.php'; ?>
                 </div>
             </div>
         </div>
@@ -609,158 +482,5 @@ unset($_SESSION['form_data']);
     </div>
 </div>
 
-<?php
-$vitePageJs = vite_asset('cadastro-cameras');
-$viteImports = vite_entry_imports('cadastro-cameras');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
-
-<style nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-.autocomplete-dropdown-camera {
-    position: absolute; top: 100%; left: 0; right: 0; z-index: 1060;
-    max-height: 250px; overflow-y: auto;
-    background: #fff; border: 1px solid #ced4da; border-top: none;
-    border-radius: 0 0 4px 4px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
-    min-width: 100%;
-}
-.autocomplete-dropdown-camera .dropdown-item {
-    padding: 8px 12px; cursor: pointer; font-size: .875rem;
-    border-bottom: 1px solid #f0f0f0; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
-}
-.autocomplete-dropdown-camera .dropdown-item:last-child { border-bottom: none; }
-.autocomplete-dropdown-camera .dropdown-item:hover,
-.autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
-</style>
-<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-document.addEventListener('DOMContentLoaded', function() {
-    var input = document.getElementById('nome_local');
-    var tipoSelect = document.getElementById('tipo_local_id');
-    if (!input || !tipoSelect) return;
-
-    var apiUrlBase = <?= json_encode(BASE_URL . '/index.php?page=api/api_locais') ?>;
-    var dropdown = document.createElement('div');
-    dropdown.className = 'autocomplete-dropdown-camera';
-    dropdown.style.display = 'none';
-    var wrapper = input.parentNode;
-    wrapper.style.position = 'relative';
-    wrapper.appendChild(dropdown);
-
-    function carregarDadosLocal(d) {
-        if (d.descricao_posicao) {
-            var desc = document.querySelector('[name="descricao_posicao"]');
-            if (desc) desc.value = d.descricao_posicao;
-        }
-        if (d.regiao_id) {
-            var reg = document.querySelector('[name="regiao_id"]');
-            if (reg) reg.value = d.regiao_id;
-        }
-        if (d.secretaria_id) {
-            var sec = document.querySelector('[name="secretaria_id"]');
-            if (sec) sec.value = d.secretaria_id;
-        }
-        if (d.cep) {
-            var cep = document.querySelector('[name="cep"]');
-            if (cep) cep.value = d.cep;
-        }
-        if (d.uf) {
-            var uf = document.querySelector('[name="uf"]');
-            if (uf) uf.value = d.uf;
-        }
-        if (d.cidade) {
-            var cidade = document.querySelector('[name="cidade"]');
-            if (cidade) cidade.value = d.cidade;
-        }
-        if (d.bairro) {
-            var bairro = document.querySelector('[name="bairro"]');
-            if (bairro) bairro.value = d.bairro;
-        }
-        if (d.tipo_logradouro) {
-            var tl = document.querySelector('[name="tipo_logradouro"]');
-            if (tl) tl.value = d.tipo_logradouro;
-        }
-        if (d.logradouro) {
-            var logr = document.querySelector('[name="logradouro"]');
-            if (logr) logr.value = d.logradouro;
-        }
-        if (d.numero) {
-            var num = document.querySelector('[name="numero"]');
-            if (num) num.value = d.numero;
-        }
-        if (d.latitude && d.longitude) {
-            var coord = document.querySelector('[name="coordenadas"]');
-            if (coord) coord.value = d.latitude + ', ' + d.longitude;
-        }
-    }
-
-    function getTipoLocalId() { return parseInt(tipoSelect.value, 10) || 0; }
-
-    input.addEventListener('input', function() {
-        clearTimeout(this._timer);
-        var val = this.value.trim();
-        if (val.length < 3 || !getTipoLocalId()) {
-            dropdown.style.display = 'none';
-            return;
-        }
-        this._timer = setTimeout(function() {
-            fetch(apiUrlBase + '&q=' + encodeURIComponent(val) + '&tipo_local_id=' + getTipoLocalId())
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    dropdown.innerHTML = '';
-                    var items = data.data && data.data.data ? data.data.data : (Array.isArray(data.data) ? data.data : []);
-                    if (items.length > 0) {
-                        items.forEach(function(item) {
-                            var el = document.createElement('div');
-                            el.className = 'dropdown-item';
-                            el.textContent = item.nome;
-                            el.dataset.value = item.nome;
-                            el.addEventListener('click', function() {
-                                input.value = this.dataset.value;
-                                dropdown.style.display = 'none';
-                                var loc = this.dataset;
-                                carregarDadosLocal(loc);
-                            });
-                            el.dataset.logradouro = item.logradouro || '';
-                            el.dataset.bairro = item.bairro || '';
-                            el.dataset.cidade = item.cidade || '';
-                            el.dataset.uf = item.uf || '';
-                            el.dataset.cep = item.cep || '';
-                            el.dataset.numero = item.numero || '';
-                            el.dataset.descricao_posicao = item.descricao_posicao || '';
-                            el.dataset.regiao_id = item.regiao_id || '';
-                            el.dataset.secretaria_id = item.secretaria_id || '';
-                            el.dataset.tipo_logradouro = item.tipo_logradouro_nome || '';
-                            el.dataset.latitude = item.latitude || '';
-                            el.dataset.longitude = item.longitude || '';
-                            dropdown.appendChild(el);
-                        });
-                        dropdown.style.display = 'block';
-                    } else {
-                        dropdown.style.display = 'none';
-                    }
-                })
-                .catch(function() { dropdown.style.display = 'none'; });
-        }, 300);
-    });
-
-    tipoSelect.addEventListener('change', function() {
-        input.value = '';
-        dropdown.style.display = 'none';
-    });
-
-    document.addEventListener('click', function(e) {
-        if (!wrapper.contains(e.target)) dropdown.style.display = 'none';
-    });
-
-    input.addEventListener('blur', function() {
-        setTimeout(function() { dropdown.style.display = 'none'; }, 200);
-    });
-});
-</script>
-
-
+<?php vite_page_js('cadastro-cameras'); ?>
 

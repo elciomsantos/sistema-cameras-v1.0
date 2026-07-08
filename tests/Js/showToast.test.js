@@ -21,7 +21,7 @@ describe('showToast', () => {
   })
 
   it('should be defined as a function in ui-utils', async () => {
-    await import('../../public/assets/js/utils/ui-utils.js')
+    await import('../../src/assets/js/utils/ui-utils.ts')
 
     expect(typeof window.showToast).toBe('function')
   })

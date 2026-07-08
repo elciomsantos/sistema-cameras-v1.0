@@ -34,7 +34,7 @@ function invalidateAndClearSession(): void
             $db = getRequestDatabase();
             invalidateUniqueSession($db, $usuarioId, $sessionToken);
         } catch (Throwable $e) {
-            error_log('Erro ao invalidar sessao: ' . $e->getMessage());
+            logError('Erro ao invalidar sessao', ['error' => $e->getMessage()], 'session');
         }
     }
     clearLocalSessionState();
@@ -121,7 +121,7 @@ function enforceUniqueSession(bool $isApi = false): void
         $db = getRequestDatabase();
         $valid = isUniqueSessionValid($db, $usuarioId, $sessionToken);
     } catch (Throwable $e) {
-        error_log('Erro ao validar sessao unica (fallback: rejeitando sessao): ' . $e->getMessage());
+        logWarning('Erro ao validar sessao unica (fallback: rejeitando sessao)', ['error' => $e->getMessage()], 'session');
         $valid = false;
     }
 

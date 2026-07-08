@@ -36,6 +36,8 @@ export default defineConfig({
         'editar-alarmes': './assets/js/entries/editar-alarmes.ts',
         'cadastro-locais': './assets/js/entries/cadastro-locais.ts',
         'editar-locais': './assets/js/entries/editar-locais.ts',
+        'listar-locais': './assets/js/entries/listar-locais.ts',
+        'notificacoes': './assets/js/entries/notificacoes.ts',
       },
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',

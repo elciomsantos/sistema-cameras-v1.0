@@ -20,9 +20,8 @@
 
 /* Estilos gerais da página */
 .manutencao-page {
-    max-width: 1400px;
+    max-width: 1240px;
     margin: 0 auto;
-    padding: 0 1rem;
 }
 
 .manutencao-page .card {

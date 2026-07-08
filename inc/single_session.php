@@ -153,10 +153,11 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
         $normalizedStored = $storedIp === '::1' ? '127.0.0.1' : $storedIp;
         $normalizedCurrent = $currentIp === '::1' ? '127.0.0.1' : $currentIp;
         if ($normalizedStored !== $normalizedCurrent) {
-            error_log(sprintf(
-                '[session] IP mismatch for user %d: stored=%s current=%s (session not invalidated)',
-                $usuarioId, $storedIp, $currentIp
-            ));
+            logWarning('IP mismatch (session not invalidated)', [
+                'usuario_id' => $usuarioId,
+                'stored_ip' => $storedIp,
+                'current_ip' => $currentIp,
+            ], 'security');
         }
     }
 

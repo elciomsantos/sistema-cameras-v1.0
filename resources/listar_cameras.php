@@ -1,11 +1,12 @@
 <?php
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('supervisor');
+requererAcesso('user');
 
 // Configurar o caminho da API
 $api_url = BASE_URL . '/index.php?page=api/api_cameras';
-$canDelete = isset($_SESSION['usuario']->nivel_acesso)
+$canEdit = isset($_SESSION['usuario']->nivel_acesso)
     && in_array($_SESSION['usuario']->nivel_acesso, ['admin', 'supervisor'], true);
+$canDelete = $canEdit;
 
 $db = db();
 $locaisService = new LocaisService($db);
@@ -33,10 +34,12 @@ $locaisList = $locaisService->getAllLocais();
                                 title="Atualizar lista" data-bs-toggle="tooltip">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
+                            <?php if (userHasAccess('supervisor')): ?>
                             <a href="?page=cadastro_cameras" class="btn btn-success btn-sm py-1"
                                 title="Cadastrar nova c�mera" data-bs-toggle="tooltip">
                                 <i class="fas fa-plus me-1"></i>Nova C�mera
                             </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -163,13 +166,5 @@ $locaisList = $locaisService->getAllLocais();
     <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 </div>
 
-<div id="listarCamerasConfig" class="hidden-init" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>" data-can-delete="<?= $canDelete ? '1' : '0' ?>"></div>
-<?php
-$vitePageJs = vite_asset('listar-cameras');
-$viteImports = vite_entry_imports('listar-cameras');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<div id="listarCamerasConfig" class="hidden-init" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>" data-can-edit="<?= $canEdit ? '1' : '0' ?>" data-can-delete="<?= $canDelete ? '1' : '0' ?>"></div>
+<?php vite_page_js('listar-cameras'); ?>

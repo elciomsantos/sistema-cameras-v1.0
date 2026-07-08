@@ -41,26 +41,35 @@ $allLocais = $locaisService->searchAll($filters);
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="locais_' . date('Y-m-d') . '.csv"');
+$sanitizeCsv = function ($value) {
+    if ($value === null || $value === '') return '';
+    $first = $value[0];
+    if (in_array($first, ['=', '+', '-', '@', "\t", "\n", "\r"], true)) {
+        return "'" . $value;
+    }
+    return $value;
+};
+
 $output = fopen('php://output', 'w');
 fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 fputcsv($output, ['Nome', 'Tipo', 'Regiao', 'Logradouro', 'Numero', 'Bairro', 'Cidade', 'UF', 'CEP', 'Secretaria', 'Tem Alarme', 'Tem Camera', 'Cameras', 'Outros Equip.', 'Horario Funcionamento']);
 foreach ($allLocais as $l) {
     fputcsv($output, [
-        $l->nome ?? '',
-        $l->tipo_local_nome ?? '',
-        $l->regiao_nome ?? '',
-        $l->logradouro ?? '',
-        $l->numero ?? '',
-        $l->bairro ?? '',
-        $l->cidade ?? '',
-        $l->uf ?? '',
-        $l->cep ?? '',
-        $l->sigla ?? '',
-        ($l->tem_alarme ?? 0) ? 'Sim' : 'Nao',
-        ($l->tem_camera ?? 0) ? 'Sim' : 'Nao',
-        (int)($l->total_cameras ?? 0),
-        (int)($l->total_outros ?? 0),
-        $l->horario_funcionamento ?? '',
+        $sanitizeCsv($l->nome ?? ''),
+        $sanitizeCsv($l->tipo_local_nome ?? ''),
+        $sanitizeCsv($l->regiao_nome ?? ''),
+        $sanitizeCsv($l->logradouro ?? ''),
+        $sanitizeCsv($l->numero ?? ''),
+        $sanitizeCsv($l->bairro ?? ''),
+        $sanitizeCsv($l->cidade ?? ''),
+        $sanitizeCsv($l->uf ?? ''),
+        $sanitizeCsv($l->cep ?? ''),
+        $sanitizeCsv($l->sigla ?? ''),
+        $sanitizeCsv(($l->tem_alarme ?? 0) ? 'Sim' : 'Nao'),
+        $sanitizeCsv(($l->tem_camera ?? 0) ? 'Sim' : 'Nao'),
+        $sanitizeCsv((int)($l->total_cameras ?? 0)),
+        $sanitizeCsv((int)($l->total_outros ?? 0)),
+        $sanitizeCsv($l->horario_funcionamento ?? ''),
     ]);
 }
 fclose($output);

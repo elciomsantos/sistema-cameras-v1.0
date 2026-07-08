@@ -1,37 +1,60 @@
 .editar-alarme-wrapper {
-    max-width: 1280px;
+    max-width: 1320px;
     margin: 0 auto;
 }
 
-.alarme-section-card {
+.editar-alarme-wrapper .card {
+    border-radius: 10px;
+    border: 1px solid #dce3ea;
+    box-shadow: 0 10px 28px rgba(21, 34, 50, 0.10);
+}
+
+body.dark-mode .editar-alarme-wrapper .card {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .editar-alarme-wrapper .alarme-section-card {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .editar-alarme-wrapper .alarme-section-header {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-bottom-color: #0d6efd;
+}
+
+.editar-alarme-wrapper .alarme-section-card {
     border: 1px solid #d5dce3;
     border-radius: 0.5rem;
     overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    transition: box-shadow 0.2s ease;
+    box-shadow: 0 3px 8px rgba(21, 34, 50, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.alarme-section-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+.editar-alarme-wrapper .alarme-section-card:hover {
+    box-shadow: 0 6px 16px rgba(21, 34, 50, 0.12);
+    transform: translateY(-1px);
 }
 
-.alarme-section-header {
+.editar-alarme-wrapper .alarme-section-header {
     background: #f0f6fc;
     border-bottom: 2px solid #0d6efd;
     font-weight: 700;
     font-size: 1rem;
     padding: 0.7rem 1rem;
-    color: #212529;
+    color: #1a2a3a;
 }
 
-.alarme-section-header i {
+.editar-alarme-wrapper .alarme-section-header i {
     color: #0d6efd;
     font-size: 1.1rem;
     width: 1.4rem;
     text-align: center;
 }
 
-.alarme-section-card .card-body {
+.editar-alarme-wrapper .alarme-section-card .card-body {
     padding: 1rem;
 }
 
@@ -44,3 +67,20 @@
 .breadcrumb-item + .breadcrumb-item::before {
     content: "›";
 }
+
+.autocomplete-dropdown-camera {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 1060;
+    max-height: 250px; overflow-y: auto;
+    background: #fff; border: 1px solid #ced4da; border-top: none;
+    border-radius: 0 0 4px 4px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    min-width: 100%;
+}
+.autocomplete-dropdown-camera .dropdown-item {
+    padding: 8px 12px; cursor: pointer; font-size: .875rem;
+    border-bottom: 1px solid #f0f0f0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.autocomplete-dropdown-camera .dropdown-item:last-child { border-bottom: none; }
+.autocomplete-dropdown-camera .dropdown-item:hover,
+.autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
+

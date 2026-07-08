@@ -55,6 +55,7 @@ class LookupService
             'locais' => 'locais',
             'tipos_locais' => 'tipos_locais',
             'secretarias' => 'secretarias',
+            'classificacao_enderecos' => 'classificacao_enderecos',
         ]);
     }
 

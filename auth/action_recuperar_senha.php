@@ -77,11 +77,12 @@ if ($result['status'] === 'success' && !empty($result['data'])) {
         error_log('[action_recuperar_senha] Erro ao registrar auditoria: ' . $e->getMessage());
     }
 
-    $_SESSION['nova_senha_gerada'] = $novaSenha;
     $_SESSION['sucesso_recuperar'] = "Senha temporária gerada para o usuário '{$userData->nome}': {$novaSenha}";
 } else {
     $_SESSION['sucesso_recuperar'] = 'Se o usuario informado existir, uma senha temporaria foi gerada.';
 }
+
+session_regenerate_id(true);
 
 $logUser = $_SESSION['usuario']->usuario ?? 'unknown';
 $logUserId = currentUserId() ?? 'unknown';

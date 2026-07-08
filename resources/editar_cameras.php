@@ -154,92 +154,7 @@ try {
                             </div>
                             </div>
 
-                            <!-- Campos específicos LPR -->
-                            <div id="secaoEditLPR" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-car me-1"></i>Especificações LPR</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Sentido da Via</label>
-                                        <input type="text" name="lpr_sentido_via" class="form-control" maxlength="50"
-                                            value="<?= htmlspecialchars($formData['lpr_sentido_via'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: CRESCENTE, DECRESCENTE">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Faixa Monitorada</label>
-                                        <input type="text" name="lpr_faixa_monitorada" class="form-control" maxlength="50"
-                                            value="<?= htmlspecialchars($formData['lpr_faixa_monitorada'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: FAIXA 1, FAIXA 2">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="lpr_leitura_noturna" id="editLprLeituraNoturna" value="1"
-                                                <?= !empty($formData['lpr_leitura_noturna']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="editLprLeituraNoturna">Leitura Noturna</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">URL de Acesso</label>
-                                        <input type="url" name="lpr_url_acesso" class="form-control" maxlength="2083"
-                                            value="<?= htmlspecialchars($formData['lpr_url_acesso'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="https://...">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Campos específicos DVR -->
-                            <div id="secaoEditDVR" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-hdd me-1"></i>Especificações DVR</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Modelo</label>
-                                        <input type="text" name="dvr_modelo" class="form-control" maxlength="80" required
-                                            value="<?= htmlspecialchars($formData['dvr_modelo'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: DVR 1104, DS-7104">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Canais</label>
-                                        <input type="number" name="dvr_canais" class="form-control" min="1"
-                                            value="<?= htmlspecialchars($formData['dvr_canais'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: 4, 8, 16">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label">Armazenamento (TB)</label>
-                                        <input type="number" name="dvr_armazenamento_tb" class="form-control" min="0" step="0.01"
-                                            value="<?= htmlspecialchars($formData['dvr_armazenamento_tb'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: 2.00">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Campos específicos Totem -->
-                            <div id="secaoEditTotem" class="hidden-init">
-                                <hr>
-                                <h6 class="text-primary mb-3"><i class="fas fa-desktop me-1"></i>Especificações Totem</h6>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label">Quantidade de Câmeras</label>
-                                        <input type="number" name="totem_quantidade_cameras" class="form-control" min="1" required
-                                            value="<?= htmlspecialchars($formData['totem_quantidade_cameras'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                            placeholder="Ex: 4">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="totem_tem_facial" id="editTotemTemFacial" value="1"
-                                                <?= !empty($formData['totem_tem_facial']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="editTotemTemFacial"><i class="fas fa-face-smile me-1"></i>Reconhecimento Facial</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-check mt-4">
-                                            <input class="form-check-input" type="checkbox" name="totem_tem_lpr" id="editTotemTemLpr" value="1"
-                                                <?= !empty($formData['totem_tem_lpr']) ? 'checked' : '' ?>>
-                                            <label class="form-check-label" for="editTotemTemLpr"><i class="fas fa-car me-1"></i>Leitor de Placa (LPR)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php $sectionPrefix = 'Edit'; $ckPrefix = 'edit'; include __DIR__ . '/../inc/partials/camera-especificacoes.php'; ?>
 
                             </div></div>
 
@@ -427,30 +342,7 @@ try {
                             </div>
                     </form>
 
-                    <!-- Anexos (fotos / documentos) -->
-                    <div class="card alarme-section-card mb-3 mt-3 anexos-editable" id="anexosSection">
-                        <div class="card-header alarme-section-header d-flex align-items-center gap-2">
-                            <i class="fas fa-paperclip"></i>
-                            <span>Anexos</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="anexos-dropzone text-center p-4 border border-dashed rounded mb-3">
-                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
-                                <p class="mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-                                <small class="text-muted">Imagens, PDF, Word, Excel (max 10MB)</small>
-                                <input type="file" class="anexos-file-input d-none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-                            </div>
-                            <div class="anexos-progress-container d-none mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="anexos-progress-text">Enviando...</small>
-                                </div>
-                                <div class="progress progress-thin">
-                                    <div class="anexos-progress progress-bar progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                            <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>
-                        </div>
-                    </div>
+                    <?php include __DIR__ . '/../inc/partials/anexos-section.php'; ?>
                 </div>
         </div>
     </div>
@@ -460,13 +352,5 @@ try {
     <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
 </div>
 
-<?php
-$vitePageJs = vite_asset('editar-cameras');
-$viteImports = vite_entry_imports('editar-cameras');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<?php vite_page_js('editar-cameras'); ?>
 

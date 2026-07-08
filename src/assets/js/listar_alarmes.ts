@@ -5,6 +5,7 @@ import { escapeHtml } from './utils/html';
 
 const listarAlarmesConfigEl = document.getElementById('listarAlarmesConfig') as HTMLElement;
 const API_URL: string = listarAlarmesConfigEl?.dataset.apiUrl || '';
+const CAN_EDIT: boolean = listarAlarmesConfigEl?.dataset.canEdit === '1';
 const PER_PAGE = (window as any).PER_PAGE || 10;
 let currentPage = (window as any).currentPage || 1;
 
@@ -239,10 +240,11 @@ function exibirAlarmes(alarmes: Array<Record<string, unknown>>): void {
                             data-bs-toggle="tooltip">
                             <i class="fas fa-eye"></i>
                         </button>
+                        ${CAN_EDIT ? `
                         <a href="?page=editar_alarmes&id=${encodeURIComponent(idRaw)}" class="btn btn-primary py-1 px-2"
                             title="Editar alarme" data-bs-toggle="tooltip">
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </a>` : ''}
                     </div>
                 </td>
             </tr>

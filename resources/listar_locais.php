@@ -22,6 +22,9 @@ if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
 $pageNum = max(1, filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1);
 $perPage = 50;
 
+$canDelete = isset($_SESSION['usuario']->nivel_acesso)
+    && in_array($_SESSION['usuario']->nivel_acesso, ['admin', 'supervisor'], true);
+
 $tiposLocais = $locaisService->getAllTiposLocais();
 $regioes = $locaisService->getAllRegioes();
 
@@ -136,133 +139,11 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                 var fd2 = new FormData(document.getElementById('formFiltrosExtrasLocais'));
                 for (var pair of fd2.entries()) { fd.append(pair[0], pair[1]); }
                 var q = new URLSearchParams(fd).toString();
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '?page=action_listar_locais';
-                var h = document.createElement('input');
-                h.type = 'hidden';
-                h.name = 'export';
-                h.value = 'csv';
-                form.appendChild(h);
-                var t = document.createElement('input');
-                t.type = 'hidden';
-                t.name = 'csrf_token';
-                t.value = <?= json_encode(getCsrfToken()) ?>;
-                form.appendChild(t);
-                var d = document.createElement('input');
-                d.type = 'hidden';
-                d.name = 'filters';
-                d.value = q;
-                form.appendChild(d);
-                document.body.appendChild(form);
-                form.submit();
+                window.location.href = '?page=api/exportar_locais&format=csv&' + q;
             }
-        </script>
-
-<style nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            .autocomplete-dropdown {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                z-index: 1060;
-                max-height: 250px;
-                overflow-y: auto;
-                background: #fff;
-                border: 1px solid #ced4da;
-                border-top: none;
-                border-radius: 0 0 4px 4px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
-                min-width: 100%;
-            }
-
-            .autocomplete-dropdown .dropdown-item {
-                padding: 8px 12px;
-                cursor: pointer;
-                font-size: .875rem;
-                border-bottom: 1px solid #f0f0f0;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .autocomplete-dropdown .dropdown-item:last-child {
-                border-bottom: none;            }
-            .autocomplete-dropdown .dropdown-item:hover,
-            .autocomplete-dropdown .dropdown-item.active {
-                background: #e9ecef;            }
-        </style>
-        <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-            document.addEventListener('DOMContentLoaded', function() {
-                var input = document.getElementById('filtro_nome');
-                if (!input) return;
-
-                var apiUrlBase = <?= json_encode(BASE_URL . '/index.php?page=api/api_locais') ?>;
-                var dropdown = document.createElement('div');
-                dropdown.className = 'autocomplete-dropdown';
-                dropdown.style.display = 'none';
-                var wrapper = input.parentNode;
-                wrapper.style.position = 'relative';
-                wrapper.appendChild(dropdown);
-
-                var debounceTimer = null;
-
-                input.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    var val = this.value.trim();
-                    if (val.length < 3) {
-                        dropdown.style.display = 'none';
-                        return;
-                    }
-                    debounceTimer = setTimeout(function() {
-                        fetch(apiUrlBase + '&q=' + encodeURIComponent(val))
-                            .then(function(r) {
-                                return r.json();
-                            })
-                            .then(function(data) {
-                                dropdown.innerHTML = '';
-                                var items = data.data && data.data.data ? data.data.data : (Array.isArray(data.data) ? data.data : []);
-                                if (items.length > 0) {
-                                    items.forEach(function(item) {
-                                        var el = document.createElement('div');
-                                        el.className = 'dropdown-item';
-                                        el.textContent = item.nome;
-                                        el.dataset.value = item.nome;
-                                        el.addEventListener('click', function() {
-                                            input.value = this.dataset.value;
-                                            dropdown.style.display = 'none';
-                                            input.form.submit();
-                                        });
-                                        dropdown.appendChild(el);
-                                    });
-                                    dropdown.style.display = 'block';
-                                } else {
-                                    dropdown.style.display = 'none';
-                                }
-                            })
-                            .catch(function(err) {
-                                console.error('Autocomplete error:', err);
-                                dropdown.style.display = 'none';
-                            });
-                    }, 300);
-                });
-
-                document.addEventListener('click', function(e) {
-                    if (!wrapper.contains(e.target)) {
-                        dropdown.style.display = 'none';
-                    }
-                });
-
-                input.addEventListener('blur', function() {
-                    setTimeout(function() {
-                        dropdown.style.display = 'none';
-                    }, 200);
-                });
-            });
         </script>
 
         <p class="text-muted small">Total: <strong><?= $total ?></strong> locais encontrados</p>
-
         <?php if (!empty($locais)): ?>
             <div class="table-responsive">
                 <table class="table table-hover table-striped table-sm">
@@ -320,6 +201,15 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                                         class="btn btn-sm btn-outline-warning" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <?php if ($canDelete): ?>
+                                    <form method="post" action="?page=action_excluir_locais" style="display:inline" onsubmit="return confirm('Tem certeza que deseja excluir o local &quot;<?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?>&quot;?');">
+                                        <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$l->id ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -362,3 +252,4 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
     </div>
 </div>
 </div>
+<?php vite_page_js('listar-locais'); ?>

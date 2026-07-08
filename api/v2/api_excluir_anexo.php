@@ -34,15 +34,21 @@ try {
 
     $before = (array)$anexo;
 
-    $uploadsBase = realpath(__DIR__ . '/../../public/uploads');
     $relativePath = str_replace('\\', '/', ltrim((string)$anexo->caminho, '/'));
 
-    if ($uploadsBase === false || !str_starts_with($relativePath, 'uploads/')) {
+    if (!str_starts_with($relativePath, 'uploads/')) {
         error_log('[api_excluir_anexo] Caminho de anexo fora de uploads: ' . $relativePath);
         ApiResponse::error('VALIDATION_ERROR', 'Caminho do anexo invalido.');
     }
 
-    $caminhoAbsoluto = realpath(__DIR__ . '/../../public/' . $relativePath);
+    $uploadsBase = realpath(APP_ROOT . '/storage/uploads');
+    $caminhoAbsoluto = realpath($uploadsBase . '/' . substr($relativePath, 8));
+    if ($caminhoAbsoluto === false) {
+        $caminhoAbsoluto = realpath(__DIR__ . '/../../public/' . $relativePath);
+        if ($caminhoAbsoluto !== false) {
+            $uploadsBase = realpath(__DIR__ . '/../../public/uploads');
+        }
+    }
     if ($caminhoAbsoluto !== false) {
         $uploadsBasePrefix = rtrim(str_replace('\\', '/', $uploadsBase), '/') . '/';
         $resolvedPath = str_replace('\\', '/', $caminhoAbsoluto);

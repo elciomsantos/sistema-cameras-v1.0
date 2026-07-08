@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('supervisor');
+requererAcesso('user');
 ?>
 
 <?php vite_page_css('manutencao-cameras'); ?>
@@ -193,29 +193,7 @@ requererAcesso('supervisor');
                 </div>
             </form>
 
-            <div id="secaoAnexosManutencao" class="anexos-section-pending d-none mt-4">
-                <hr>
-                <h6><i class="fas fa-paperclip me-2"></i>Anexos da Manutenção</h6>
-                <p class="text-muted small mb-3">Anexe fotos de peças trocadas ou estado atual do equipamento.</p>
-                <div class="anexos-editable">
-                    <div class="anexos-dropzone text-center p-4 border border-dashed rounded">
-                        <i class="fas fa-cloud-upload-alt fa-2x mb-2 d-block text-primary"></i>
-                        <p class="mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-                        <small class="text-muted">Imagens, PDF, DOC, XLS — Máx. 10MB cada</small>
-                        <input type="file" class="anexos-file-input d-none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-                    </div>
-                    <div class="anexos-progress-container d-none mt-2">
-                        <div class="progress progress-thin">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="anexos-progress-text text-muted mt-1 d-block"></small>
-                    </div>
-                    <div class="anexos-error-msg text-danger small mt-1"></div>
-                    <div class="anexos-list mt-2" data-manutencao-camera-id="" data-empty-msg="Nenhum anexo cadastrado para esta manutenção.">
-                        <p class="text-muted text-center mb-0">Nenhum anexo cadastrado.</p>
-                    </div>
-                </div>
-            </div>
+            <?php $modo = 'manutencao'; $tipo = 'camera'; include __DIR__ . '/../inc/partials/anexos-section.php'; ?>
         </div>
     </div>
 
@@ -387,12 +365,4 @@ requererAcesso('supervisor');
   </div>
 </div>
 
-<?php
-$vitePageJs = vite_asset('manutencao-cameras');
-$viteImports = vite_entry_imports('manutencao-cameras');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<?php vite_page_js('manutencao-cameras'); ?>

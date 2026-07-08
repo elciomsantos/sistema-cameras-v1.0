@@ -43,7 +43,7 @@ class database
             $this->pdo = new \PDO($dsn, DB_USER, DB_PASS, $options);
             $this->reconnectAttempts = 0;
         } catch (\PDOException $err) {
-            error_log('Erro de conexao: ' . $err->getMessage());
+            logError('Erro de conexao', ['error' => $err->getMessage()], 'database');
             throw new \RuntimeException('Erro de conexao com o banco de dados.');
         }
     }
@@ -55,7 +55,7 @@ class database
         } catch (\PDOException $e) {
             if ($this->reconnectAttempts < self::MAX_RECONNECT_ATTEMPTS && !$this->inTransaction) {
                 $this->reconnectAttempts++;
-                error_log('[database] Connection lost, attempting reconnect (' . $this->reconnectAttempts . ')');
+                logWarning('Connection lost, attempting reconnect', ['attempt' => $this->reconnectAttempts], 'database');
                 $this->connect();
             }
         }
@@ -131,14 +131,14 @@ class database
                     $this->connect();
                     return $this->query($sql, $params);
                 } catch (\Throwable $retryErr) {
-                    error_log('Database error (after reconnect): ' . $retryErr->getMessage());
+                    logError('Database error after reconnect', ['error' => $retryErr->getMessage()], 'database');
                     throw new \RuntimeException('Erro interno no banco de dados.');
                 }
             }
-            error_log('Database error: ' . $err->getMessage());
+            logError('Database error', ['error' => $err->getMessage()], 'database');
             throw new \RuntimeException('Erro interno no banco de dados.');
         } catch (\Throwable $err) {
-            error_log('Database error: ' . $err->getMessage());
+            logError('Database error', ['error' => $err->getMessage()], 'database');
             throw new \RuntimeException('Erro interno no banco de dados.');
         }
     }

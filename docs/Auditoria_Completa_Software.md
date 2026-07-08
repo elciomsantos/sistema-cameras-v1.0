@@ -18,6 +18,7 @@ Atue como uma equipe multidisciplinar composta por:
 * QA Engineer
 * Especialista em UX/UI
 * Especialista em Clean Code e Refatoração
+* PHP
 
 Sua missão é realizar uma auditoria técnica completa do projeto, produzindo um relatório detalhado e baseado em evidências.
 
@@ -522,6 +523,12 @@ Ao final, gere um relatório contendo:
 19. Ranking das 20 correções mais importantes
 20. Conclusão Final
 
+
+ ** Interface com usuario
+ * Facilidade de uso
+ * telas
+ * acessos
+ *
 ## Instrução Final
 
 Não faça uma análise superficial. Percorra todo o repositório, identificando relações entre arquivos, módulos, APIs, banco de dados e dependências. Sempre justifique as conclusões com evidências do código, proponha soluções completas e utilize as melhores práticas atuais de engenharia de software para aplicações TypeScript, Node.js, React, Next.js, NestJS e ecossistemas relacionados.

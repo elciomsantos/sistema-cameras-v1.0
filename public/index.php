@@ -100,6 +100,9 @@ $routes = [
     'deletarUsuario'       => ['handler' => __DIR__ . '/../accounts/action_deletar_usuario.php', 'type' => 'action'],
     'action_deletar_usuario'=> ['handler' => __DIR__ . '/../accounts/action_deletar_usuario.php', 'type' => 'action'],
     'action_listar_locais' => ['handler' => __DIR__ . '/../resources/action_listar_locais.php', 'type' => 'action'],
+    'action_excluir_locais' => ['handler' => __DIR__ . '/../resources/action_excluir_locais.php', 'type' => 'action'],
+    'action_administracao' => ['handler' => __DIR__ . '/../resources/action_administracao.php', 'type' => 'action'],
+    'action_notificacoes'  => ['handler' => __DIR__ . '/../resources/action_notificacoes.php', 'type' => 'action'],
 
     // Mixed: intercepta POST com submit, senao renderiza layout
     'recuperar_senha' => ['handler' => __DIR__ . '/../auth/action_recuperar_senha.php', 'type' => 'mixed'],

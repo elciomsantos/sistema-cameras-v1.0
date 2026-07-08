@@ -14,7 +14,7 @@ class LocaisService
     public function getAll(array $filters = [], int $page = 1, int $perPage = 20): array
     {
         $perPage = min($perPage, 100);
-        $where = ['1=1'];
+        $where = ['l.deleted_at IS NULL'];
         $params = [];
 
         if (!empty($filters['nome'])) {
@@ -63,7 +63,7 @@ class LocaisService
 
     public function count(array $filters = []): int
     {
-        $where = ['1=1'];
+        $where = ['l.deleted_at IS NULL'];
         $params = [];
 
         if (!empty($filters['nome'])) {
@@ -95,7 +95,7 @@ class LocaisService
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
-        WHERE l.id = ?";
+        WHERE l.id = ? AND l.deleted_at IS NULL";
         $result = $this->db->query($sql, [$id]);
         if ($result['status'] === 'success' && !empty($result['data'])) {
             return $result['data'][0];
@@ -105,7 +105,7 @@ class LocaisService
 
     public function checkDuplicado(string $nome, ?int $secretariaId, ?int $excludeId = null): bool
     {
-        $sql = "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ?";
+        $sql = "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ? AND deleted_at IS NULL";
         $params = [$nome, $secretariaId];
         if ($excludeId !== null) {
             $sql .= ' AND id != ?';
@@ -142,13 +142,13 @@ class LocaisService
 
     public function getAllLocais(): array
     {
-        $result = $this->db->query("SELECT id, nome FROM locais ORDER BY nome");
+        $result = $this->db->query("SELECT id, nome FROM locais WHERE deleted_at IS NULL ORDER BY nome");
         return $result['status'] === 'success' ? $result['data'] : [];
     }
 
     public function getByTipoNome(string $tipoNome, string $search = '', int $page = 1, int $perPage = 20): array
     {
-        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1)';
+        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1) AND l.deleted_at IS NULL';
         $params = [$tipoNome];
 
         if ($search !== '') {
@@ -177,7 +177,7 @@ class LocaisService
 
     public function countByTipoNome(string $tipoNome, string $search = ''): int
     {
-        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1)';
+        $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1) AND l.deleted_at IS NULL';
         $params = [$tipoNome];
 
         if ($search !== '') {
@@ -191,6 +191,17 @@ class LocaisService
         $sql = "SELECT COUNT(*) as total FROM locais l WHERE {$where}";
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? (int)($result['data'][0]->total ?? 0) : 0;
+    }
+
+    public function softDelete(int $id): bool
+    {
+        if ($id <= 0) {
+            throw new InvalidArgumentException('ID inválido para exclusão.');
+        }
+
+        $sql = "UPDATE locais SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL";
+        $result = $this->db->query($sql, [$id]);
+        return $result['status'] === 'success' && $this->db->affectedRows() > 0;
     }
 
     public function create(array $data): int
@@ -264,6 +275,7 @@ class LocaisService
 
     private function applyFiltersWhere(array $filters, array &$where, array &$params): void
     {
+        $where[] = 'l.deleted_at IS NULL';
         if (!empty($filters['search'])) {
             $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['search']) . '%';

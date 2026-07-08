@@ -1,3 +1,5 @@
+import { CLASSIFICACAO_MAP } from './utils/classificacao-endereco';
+
 class EditarCamera {
     form!: HTMLFormElement;
     marcaSelect!: HTMLSelectElement;
@@ -290,13 +292,8 @@ class EditarCamera {
             }
         }
 
-        const classificacaoMap: Record<string, number> = {
-            'RUA': 1, 'AVENIDA': 2, 'TRAVESSA': 3, 'RODOVIA': 4,
-            'ALAMEDA': 5, 'PRACA': 6, 'PARQUE': 7, 'ESTRADA RURAL': 8,
-            'CHACARA': 9, 'OUTRO': 10
-        };
-        if (tipoLogradouro && classificacaoMap[tipoLogradouro.toUpperCase()]) {
-            data['classificacao_endereco_id'] = classificacaoMap[tipoLogradouro.toUpperCase()];
+        if (tipoLogradouro && CLASSIFICACAO_MAP[tipoLogradouro.toUpperCase()]) {
+            data['classificacao_endereco_id'] = CLASSIFICACAO_MAP[tipoLogradouro.toUpperCase()];
         }
 
         return data;

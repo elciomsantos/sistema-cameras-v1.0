@@ -163,15 +163,7 @@ try {
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 window.LOCAIS_LIST = <?= json_encode(array_map(fn($l) => ['id' => (int)$l->id, 'nome' => $l->nome], $locaisList)) ?>;
 </script>
-<?php
-$vitePageJs = vite_asset('relatorios-cameras');
-$viteImports = vite_entry_imports('relatorios-cameras');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<?php vite_page_js('relatorios-cameras'); ?>
 
 
 

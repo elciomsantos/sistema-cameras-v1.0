@@ -49,7 +49,7 @@ try {
     $_SESSION['ultimo_acesso'] = $now;
 
     if (!isset($_SESSION['last_regenerate']) || ($now - (int)$_SESSION['last_regenerate']) >= 300) {
-        session_regenerate_id(false);
+        session_regenerate_id(true);
         $_SESSION['last_regenerate'] = $now;
 
         // Apenas atualiza last_seen na sessao existente — NAO cria novo token,

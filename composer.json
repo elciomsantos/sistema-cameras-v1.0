@@ -3,7 +3,8 @@
     "description": "Sistema de Gerenciamento de Câmeras de Segurança",
     "type": "project",
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "monolog/monolog": "^3.10"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0",
@@ -18,6 +19,7 @@
         "files": [
             "config/app.php",
             "config/database.php",
+            "config/logger.php",
             "inc/security.php",
             "inc/single_session.php",
             "src/ErrorHandler.php"

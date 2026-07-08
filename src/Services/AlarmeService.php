@@ -208,6 +208,29 @@ class AlarmeService
         }
     }
 
+    public function excluir(int $id): void
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $result = $this->db->query(
+                "UPDATE central_alarmes SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+                [$id]
+            );
+
+            if ($result['status'] !== 'success' || empty($result['affected_rows']) || $result['affected_rows'] < 1) {
+                throw new RuntimeException('Alarme ja foi excluido ou nao encontrado.');
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollback();
+            }
+            throw $e;
+        }
+    }
+
     private function buildParams(array $data, bool $includeId = false): array
     {
         $params = [

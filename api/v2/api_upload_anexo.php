@@ -24,26 +24,39 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'Informe apenas um ID por vez (equipamento, alarme, manutenção câmera ou manutenção alarme).');
     }
 
+    $usuarioNivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+    $usuarioSecretariaId = getUsuarioSecretariaId();
+
+    $targetSecretariaId = null;
+
     if ($equipamentoId) {
-        $check = $db->query("SELECT id FROM equipamentos WHERE id = ? AND deleted_at IS NULL LIMIT 1", [$equipamentoId]);
+        $check = $db->query("SELECT id, secretaria_id FROM equipamentos WHERE id = ? AND deleted_at IS NULL LIMIT 1", [$equipamentoId]);
         if ($check['status'] !== 'success' || empty($check['data'])) {
             ApiResponse::error('VALIDATION_ERROR', 'Equipamento não encontrado.');
         }
+        $targetSecretariaId = (int)($check['data'][0]->secretaria_id ?? 0);
     } elseif ($alarmeId) {
-        $check = $db->query("SELECT id FROM central_alarmes WHERE id = ? LIMIT 1", [$alarmeId]);
+        $check = $db->query("SELECT ca.id, l.secretaria_id FROM central_alarmes ca LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE ca.id = ? LIMIT 1", [$alarmeId]);
         if ($check['status'] !== 'success' || empty($check['data'])) {
             ApiResponse::error('VALIDATION_ERROR', 'Alarme não encontrado.');
         }
+        $targetSecretariaId = (int)($check['data'][0]->secretaria_id ?? 0);
     } elseif ($manutencaoCameraId) {
-        $check = $db->query("SELECT id FROM equipamentos_manutencoes WHERE id = ? LIMIT 1", [$manutencaoCameraId]);
+        $check = $db->query("SELECT em.id, e.secretaria_id FROM equipamentos_manutencoes em JOIN equipamentos e ON e.id = em.equipamento_id WHERE em.id = ? LIMIT 1", [$manutencaoCameraId]);
         if ($check['status'] !== 'success' || empty($check['data'])) {
             ApiResponse::error('VALIDATION_ERROR', 'Manutenção de câmera não encontrada.');
         }
+        $targetSecretariaId = (int)($check['data'][0]->secretaria_id ?? 0);
     } elseif ($manutencaoAlarmeId) {
-        $check = $db->query("SELECT id FROM alarmes_manutencoes WHERE id = ? LIMIT 1", [$manutencaoAlarmeId]);
+        $check = $db->query("SELECT am.id, l.secretaria_id FROM alarmes_manutencoes am JOIN central_alarmes ca ON ca.id = am.alarme_id LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE am.id = ? LIMIT 1", [$manutencaoAlarmeId]);
         if ($check['status'] !== 'success' || empty($check['data'])) {
             ApiResponse::error('VALIDATION_ERROR', 'Manutenção de alarme não encontrada.');
         }
+        $targetSecretariaId = (int)($check['data'][0]->secretaria_id ?? 0);
+    }
+
+    if ($usuarioNivel !== 'admin' && $usuarioSecretariaId !== null && $targetSecretariaId > 0 && $targetSecretariaId !== $usuarioSecretariaId) {
+        ApiResponse::error('FORBIDDEN', 'Você não tem permissão para anexar arquivos a este registro.');
     }
 
     $tipoPermitido = ['foto', 'documento', 'anexo'];

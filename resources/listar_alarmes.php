@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('supervisor');
+requererAcesso('user');
 
 $api_url = BASE_URL . '/index.php?page=api/api_alarmes';
-$canDelete = isset($_SESSION['usuario']->nivel_acesso)
+$canEdit = isset($_SESSION['usuario']->nivel_acesso)
     && in_array($_SESSION['usuario']->nivel_acesso, ['admin', 'supervisor'], true);
 ?>
 
@@ -25,10 +25,12 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
                                 title="Atualizar lista" data-bs-toggle="tooltip">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
+                            <?php if (userHasAccess('supervisor')): ?>
                             <a href="?page=cadastro_alarmes" class="btn btn-success btn-sm py-1"
                                 title="Cadastrar novo alarme" data-bs-toggle="tooltip">
                                 <i class="fas fa-plus me-1"></i>Novo Alarme
                             </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -111,13 +113,5 @@ $canDelete = isset($_SESSION['usuario']->nivel_acesso)
     <div class="toast-container position-fixed top-0 end-0 p-3"></div>
 </div>
 
-<div id="listarAlarmesConfig" class="hidden-init" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>"></div>
-<?php
-$vitePageJs = vite_asset('listar-alarmes');
-$viteImports = vite_entry_imports('listar-alarmes');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<div id="listarAlarmesConfig" class="hidden-init" data-api-url="<?= htmlspecialchars($api_url, ENT_QUOTES, 'UTF-8') ?>" data-can-edit="<?= $canEdit ? '1' : '0' ?>"></div>
+<?php vite_page_js('listar-alarmes'); ?>

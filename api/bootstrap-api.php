@@ -34,10 +34,11 @@ function requiredAccessForApiEndpoint(string $endpoint): string
         'cadastrar_cameras',
         'editar_alarme',
         'editar_camera',
+        'excluir_alarme',
         'excluir_anexo',
         'excluir_camera',
-        'manutencao_alarmes',
-        'manutencao_cameras',
+        'exportar_locais',
+        'notificacoes',
         'relatorios_cameras',
         'upload_anexo',
     ];
@@ -103,10 +104,11 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $allowedEndpoints = [
         'alarmes', 'auditoria_cameras', 'cadastrar_alarmes', 'cadastrar_cameras',
-        'cameras', 'cep_lookup', 'dashboard', 'editar_alarme', 'editar_camera',
-        'excluir_anexo', 'excluir_camera', 'geocode', 'get_modelos', 'health',
+        'cameras', 'cep_lookup', 'dashboard',         'editar_alarme', 'editar_camera',
+        'excluir_alarme', 'excluir_anexo', 'excluir_camera', 'exportar_locais', 'geocode', 'get_modelos', 'health',
         'limpar_sessoes_orfas', 'listar_anexos', 'locais', 'manutencao_alarmes',
         'manutencao_cameras', 'manutencao_utils', 'modelos_alarmes', 'modelos_cameras',
+        'notificacoes',
         'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'session_check',
         'status', 'swagger', 'upload_anexo',
     ];
@@ -170,7 +172,7 @@ function executeApiRequest(?string $endpointOverride = null): void
     if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
         $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
         if (in_array('*', $configuredOrigins, true)) {
-            error_log('[CORS] APP_ALLOWED_ORIGINS contem "*" — remova para seguranca.');
+            logWarning('APP_ALLOWED_ORIGINS contem "*" — remova para seguranca.', [], 'security');
             $isOriginAllowed = true;
         } else {
             $isOriginAllowed = in_array($allowedOrigin, $configuredOrigins, true);

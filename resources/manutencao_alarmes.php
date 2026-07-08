@@ -1,34 +1,22 @@
 <?php
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('supervisor');
+requererAcesso('user');
 ?>
 
 <?php vite_page_css('manutencao-alarmes'); ?>
 
 <div class="container-fluid mt-4 mb-4 manutencao-page">
     <!-- Header com título e ações -->
-    <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="row mb-3">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h2 class="mb-1"><i class="fas fa-tools me-2"></i>Manutenção de Alarmes</h2>
-                <p class="text-muted mb-0">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Registre manutenções e acompanhe o histórico completo por equipamento
-                </p>
+                <p class="text-muted mb-0">Registre manutenções e acompanhe o histórico completo por equipamento.</p>
             </div>
-            <div class="d-flex gap-2">
-                <a href="?page=controle_alarmes" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
-            </div>
+            <a href="?page=controle_alarmes" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Voltar
+            </a>
         </div>
-    </div>
-
-    <!-- Alerta de loading global -->
-    <div id="globalLoadingAlert" class="alert alert-info alert-dismissible fade show d-none" role="alert">
-        <i class="fas fa-spinner fa-spin me-2"></i>
-        <span id="loadingMessage">Carregando dados...</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
     <!-- Seção de Nova Ordem de Serviço -->
@@ -43,9 +31,9 @@ requererAcesso('supervisor');
         </div>
         <div class="card-body" id="novaOsBody">
             <form id="formCriarOs" class="row g-3" novalidate>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="equipamento_id_os" class="form-label">Alarme Conta</label>
-                    <div class="input-group mb-2">
+                    <div class="input-group mb-4">
                         <input type="text" id="filtroAlarmeOs" class="form-control" placeholder="Buscar alarme...">
                         <button type="button" class="btn btn-outline-primary" id="btnBuscarAlarmeLista">
                             <i class="fas fa-search"></i>
@@ -59,15 +47,15 @@ requererAcesso('supervisor');
                     <label for="local_servico_os" class="form-label">Local do alarme</label>
                     <input type="text" id="local_servico_os" name="local_servico_os" class="form-control" maxlength="255" readonly>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-5">
                     <label for="endereco_servico_os" class="form-label">Endereço do alarme</label>
                     <input type="text" id="endereco_servico_os" name="endereco_servico_os" class="form-control" maxlength="255" readonly>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="data_hora_os" class="form-label">Data/Hora de abertura</label>
                     <input type="datetime-local" id="data_hora_os" name="data_hora_os" class="form-control">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label for="numero_os_os" class="form-label">Número da OS</label>
                     <input type="text" id="numero_os_os" name="numero_os_os" class="form-control" maxlength="50" placeholder="Número da OS">
                 </div>
@@ -134,7 +122,7 @@ requererAcesso('supervisor');
                     <label for="local_servico" class="form-label">Local do serviço</label>
                     <input type="text" id="local_servico" name="local_servico" class="form-control" maxlength="255" placeholder="Local onde foi atendido">
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label for="endereco_servico" class="form-label">Endereço do serviço</label>
                     <input type="text" id="endereco_servico" name="endereco_servico" class="form-control" maxlength="255" placeholder="Endereço ou referência">
                 </div>
@@ -159,29 +147,7 @@ requererAcesso('supervisor');
                 </div>
             </form>
 
-            <div id="secaoAnexosManutencao" class="anexos-section-pending d-none mt-4">
-                <hr>
-                <h6><i class="fas fa-paperclip me-2"></i>Anexos da Manutenção</h6>
-                <p class="text-muted small mb-3">Anexe fotos de peças trocadas ou estado atual do equipamento.</p>
-                <div class="anexos-editable">
-                    <div class="anexos-dropzone text-center p-4 border border-dashed rounded">
-                        <i class="fas fa-cloud-upload-alt fa-2x mb-2 d-block text-primary"></i>
-                        <p class="mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-                        <small class="text-muted">Imagens, PDF, DOC, XLS — Máx. 10MB cada</small>
-                        <input type="file" class="anexos-file-input d-none" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-                    </div>
-                    <div class="anexos-progress-container d-none mt-2">
-                        <div class="progress progress-thin">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-start" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <small class="anexos-progress-text text-muted mt-1 d-block"></small>
-                    </div>
-                    <div class="anexos-error-msg text-danger small mt-1"></div>
-                    <div class="anexos-list mt-2" data-manutencao-alarme-id="" data-empty-msg="Nenhum anexo cadastrado para esta manutenção.">
-                        <p class="text-muted text-center mb-0">Nenhum anexo cadastrado.</p>
-                    </div>
-                </div>
-            </div>
+            <?php $modo = 'manutencao'; $tipo = 'alarme'; include __DIR__ . '/../inc/partials/anexos-section.php'; ?>
         </div>
     </div>
 
@@ -392,12 +358,4 @@ requererAcesso('supervisor');
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 window._CSP_NONCE = '<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>';
 </script>
-<?php
-$vitePageJs = vite_asset('manutencao-alarmes');
-$viteImports = vite_entry_imports('manutencao-alarmes');
-if ($vitePageJs):
-    foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
-<?php endforeach; ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
-<?php endif; ?>
+<?php vite_page_js('manutencao-alarmes'); ?>

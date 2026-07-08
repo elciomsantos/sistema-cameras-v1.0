@@ -23,13 +23,12 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
     });
 
     set_exception_handler(static function (Throwable $exception) use ($context): void {
-        error_log(sprintf(
-            '[%s] %s in %s:%d',
-            strtoupper($context),
-            $exception->getMessage(),
-            $exception->getFile(),
-            $exception->getLine()
-        ));
+        logError($exception->getMessage(), [
+            'context' => $context,
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $exception->getTraceAsString(),
+        ], $context);
 
         if (!headers_sent()) {
             http_response_code(500);
@@ -82,13 +81,12 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             ob_end_clean();
         }
 
-        error_log(sprintf(
-            '[%s] FATAL %s in %s:%d',
-            strtoupper($context),
-            (string)($error['message'] ?? 'erro fatal'),
-            (string)($error['file'] ?? 'unknown'),
-            (int)($error['line'] ?? 0)
-        ));
+        logError($error['message'] ?? 'erro fatal', [
+            'context' => $context,
+            'type' => 'FATAL',
+            'file' => $error['file'] ?? 'unknown',
+            'line' => $error['line'] ?? 0,
+        ], $context);
 
         if (headers_sent()) {
             exit(1);

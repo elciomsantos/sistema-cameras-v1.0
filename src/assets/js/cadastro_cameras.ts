@@ -1,3 +1,6 @@
+import { CLASSIFICACAO_MAP } from './utils/classificacao-endereco';
+import { initAutocomplete, AutocompleteItem } from './utils/autocomplete-utils';
+
 class CadastroCamera {
     form!: HTMLFormElement;
     marcaSelect!: HTMLSelectElement;
@@ -602,14 +605,9 @@ class CadastroCamera {
             }
         }
 
-        const classificacaoMap: Record<string, number> = {
-            'RUA': 1, 'AVENIDA': 2, 'TRAVESSA': 3, 'RODOVIA': 4,
-            'ALAMEDA': 5, 'PRACA': 6, 'PARQUE': 7, 'ESTRADA': 8,
-            'ESTRADA RURAL': 8, 'CHACARA': 9, 'OUTRO': 10
-        };
         const tipoLogradouro = data['tipo_logradouro'] as string | undefined;
-        if (tipoLogradouro && classificacaoMap[tipoLogradouro]) {
-            data['classificacao_endereco_id'] = classificacaoMap[tipoLogradouro];
+        if (tipoLogradouro && CLASSIFICACAO_MAP[tipoLogradouro.toUpperCase()]) {
+            data['classificacao_endereco_id'] = CLASSIFICACAO_MAP[tipoLogradouro.toUpperCase()];
         }
         delete data['tipo_logradouro'];
 
@@ -825,6 +823,27 @@ class CadastroCamera {
     }
 }
 
+function carregarDadosLocal(d: Record<string, unknown>): void {
+    const setVal = (name: string, val: unknown) => {
+        const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLSelectElement | null;
+        if (el && val) el.value = String(val);
+    };
+    setVal('descricao_posicao', d.descricao_posicao);
+    setVal('regiao_id', d.regiao_id);
+    setVal('secretaria_id', d.secretaria_id);
+    setVal('cep', d.cep);
+    setVal('uf', d.uf);
+    setVal('cidade', d.cidade);
+    setVal('bairro', d.bairro);
+    setVal('tipo_logradouro', d.tipo_logradouro);
+    setVal('logradouro', d.logradouro);
+    setVal('numero', d.numero);
+    if (d.latitude && d.longitude) {
+        const coord = document.querySelector('[name="coordenadas"]') as HTMLInputElement | null;
+        if (coord) coord.value = d.latitude + ', ' + d.longitude;
+    }
+}
+
 function onReady(): void {
     new CadastroCamera();
 
@@ -853,6 +872,27 @@ function onReady(): void {
 
     chk.addEventListener('change', toggleAlarmeSection);
     toggleAlarmeSection();
+
+    const tipoSelect = document.getElementById('tipo_local_id') as HTMLSelectElement | null;
+    initAutocomplete({
+        inputId: 'nome_local',
+        apiUrlBase: window.APP_API_BASE + 'api_locais',
+        dropdownClass: 'autocomplete-dropdown-camera',
+        extraParams: () => '&tipo_local_id=' + (tipoSelect ? parseInt(tipoSelect.value, 10) || 0 : 0),
+        onSelect: (item: AutocompleteItem) => {
+            const data: Record<string, unknown> = { ...item };
+            if (item.tipo_logradouro_nome && !item.tipo_logradouro) {
+                data.tipo_logradouro = item.tipo_logradouro_nome;
+            }
+            carregarDadosLocal(data);
+        },
+    });
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', () => {
+            const nomeInput = document.getElementById('nome_local') as HTMLInputElement | null;
+            if (nomeInput) nomeInput.value = '';
+        });
+    }
 }
 
 if (document.readyState === 'loading') {

@@ -265,7 +265,7 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Método não permitido.');
     }
 
-    requireApiAuth('supervisor');
+    requireApiAuth('user');
 
     $db = db();
 

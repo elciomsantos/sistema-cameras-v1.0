@@ -93,7 +93,11 @@ function requireApiCsrf(bool $rotate = true): void
 
     $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     if (!validateCsrfToken($token)) {
-        error_log('[CSRF] Falha na validacao. Token: ' . substr($token, 0, 16) . '... | Session keys: ' . implode(',', array_keys($_SESSION['csrf_tokens'] ?? [])) . ' | Method: ' . $_SERVER['REQUEST_METHOD']);
+        logWarning('Falha na validacao CSRF', [
+            'token_prefix' => substr($token, 0, 16),
+            'session_keys' => array_keys($_SESSION['csrf_tokens'] ?? []),
+            'method' => $_SERVER['REQUEST_METHOD'],
+        ], 'security');
         http_response_code(422);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
@@ -300,7 +304,7 @@ function auditEvent($db, string $entidade, ?int $entidadeId, string $operacao, ?
         $mapaOperacao = ['INSERT' => 1, 'UPDATE' => 2, 'DELETE' => 3];
         $operacaoId = $mapaOperacao[strtoupper($operacao)] ?? null;
         if ($operacaoId === null) {
-            error_log('Falha ao registrar auditoria: operacao desconhecida "' . $operacao . '"');
+            logWarning('Falha ao registrar auditoria: operacao desconhecida', ['operacao' => $operacao], 'audit');
             return;
         }
         $db->query(
@@ -317,7 +321,7 @@ function auditEvent($db, string $entidade, ?int $entidadeId, string $operacao, ?
             ]
         );
     } catch (Throwable $e) {
-        error_log('Falha ao registrar auditoria: ' . $e->getMessage());
+        logError('Falha ao registrar auditoria', ['error' => $e->getMessage()], 'audit');
         writeAuditLog($entidade, $entidadeId, $operacao, $dadosAntes, $dadosDepois, $origem);
     }
 }
@@ -348,7 +352,7 @@ function writeAuditLog(string $entidade, ?int $entidadeId, string $operacao, ?ar
         ], JSON_UNESCAPED_UNICODE);
         file_put_contents($logFile, $entry . "\n", FILE_APPEND | LOCK_EX);
     } catch (Throwable $e2) {
-        error_log('Falha ao escrever auditoria em arquivo: ' . $e2->getMessage());
+        logError('Falha ao escrever auditoria em arquivo', ['error' => $e2->getMessage()], 'audit');
     }
 }
 

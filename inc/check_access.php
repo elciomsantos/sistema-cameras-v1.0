@@ -61,7 +61,7 @@ function requererEscopoLocal(int $localId): void
 {
     if (!verificarEscopoLocal($localId)) {
         if (!headers_sent()) {
-            header('Location: index.php?page=nao_autorizado');
+            header('Location: index.php?page=home');
             exit;
         }
         echo 'Acesso nao autorizado a este local.';
@@ -152,4 +152,31 @@ function verificarEscopoAnexo(int $anexoId): bool
     if ($localId === null) return false;
 
     return verificarEscopoLocal($localId);
+}
+
+function verificarEscopoAlarme(int $alarmeId): bool
+{
+    $usuario = $_SESSION['usuario'] ?? null;
+    if (!$usuario) return false;
+
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+
+    $secretariaId = getUsuarioSecretariaId();
+    if ($secretariaId === null) return true;
+
+    $db = db();
+    $result = $db->query(
+        "SELECT l.secretaria_id
+         FROM central_alarmes ca
+         LEFT JOIN locais l ON l.alarme_conta = ca.conta
+         WHERE ca.id = ? LIMIT 1",
+        [$alarmeId]
+    );
+
+    if ($result['status'] !== 'success' || empty($result['data'])) {
+        return false;
+    }
+
+    $alarmeSecretariaId = (int)($result['data'][0]->secretaria_id ?? 0);
+    return $alarmeSecretariaId > 0 && $alarmeSecretariaId === $secretariaId;
 }

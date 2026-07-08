@@ -5,4 +5,4 @@ import Chart from 'chart.js/auto';
 import '../utils/ui/theme-manager';
 import '../core/dashboard-core';
 import '../modules/dashboard-charts';
-import '../pages/home-dashboard';
+import '../home_dashboard';

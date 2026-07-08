@@ -104,24 +104,20 @@ class ChartManager {
     }
 
     updateCameraTypeChart(tipoData: Array<Record<string, unknown>>): void {
-        const allTypes = ['FIXA', 'SPEED DOME', 'LPR', 'FACIAL'];
-        const colorMap: Record<string, string> = {
-            'FIXA': '#3498db',
-            'SPEED DOME': '#f39c12',
-            'LPR': '#9b59b6',
-            'FACIAL': '#1abc9c'
-        };
-        const counts: Record<string, number> = { FIXA: 0, 'SPEED DOME': 0, LPR: 0, FACIAL: 0 };
+        const allTypes: string[] = [];
+        const colorMap: Record<string, string> = {};
+        const counts: Record<string, number> = {};
+        const defaultColors = ['#3498db', '#f39c12', '#9b59b6', '#1abc9c', '#e74c3c', '#2ecc71', '#e67e22', '#95a5a6'];
         if (Array.isArray(tipoData)) {
-            tipoData.forEach(item => {
+            tipoData.forEach((item, i) => {
                 const key = String(item.tipo || '').toUpperCase();
                 const qty = Number(item.quantidade || 0);
-                if (counts.hasOwnProperty(key)) {
-                    counts[key] += qty;
-                } else {
+                if (!counts.hasOwnProperty(key)) {
+                    counts[key] = 0;
                     allTypes.push(key);
-                    colorMap[key] = '#95a5a6';
+                    colorMap[key] = defaultColors[i % defaultColors.length];
                 }
+                counts[key] += qty;
             });
         }
         const labels = allTypes;

@@ -69,4 +69,20 @@ body.dark-mode .camera-cadastro-page .alarme-section-header {
     padding: 1rem;
 }
 
+.autocomplete-dropdown-camera {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 1060;
+    max-height: 250px; overflow-y: auto;
+    background: #fff; border: 1px solid #ced4da; border-top: none;
+    border-radius: 0 0 4px 4px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    min-width: 100%;
+}
+.autocomplete-dropdown-camera .dropdown-item {
+    padding: 8px 12px; cursor: pointer; font-size: .875rem;
+    border-bottom: 1px solid #f0f0f0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.autocomplete-dropdown-camera .dropdown-item:last-child { border-bottom: none; }
+.autocomplete-dropdown-camera .dropdown-item:hover,
+.autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
+
 

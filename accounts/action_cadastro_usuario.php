@@ -27,6 +27,24 @@ if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
     $nivel_acesso = 'user';
 }
 
+$secretaria_id = $_POST['text_secretaria_id'] ?? '';
+if ($secretaria_id !== '') {
+    $secretaria_id = (int)$secretaria_id;
+    if ($secretaria_id < 1) $secretaria_id = null;
+} else {
+    $secretaria_id = null;
+}
+
+if ($nivel_acesso !== 'admin' && $secretaria_id === null) {
+    $_SESSION['erro_cadastro'] = 'Secretaria e obrigatoria para usuarios e supervisores.';
+    $_SESSION['form_secretaria_id'] = '';
+    header('Location: index.php?page=cadastroUsuario');
+    exit;
+}
+if ($nivel_acesso === 'admin') {
+    $secretaria_id = null;
+}
+
 if (mb_strlen($nome) > 255 || mb_strlen($usuario) > 100) {
     $_SESSION['erro_cadastro'] = 'Nome ou usuario muito longo.';
     header('Location: index.php?page=cadastroUsuario');
@@ -74,11 +92,27 @@ try {
     $result = $db->query($sql, [':usuario' => $usuario]);
     if ($result['status'] === 'success' && !empty($result['data']) && $result['data'][0]->total >= 1) {
         $_SESSION['usuario_existe'] = true;
+        $_SESSION['form_secretaria_id'] = (string)$secretaria_id;
         header('Location: index.php?page=cadastroUsuario');
         exit;
     }
 } catch (Exception $ex) {
     error_log('Erro ao verificar usuario: ' . $ex->getMessage());
+}
+
+if ($secretaria_id !== null) {
+    try {
+        $sql = "SELECT id, ativo FROM secretarias WHERE id = :id LIMIT 1";
+        $result = $db->query($sql, [':id' => $secretaria_id]);
+        if ($result['status'] !== 'success' || empty($result['data']) || (int)$result['data'][0]->ativo !== 1) {
+            $_SESSION['erro_cadastro'] = 'Secretaria invalida ou inativa.';
+            $_SESSION['form_secretaria_id'] = '';
+            header('Location: index.php?page=cadastroUsuario');
+            exit;
+        }
+    } catch (Exception $ex) {
+        error_log('Erro ao verificar secretaria: ' . $ex->getMessage());
+    }
 }
 
 if ($email !== null) {
@@ -111,13 +145,14 @@ $senha_hash = hashPassword($senha);
 
 enableAuditTriggers($db, 'web');
 
-$sql = "INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, senha_temporaria) VALUES (:nome, :usuario, :email, :senha, :nivel_acesso_id, 1)";
+$sql = "INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, secretaria_id, senha_temporaria) VALUES (:nome, :usuario, :email, :senha, :nivel_acesso_id, :secretaria_id, 1)";
 $params = [
     ':nome' => $nome,
     ':usuario' => $usuario,
     ':email' => $email,
     ':senha' => $senha_hash,
-    ':nivel_acesso_id' => $nivel_acesso_id
+    ':nivel_acesso_id' => $nivel_acesso_id,
+    ':secretaria_id' => $secretaria_id,
 ];
 
 $result = $db->query($sql, $params);

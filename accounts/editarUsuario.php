@@ -13,7 +13,7 @@ if (!$id_usuario) {
     exit;
 }
 
-$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id";
+$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria, u.secretaria_id FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id";
 $params = [':id' => $id_usuario];
 $result = $db->query($sql, $params);
 
@@ -24,6 +24,10 @@ if ($result['status'] !== 'success' || count($result['data']) === 0) {
 }
 
 $usuario = $result['data'][0];
+
+$secretariasResult = $db->query("SELECT id, nome, sigla FROM secretarias WHERE ativo = 1 ORDER BY nome");
+$secretarias = ($secretariasResult['status'] === 'success') ? ($secretariasResult['data'] ?? []) : [];
+$usuarioSecretariaId = $usuario->secretaria_id ?? null;
 
 $mensagem_erro = $_SESSION['erro_editar_usuario'] ?? '';
 unset($_SESSION['erro_editar_usuario']);
@@ -100,8 +104,7 @@ if ($senhaTemporariaExibida !== null) {
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="nivel_acesso" class="form-label">Nivel de Acesso</label>
-                                    <select class="form-select" id="nivel_acesso" name="nivel_acesso"
-                                        onchange="return confirmarNivelAcesso(this)">
+                                    <select class="form-select" id="nivel_acesso" name="nivel_acesso">
                                         <option value="user" <?= $usuario->nivel_acesso === 'user' ? 'selected' : '' ?>>Usuario</option>
                                         <option value="supervisor" <?= $usuario->nivel_acesso === 'supervisor' ? 'selected' : '' ?>>Supervisor</option>
                                         <option value="admin" <?= $usuario->nivel_acesso === 'admin' ? 'selected' : '' ?>>Administrador</option>
@@ -117,6 +120,23 @@ if ($senhaTemporariaExibida !== null) {
                                             Usuario ativo
                                         </label>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="secretaria_id" class="form-label">Secretaria</label>
+                                    <select class="form-select" id="secretaria_id" name="secretaria_id" data-required-levels="user,supervisor">
+                                        <option value="">-- Selecione --</option>
+                                        <?php foreach ($secretarias as $sec): ?>
+                                            <option value="<?= (int)$sec->id ?>" <?= ((string)$usuarioSecretariaId === (string)$sec->id) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($sec->nome, ENT_QUOTES, 'UTF-8') ?>
+                                                (<?= htmlspecialchars($sec->sigla, ENT_QUOTES, 'UTF-8') ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <div class="form-text">Obrigatorio para usuarios e supervisores. Administradores podem deixar em branco.</div>
                                 </div>
                             </div>
                         </div>
@@ -166,35 +186,48 @@ if ($senhaTemporariaExibida !== null) {
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 (function() {
-    var valorOriginal = '<?= htmlspecialchars($usuario->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8') ?>';
     var selectEl = document.getElementById('nivel_acesso');
+    var secFieldEdit = document.getElementById('secretaria_id');
+    var secContainerEdit = secFieldEdit ? secFieldEdit.closest('.mb-3') : null;
+    var valorOriginal = '<?= htmlspecialchars($usuario->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8') ?>';
     var modalConfirm = new bootstrap.Modal(document.getElementById('modalConfirmarRebaixar'));
     var confirmBtn = document.getElementById('btnConfirmarRebaixar');
     var pendingValue = null;
 
-    window.confirmarNivelAcesso = function(select) {
-        if (valorOriginal === 'admin' && select.value !== 'admin') {
-            pendingValue = select.value;
-            modalConfirm.show();
-            return false;
+    function atualizarSecretariaField() {
+        if (!selectEl || !secFieldEdit) return;
+        if (selectEl.value === 'admin') {
+            secFieldEdit.removeAttribute('required');
+            secFieldEdit.value = '';
+            if (secContainerEdit) secContainerEdit.style.display = 'none';
+        } else {
+            secFieldEdit.setAttribute('required', 'required');
+            if (secContainerEdit) secContainerEdit.style.display = '';
         }
-        return true;
-    };
-
-    confirmBtn.addEventListener('click', function() {
-        if (pendingValue) {
-            selectEl.value = pendingValue;
-        }
-        modalConfirm.hide();
-    });
+    }
 
     selectEl.addEventListener('change', function() {
+        // Primeiro, abre modal se for rebaixar admin
         if (valorOriginal === 'admin' && this.value !== 'admin') {
             pendingValue = this.value;
             modalConfirm.show();
             this.value = valorOriginal;
+            return;
         }
+        atualizarSecretariaField();
     });
+
+    confirmBtn.addEventListener('click', function() {
+        if (pendingValue) {
+            selectEl.value = pendingValue;
+            atualizarSecretariaField();
+        }
+        pendingValue = null;
+        modalConfirm.hide();
+    });
+
+    // Estado inicial
+    atualizarSecretariaField();
 })();
 </script>
             <div class="card mt-4 border-warning">

@@ -10,7 +10,7 @@ $db = db();
 
 function listarUsuarios($dbConn) {
     try {
-        $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.ativo, u.created_at AS data FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.deleted_at IS NULL ORDER BY u.id DESC";
+        $sql = "SELECT u.id, u.nome, u.usuario, n.nome as nivel_acesso, u.ativo, u.created_at AS data, s.nome as secretaria, s.sigla as secretaria_sigla FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id LEFT JOIN secretarias s ON u.secretaria_id = s.id WHERE u.deleted_at IS NULL ORDER BY u.id DESC";
         $result = $dbConn->query($sql);
         
         if ($result['status'] === 'success') {
@@ -59,6 +59,7 @@ $listUsuarios = listarUsuarios($db);
                         <th>Nome</th>
                         <th>Usuário</th>
                         <th>Nível de Acesso</th>
+                        <th>Secretaria</th>
                         <th>Status</th>
                         <th>Data de Cadastro</th>
                         <th class="text-center">Ações</th>
@@ -74,6 +75,15 @@ $listUsuarios = listarUsuarios($db);
                                 <span class="badge <?= ($usuario->nivel_acesso === 'admin') ? 'bg-danger' : 'bg-primary' ?>">
                                     <?= htmlspecialchars($usuario->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8'); ?>
                                 </span>
+                            </td>
+                            <td>
+                                <?php if (!empty($usuario->secretaria)): ?>
+                                    <span class="badge bg-info text-dark" title="<?= htmlspecialchars($usuario->secretaria, ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($usuario->secretaria_sigla ?? $usuario->secretaria, ENT_QUOTES, 'UTF-8') ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-muted">—</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <span class="badge <?= ($usuario->ativo == 1) ? 'bg-success' : 'bg-secondary' ?>">

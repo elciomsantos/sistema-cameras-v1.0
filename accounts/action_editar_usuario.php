@@ -27,7 +27,7 @@ if (!$id_usuario) {
 
 $db = db();
 
-$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id AND u.deleted_at IS NULL";
+$sql = "SELECT u.id, u.usuario, u.nome, n.nome as nivel_acesso, u.ativo, u.senha_temporaria, u.secretaria_id FROM usuarios u LEFT JOIN niveis_acesso n ON u.nivel_acesso_id = n.id WHERE u.id = :id AND u.deleted_at IS NULL";
 $result = $db->query($sql, [':id' => $id_usuario]);
 
 if ($result['status'] !== 'success' || count($result['data']) === 0) {
@@ -42,7 +42,8 @@ $beforeAudit = [
     'usuario' => $usuario->usuario ?? null,
     'nivel_acesso' => $usuario->nivel_acesso ?? null,
     'ativo' => $usuario->ativo ?? null,
-    'senha_temporaria' => $usuario->senha_temporaria ?? null
+    'senha_temporaria' => $usuario->senha_temporaria ?? null,
+    'secretaria_id' => $usuario->secretaria_id ?? null,
 ];
 
 $nome = trim($_POST['nome'] ?? '');
@@ -50,6 +51,32 @@ $usuario_novo = trim($_POST['usuario'] ?? '');
 $nivel_acesso = $_POST['nivel_acesso'] ?? 'user';
 if (!in_array($nivel_acesso, ['admin', 'supervisor', 'user'], true)) {
     $nivel_acesso = 'user';
+}
+
+$secretaria_id = $_POST['secretaria_id'] ?? '';
+if ($secretaria_id !== '') {
+    $secretaria_id = (int)$secretaria_id;
+    if ($secretaria_id < 1) $secretaria_id = null;
+} else {
+    $secretaria_id = null;
+}
+
+if ($nivel_acesso !== 'admin' && $secretaria_id === null) {
+    $_SESSION['erro_editar_usuario'] = 'Secretaria e obrigatoria para usuarios e supervisores.';
+    header('Location: ?page=editarUsuario&id=' . $id_usuario);
+    exit;
+}
+if ($nivel_acesso === 'admin') {
+    $secretaria_id = null;
+}
+
+if ($secretaria_id !== null) {
+    $secCheck = $db->query("SELECT id FROM secretarias WHERE id = ? AND ativo = 1 LIMIT 1", [$secretaria_id]);
+    if ($secCheck['status'] !== 'success' || empty($secCheck['data'])) {
+        $_SESSION['erro_editar_usuario'] = 'Secretaria invalida ou inativa.';
+        header('Location: ?page=editarUsuario&id=' . $id_usuario);
+        exit;
+    }
 }
 
 if (mb_strlen($nome) > 255 || mb_strlen($usuario_novo) > 100) {
@@ -100,22 +127,24 @@ $senhaTemporariaPlain = null;
 if ($redefinir_senha) {
     $senhaTemporariaPlain = generateTemporaryPassword(12);
     $senhaHash = hashPassword($senhaTemporariaPlain);
-    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo, senha = :senha, senha_temporaria = 1 WHERE id = :id";
+    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo, secretaria_id = :secretaria_id, senha = :senha, senha_temporaria = 1 WHERE id = :id";
     $params_update = [
         ':nome' => $nome,
         ':usuario' => $usuario_novo,
         ':nivel_acesso_id' => $nivel_acesso_id,
         ':ativo' => $ativo,
+        ':secretaria_id' => $secretaria_id,
         ':senha' => $senhaHash,
         ':id' => $id_usuario
     ];
 } else {
-    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo WHERE id = :id";
+    $sql_update = "UPDATE usuarios SET nome = :nome, usuario = :usuario, nivel_acesso_id = :nivel_acesso_id, ativo = :ativo, secretaria_id = :secretaria_id WHERE id = :id";
     $params_update = [
         ':nome' => $nome,
         ':usuario' => $usuario_novo,
         ':nivel_acesso_id' => $nivel_acesso_id,
         ':ativo' => $ativo,
+        ':secretaria_id' => $secretaria_id,
         ':id' => $id_usuario
     ];
 }
@@ -129,7 +158,8 @@ if (($result_update['status'] ?? 'error') === 'success') {
         'usuario' => $usuario_novo,
         'nivel_acesso' => $nivel_acesso,
         'ativo' => $ativo,
-        'senha_temporaria' => $redefinir_senha ? 1 : ($usuario->senha_temporaria ?? 0)
+        'senha_temporaria' => $redefinir_senha ? 1 : ($usuario->senha_temporaria ?? 0),
+        'secretaria_id' => $secretaria_id,
     ];
     try {
         auditEvent($db, 'usuarios', $id_usuario, 'UPDATE', $beforeAudit, $afterAudit, 'web');

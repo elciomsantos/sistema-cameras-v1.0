@@ -14,6 +14,12 @@ $usuarioExiste = $_SESSION['usuario_existe'] ?? null;
 unset($_SESSION['usuario_existe']);
 $emailExiste = $_SESSION['email_existe'] ?? null;
 unset($_SESSION['email_existe']);
+
+$db = db();
+$secretariasResult = $db->query("SELECT id, nome, sigla FROM secretarias WHERE ativo = 1 ORDER BY nome");
+$secretarias = ($secretariasResult['status'] === 'success') ? ($secretariasResult['data'] ?? []) : [];
+$secretariaSelecionada = $_SESSION['form_secretaria_id'] ?? '';
+unset($_SESSION['form_secretaria_id']);
 ?>
 
 <div class="container mt-4 mb-5">
@@ -79,6 +85,20 @@ unset($_SESSION['email_existe']);
                         </div>
 
                         <div class="mb-3">
+                            <label for="text_secretaria_id" class="form-label">Secretaria</label>
+                            <select id="text_secretaria_id" name="text_secretaria_id" class="form-select" data-required-levels="user,supervisor">
+                                <option value="">-- Selecione --</option>
+                                <?php foreach ($secretarias as $sec): ?>
+                                    <option value="<?= (int)$sec->id ?>" <?= ((string)$secretariaSelecionada === (string)$sec->id) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($sec->nome, ENT_QUOTES, 'UTF-8') ?>
+                                        (<?= htmlspecialchars($sec->sigla, ENT_QUOTES, 'UTF-8') ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="form-text">Obrigatorio para usuarios e supervisores. Administradores podem deixar em branco.</div>
+                        </div>
+
+                        <div class="mb-3">
                             <label for="text_senha" class="form-label">Senha <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <input type="password" id="text_senha" name="text_senha" class="form-control" placeholder="Senha tempor&aacute;ria" required minlength="8">
@@ -118,6 +138,25 @@ unset($_SESSION['email_existe']);
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 (function () {
+    var nivelSelect = document.getElementById('text_nivel_acesso');
+    var secField = document.getElementById('text_secretaria_id');
+    var secContainer = secField ? secField.closest('.mb-3') : null;
+
+    function atualizarObrigatoriedade() {
+        if (!nivelSelect || !secField) return;
+        var nivel = nivelSelect.value;
+        if (nivel === 'admin') {
+            secField.removeAttribute('required');
+            secField.value = '';
+            if (secContainer) secContainer.style.display = 'none';
+        } else {
+            secField.setAttribute('required', 'required');
+            if (secContainer) secContainer.style.display = '';
+        }
+    }
+    atualizarObrigatoriedade();
+    nivelSelect.addEventListener('change', atualizarObrigatoriedade);
+
     function gerarSenhaTemporaria(len) {
         var mai = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
         var min = 'abcdefghijkmnpqrstuvwxyz';

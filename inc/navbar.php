@@ -43,6 +43,7 @@
                     </ul>
                 </li>
 
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-chart-column me-1"></i>Relatorios
@@ -52,8 +53,33 @@
                         <li><a class="dropdown-item" href="?page=relatorios_alarmes"><i class="fas fa-bell me-2"></i>Relatorios de Alarmes</a></li>
                     </ul>
                 </li>
+                <?php endif; ?>
 
-                <?php if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']->nivel_acesso) && ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor')): ?>
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
+                <?php
+                try {
+                    $notifService = new NotificacaoService();
+                    $notifUsuarioSecId = getUsuarioSecretariaId();
+                    $notifNivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+                    $notifSecId = ($notifNivel === 'user' && $notifUsuarioSecId !== null) ? $notifUsuarioSecId : null;
+                    $notifCount = $notifService->getCountNaoLidas($notifSecId);
+                } catch (Throwable $e) {
+                    $notifCount = 0;
+                }
+                ?>
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="?page=notificacoes">
+                        <i class="fas fa-bell me-1"></i>Notificações
+                        <?php if ($notifCount > 0): ?>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <?= $notifCount < 100 ? $notifCount : '99+' ?>
+                        </span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+                <?php endif; ?>
+
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-cog me-1"></i>Administracao
@@ -72,6 +98,14 @@
                         <li><a class="dropdown-item" href="?page=listar_cmeis"><i class="fas fa-child me-2"></i>CMEIs</a></li>
                         <li><a class="dropdown-item" href="?page=listar_operadoras"><i class="fas fa-network-wired me-2"></i>Operadoras / Links</a></li>
                         <li><a class="dropdown-item" href="?page=listar_proprios"><i class="fas fa-building me-2"></i>Proprios Publicos</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Tabelas Lookup</h6></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=secretarias"><i class="fas fa-building me-2"></i>Secretarias</a></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=regioes"><i class="fas fa-map me-2"></i>Regioes</a></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=tipos_locais"><i class="fas fa-tag me-2"></i>Tipos de Local</a></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=tipos_equipamento"><i class="fas fa-cogs me-2"></i>Tipos de Equipamento</a></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=marcas"><i class="fas fa-industry me-2"></i>Marcas</a></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=status"><i class="fas fa-flag me-2"></i>Status</a></li>
                     </ul>
                 </li>
                 <?php endif; ?>

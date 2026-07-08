@@ -84,6 +84,12 @@ CREATE INDEX idx_usuarios_nivel_acesso ON usuarios(nivel_acesso_id);
 CREATE INDEX idx_usuarios_secretaria ON usuarios(secretaria_id);
 CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
 
+-- Senhas padrao (seed): admin / admin123, supervisor / sup123, usuario / user123
+INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, secretaria_id) VALUES
+('Administrador', 'admin', 'admin@sistema.local', '$2y$12$fdnhj.EWAy.Po1j2BfrFWOgAcNplbgdMaX7QF/BMEMWGdAtrMy7w.', 1, 1),
+('Supervisor', 'supervisor', 'supervisor@sistema.local', '$2y$12$9OyosGMEQqupd1nom3qNJO6Coz7R6OG3gyMxnCx7OO2//jCkKTXw.', 2, 1),
+('Usuario Padrao', 'usuario', 'usuario@sistema.local', '$2y$12$rurfcjaYNYCNm40JlLfFKO5ptB98.pjH3s/9ZnHLS2NYl6lfNx7Ny', 3, 1);
+
 -- =====================================================
 -- SESSAO UNICA POR USUARIO
 -- =====================================================
@@ -390,8 +396,10 @@ CREATE TABLE locais (
     ramal VARCHAR(50) NULL COMMENT 'Ramal do local',
     email VARCHAR(150) NULL COMMENT 'E-mail do local',
     secretaria_id INT NULL,
+    alarme_conta INT NULL COMMENT 'Conta de alarme FK para central_alarmes',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL COMMENT 'Data de exclusao logica (soft delete)',
     CONSTRAINT fk_locais_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_tipo_local FOREIGN KEY (tipo_local_id) REFERENCES tipos_locais(id) ON DELETE SET NULL,
@@ -404,6 +412,7 @@ CREATE INDEX idx_locais_regiao ON locais(regiao_id);
 CREATE INDEX idx_locais_secretaria ON locais(secretaria_id);
 CREATE INDEX idx_locais_tipo_local ON locais(tipo_local_id);
 CREATE INDEX idx_locais_classif_endereco ON locais(classificacao_endereco_id);
+CREATE INDEX idx_locais_deleted ON locais(deleted_at);
 
 -- =====================================================
 -- CORE UNIFICADO: EQUIPAMENTOS
@@ -625,6 +634,7 @@ CREATE TABLE central_alarmes (
     ip_dvr VARCHAR(45),
     cameras_dvr INT,
     modelo_alarme_id INT NULL,
+    alarme_local_id INT NULL COMMENT 'FK direta para locais.id (substitui JOIN via alarme_conta)',
     quant_repetidor INT,
     qtde_sensores INT,
     documentacao VARCHAR(50),
@@ -638,6 +648,7 @@ CREATE TABLE central_alarmes (
     CONSTRAINT fk_central_alarmes_modelo FOREIGN KEY (modelo_alarme_id) REFERENCES catalogo_modelos_alarmes(id) ON DELETE RESTRICT,
     CONSTRAINT fk_central_alarmes_status FOREIGN KEY (status_id) REFERENCES status(id) ON DELETE RESTRICT,
     CONSTRAINT fk_central_alarmes_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_central_alarmes_local FOREIGN KEY (alarme_local_id) REFERENCES locais(id) ON DELETE SET NULL,
     
     INDEX idx_alarmes_conta (conta),
     INDEX idx_alarmes_status (status),
@@ -645,6 +656,7 @@ CREATE TABLE central_alarmes (
     INDEX idx_alarmes_data_atualizacao (data_atualizacao),
     INDEX idx_alarmes_status_id (status_id),
     INDEX idx_alarmes_regiao_id (regiao_id),
+    INDEX idx_alarmes_local_id (alarme_local_id),
     INDEX idx_alarmes_deleted (deleted_at),
     INDEX idx_alarmes_deleted_id (deleted_at, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -788,6 +800,17 @@ INSERT INTO configuracoes (chave, valor, descricao) VALUES
 ('timeout_sessao', '3600', 'Tempo de sessão em segundos'),
 ('itens_por_pagina', '50', 'Itens padrão por página nas listagens');
 
+
+-- =====================================================
+-- =====================================================
+-- RATE LIMITS (fallback via DB quando storage/ratelimit nao disponivel)
+-- =====================================================
+CREATE TABLE IF NOT EXISTS rate_limits (
+    `key` VARCHAR(64) PRIMARY KEY COMMENT 'SHA-256 hash da chave de rate limit',
+    tokens DOUBLE NOT NULL DEFAULT 0 COMMENT 'Tokens disponiveis (token bucket)',
+    updated_at INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Timestamp Unix da ultima atualizacao',
+    timestamps JSON NULL COMMENT 'Array de timestamps para sliding window'
+) ENGINE=InnoDB;
 
 -- =====================================================
 -- SEQUÊNCIA PARA GERAÇÃO DE CÓDIGO PÚBLICO
@@ -1389,6 +1412,28 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     INDEX idx_anexos_manut_camera (manutencao_camera_id),
     INDEX idx_anexos_manut_alarme (manutencao_alarme_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Anexos de equipamentos (fotos, documentos)';
+
+-- =====================================================
+-- TABELA DE NOTIFICAÇÕES
+-- =====================================================
+CREATE TABLE IF NOT EXISTS `notificacoes` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `tipo` VARCHAR(50) NOT NULL COMMENT 'Tipo: manutencao_atrasada, etc.',
+    `titulo` VARCHAR(255) NOT NULL,
+    `mensagem` TEXT NULL,
+    `link` VARCHAR(500) NULL COMMENT 'URL para navegar ao contexto',
+    `entidade_tipo` VARCHAR(50) NULL COMMENT 'Tipo da entidade (equipamento, alarme, local)',
+    `entidade_id` BIGINT NULL COMMENT 'ID da entidade relacionada',
+    `lida` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_notificacoes_lida` (`lida`),
+    KEY `idx_notificacoes_tipo` (`tipo`),
+    KEY `idx_notificacoes_criadas` (`created_at` DESC),
+    KEY `idx_notificacoes_lida_criadas` (`lida`, `created_at` DESC),
+    KEY `idx_notificacoes_lookup` (`tipo`, `entidade_tipo`, `entidade_id`, `lida`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================
 -- FIM DO SCRIPT

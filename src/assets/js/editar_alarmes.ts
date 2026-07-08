@@ -1,4 +1,6 @@
 import { escapeHtml } from './utils/html';
+import { initAutocomplete, type AutocompleteItem } from './utils/autocomplete-utils';
+import { preencherCamposLocal } from './utils/alarme-local-fill';
 
 (function (): void {
   let alarmes: Array<Record<string, unknown>> = [];
@@ -6,6 +8,17 @@ import { escapeHtml } from './utils/html';
 
   function getApiBase(): string {
     return window.APP_API_BASE || '';
+  }
+
+  function setupLocalAutocomplete(): void {
+    initAutocomplete({
+      inputId: 'nome_local',
+      apiUrlBase: getApiBase() + 'api_locais',
+      dropdownClass: 'autocomplete-dropdown-camera',
+      onSelect: (item: AutocompleteItem) => {
+        preencherCamposLocal(item as unknown as Record<string, unknown>);
+      },
+    });
   }
 
   function formToPayload(form: HTMLFormElement): Record<string, string> {
@@ -174,6 +187,7 @@ import { escapeHtml } from './utils/html';
     setupCharCounters();
     setupDirtyTracking(form);
     setupBeforeUnload();
+    setupLocalAutocomplete();
 
     try {
       await loadAlarmes();

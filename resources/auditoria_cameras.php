@@ -8,7 +8,7 @@ requererAcesso('admin');
     <div class="row mb-3">
         <div class="col-12">
             <div class="mb-3">
-                <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+                <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left me-1"></i>Voltar
                 </a>
             </div>

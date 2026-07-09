@@ -38,7 +38,7 @@ vite_page_js('notificacoes');
         </h1>
         <div>
             <?php if ($total > 0): ?>
-            <form method="post" action="?page=action_notificacoes" style="display:inline">
+            <form method="post" action="?page=action_notificacoes" class="d-inline">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                 <input type="hidden" name="acao" value="marcar_todas_lidas">
                 <button type="submit" class="btn btn-outline-secondary btn-sm">
@@ -50,14 +50,10 @@ vite_page_js('notificacoes');
     </div>
 
     <?php if ($sucesso): ?>
-    <div class="alert alert-success alert-dismissible fade show"><?= htmlspecialchars($sucesso) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-success"><?= htmlspecialchars($sucesso, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
     <?php if ($erro): ?>
-    <div class="alert alert-danger alert-dismissible fade show"><?= htmlspecialchars($erro) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="alert alert-danger"><?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
     <div class="card">
@@ -66,10 +62,10 @@ vite_page_js('notificacoes');
             <div class="d-flex gap-2">
                 <form method="get" class="d-flex gap-2">
                     <input type="hidden" name="page" value="notificacoes">
-                    <select name="filtro_tipo" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                    <select name="filtro_tipo" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
                         <option value="">Todos os tipos</option>
                         <?php foreach ($tiposNotificacao as $val => $label): ?>
-                        <option value="<?= $val ?>" <?= $filtroTipo === $val ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
+                        <option value="<?= $val ?>" <?= $filtroTipo === $val ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach; ?>
                     </select>
                     <?php if ($filtroTipo !== ''): ?>
@@ -94,11 +90,11 @@ vite_page_js('notificacoes');
                                 <?php if (!$n->lida): ?>
                                 <span class="badge bg-warning text-dark"><i class="fas fa-exclamation"></i></span>
                                 <?php endif; ?>
-                                <strong><?= htmlspecialchars($n->titulo) ?></strong>
-                                <small class="text-muted"><?= htmlspecialchars($tiposNotificacao[$n->tipo] ?? $n->tipo) ?></small>
+                                <strong><?= htmlspecialchars($n->titulo, ENT_QUOTES, 'UTF-8') ?></strong>
+                                <small class="text-muted"><?= htmlspecialchars($tiposNotificacao[$n->tipo] ?? $n->tipo, ENT_QUOTES, 'UTF-8') ?></small>
                             </div>
                             <?php if ($n->mensagem): ?>
-                            <p class="mb-1 text-muted small"><?= htmlspecialchars($n->mensagem) ?></p>
+                            <p class="mb-1 text-muted small"><?= htmlspecialchars($n->mensagem, ENT_QUOTES, 'UTF-8') ?></p>
                             <?php endif; ?>
                             <small class="text-muted">
                                 <i class="fas fa-clock me-1"></i><?= date('d/m/Y H:i', strtotime($n->created_at)) ?>
@@ -106,12 +102,12 @@ vite_page_js('notificacoes');
                         </div>
                         <div class="d-flex gap-1 ms-3 flex-shrink-0">
                             <?php if ($n->link): ?>
-                            <a href="<?= htmlspecialchars($n->link) ?>" class="btn btn-sm btn-outline-primary">
+                            <a href="<?= htmlspecialchars($n->link, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
                             <?php endif; ?>
                             <?php if (!$n->lida): ?>
-                            <form method="post" action="?page=action_notificacoes" style="display:inline">
+<form method="post" action="?page=action_notificacoes" class="d-inline">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                                 <input type="hidden" name="acao" value="marcar_lida">
                                 <input type="hidden" name="id" value="<?= (int)$n->id ?>">

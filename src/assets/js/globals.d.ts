@@ -4,15 +4,38 @@
 declare const BASE_URL: string;
 declare const APP_API_BASE: string;
 
-// ===== API response types =====
-interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  error?: string;
-}
+// ===== API response types (re-exported for global use) =====
+type ApiResponse<T = unknown> = import('./api/types').ApiResponse<T>;
+type PaginatedResponse<T> = import('./api/types').PaginatedResponse<T>;
+type Pagination = import('./api/types').Pagination;
+type ApiMeta = import('./api/types').ApiMeta;
 
-interface AnexoData {
+type CameraData = import('./api/types').CameraData;
+type AlarmeData = import('./api/types').AlarmeData;
+type LocalData = import('./api/types').LocalData;
+type DashboardData = import('./api/types').DashboardData;
+type DashboardStats = import('./api/types').DashboardStats;
+type AnexoData = import('./api/types').AnexoData;
+type ModeloItem = import('./api/types').ModeloItem;
+type HealthResponse = import('./api/types').HealthResponse;
+type CepLookupData = import('./api/types').CepLookupData;
+type GeocodeData = import('./api/types').GeocodeData;
+type ReportCameraItem = import('./api/types').ReportCameraItem;
+type CreatedResponse = import('./api/types').CreatedResponse;
+type CreatedResource = import('./api/types').CreatedResource;
+type ManutencaoCamerasResponse = import('./api/types').ManutencaoCamerasResponse;
+type ManutencaoAlarmesResponse = import('./api/types').ManutencaoAlarmesResponse;
+type CameraOption = import('./api/types').CameraOption;
+type MaintenanceOrder = import('./api/types').MaintenanceOrder;
+type MaintenanceHistorico = import('./api/types').MaintenanceHistorico;
+type CheckItem = import('./api/types').CheckItem;
+type ChartDataItem = import('./api/types').ChartDataItem;
+type DashboardProblemaItem = import('./api/types').DashboardProblemaItem;
+type DashboardManutencaoItem = import('./api/types').DashboardManutencaoItem;
+type AlarmeOption = import('./api/types').AlarmeOption;
+
+// Legacy AnexoData kept for backward compat (string id vs number id)
+interface AnexoDataLegacy {
   id: string;
   url: string;
   nome_original: string;

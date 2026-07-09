@@ -96,8 +96,11 @@ if ($tabela !== '' && !isset($allTables[$tabela])) {
 <div class="container mt-4">
     <?php if ($tabela === ''): ?>
         <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Administração</h4>
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Tabelas Lookup</h4>
+                <a href="?page=administracao" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Administração
+                </a>
             </div>
             <div class="card-body">
                 <?php if (isset($_SESSION['sucesso'])): ?>
@@ -141,9 +144,14 @@ if ($tabela !== '' && !isset($allTables[$tabela])) {
         <div class="card shadow-sm">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                 <h4 class="mb-0"><i class="fas <?= $cfg['icon'] ?> me-2"></i><?= $cfg['label'] ?></h4>
-                <a href="?page=admin_tabelas" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i>Voltar
-                </a>
+                <div class="d-flex gap-2">
+                    <a href="?page=admin_tabelas" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-th-list me-1"></i>Painel
+                    </a>
+                    <a href="?page=administracao" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Administração
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <?php if ($msgSucesso): ?>
@@ -199,7 +207,7 @@ if ($tabela !== '' && !isset($allTables[$tabela])) {
                                         onclick="editar(<?= $row->id ?>, <?= htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') ?>)">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form method="post" action="?page=action_administracao" style="display:inline"
+                                    <form method="post" action="?page=action_administracao" class="d-inline"
                                         onsubmit="return confirm('Tem certeza que deseja excluir este registro?')">
                                         <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                         <input type="hidden" name="tabela" value="<?= $tabela ?>">

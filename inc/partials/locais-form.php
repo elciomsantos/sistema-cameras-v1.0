@@ -43,7 +43,7 @@ $lchecked = function (string $key) use ($formData, $data): string {
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <label for="tipo_local_id" class="form-label">Tipo de Local *</label>
-            <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required>
+            <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required<?= !empty($autofocusTipo) ? ' autofocus' : '' ?>>
                 <option value="">Selecione...</option>
                 <?php foreach ($tiposLocais as $t): ?>
                 <option value="<?= (int)$t->id ?>" <?= $lselected('tipo_local_id', $t->id) ?>>

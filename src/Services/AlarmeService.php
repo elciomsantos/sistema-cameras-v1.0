@@ -109,6 +109,11 @@ class AlarmeService
             'regiao_id' => $regiaoId,
             'endereco' => trim((string)($data['endereco'] ?? '')) ?: null,
             'numero' => trim((string)($data['numero'] ?? '')) ?: null,
+            'bairro' => trim((string)($data['bairro'] ?? '')) ?: null,
+            'cidade' => trim((string)($data['cidade'] ?? '')) ?: null,
+            'uf' => trim((string)($data['uf'] ?? '')) ?: null,
+            'cep' => trim((string)($data['cep'] ?? '')) ?: null,
+            'local_id' => !empty($data['local_id']) ? max(0, (int)($data['local_id'])) : null,
             'pgm1' => trim((string)($data['pgm1'] ?? '')) ?: null,
             'pgm2' => trim((string)($data['pgm2'] ?? '')) ?: null,
             'mac' => trim((string)($data['mac'] ?? '')) ?: null,
@@ -145,12 +150,14 @@ class AlarmeService
             enableAuditTriggers($this->db, 'api');
 
             $sql = "INSERT INTO central_alarmes (
-                regiao, regiao_id, conta, status, status_id, local, endereco, numero, pgm1, pgm2, mac, ip,
+                regiao, regiao_id, conta, status, status_id, local, endereco, numero, bairro, cidade, uf, cep,
+                alarme_local_id, pgm1, pgm2, mac, ip,
                 integracao, camera_gm, quant_camera_gm, ip_dvr, cameras_dvr, modelo_alarme_id,
                 quant_repetidor, qtde_sensores, documentacao, monitorada, numero_sei,
                 data_atualizacao, observacao
             ) VALUES (
-                :regiao, :regiao_id, :conta, :status, :status_id, :local, :endereco, :numero, :pgm1, :pgm2, :mac, :ip,
+                :regiao, :regiao_id, :conta, :status, :status_id, :local, :endereco, :numero, :bairro, :cidade, :uf, :cep,
+                :local_id, :pgm1, :pgm2, :mac, :ip,
                 :integracao, :camera_gm, :quant_camera_gm, :ip_dvr, :cameras_dvr, :modelo_alarme_id,
                 :quant_repetidor, :qtde_sensores, :documentacao, :monitorada, :numero_sei,
                 :data_atualizacao, :observacao
@@ -185,6 +192,8 @@ class AlarmeService
                 regiao = :regiao, regiao_id = :regiao_id,
                 conta = :conta, status = :status, status_id = :status_id,
                 local = :local, endereco = :endereco, numero = :numero,
+                bairro = :bairro, cidade = :cidade, uf = :uf, cep = :cep,
+                alarme_local_id = :local_id,
                 pgm1 = :pgm1, pgm2 = :pgm2, mac = :mac, ip = :ip,
                 integracao = :integracao, camera_gm = :camera_gm,
                 quant_camera_gm = :quant_camera_gm, ip_dvr = :ip_dvr, cameras_dvr = :cameras_dvr,
@@ -233,33 +242,14 @@ class AlarmeService
 
     private function buildParams(array $data, bool $includeId = false): array
     {
+        $optional = ['regiao', 'regiao_id', 'status', 'status_id', 'endereco', 'numero', 'bairro', 'cidade', 'uf', 'cep', 'local_id', 'pgm1', 'pgm2', 'mac', 'ip', 'integracao', 'camera_gm', 'quant_camera_gm', 'ip_dvr', 'cameras_dvr', 'modelo_alarme_id', 'quant_repetidor', 'qtde_sensores', 'documentacao', 'monitorada', 'numero_sei', 'data_atualizacao', 'observacao'];
         $params = [
-            ':regiao' => $data['regiao'],
-            ':regiao_id' => $data['regiao_id'],
             ':conta' => $data['conta'],
-            ':status' => $data['status'],
-            ':status_id' => $data['status_id'],
             ':local' => $data['local'],
-            ':endereco' => $data['endereco'],
-            ':numero' => $data['numero'],
-            ':pgm1' => $data['pgm1'],
-            ':pgm2' => $data['pgm2'],
-            ':mac' => $data['mac'],
-            ':ip' => $data['ip'],
-            ':integracao' => $data['integracao'],
-            ':camera_gm' => $data['camera_gm'],
-            ':quant_camera_gm' => $data['quant_camera_gm'],
-            ':ip_dvr' => $data['ip_dvr'],
-            ':cameras_dvr' => $data['cameras_dvr'],
-            ':modelo_alarme_id' => $data['modelo_alarme_id'],
-            ':quant_repetidor' => $data['quant_repetidor'],
-            ':qtde_sensores' => $data['qtde_sensores'],
-            ':documentacao' => $data['documentacao'],
-            ':monitorada' => $data['monitorada'],
-            ':numero_sei' => $data['numero_sei'],
-            ':data_atualizacao' => $data['data_atualizacao'],
-            ':observacao' => $data['observacao'],
         ];
+        foreach ($optional as $key) {
+            $params[':' . $key] = $data[$key] ?? null;
+        }
 
         if ($includeId && isset($data['id'])) {
             $params[':id'] = $data['id'];

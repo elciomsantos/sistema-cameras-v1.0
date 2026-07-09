@@ -66,7 +66,7 @@ try {
     ApiResponse::created([
         'message' => "Equipamento cadastrado com sucesso! ID: $equipId",
         'camera_id' => $equipId,
-        'redirect' => 'index.php?page=controle_cameras',
+        'redirect' => 'index.php?page=controle&modulo=cameras',
     ], $equipId);
 
 } catch (Throwable $e) {

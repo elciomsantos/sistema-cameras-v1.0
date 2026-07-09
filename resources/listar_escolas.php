@@ -61,7 +61,7 @@ $locais = $locaisService->getByTipoNome('ESCOLA', $search, $pageNum, $perPage);
                         <?php foreach ($locais as $l): ?>
                         <tr>
                             <td><?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?></td>
-                            <td><?= htmlspecialchars(($l->logradouro ?? '') . ($l->numero ? ', ' . $l->numero : '')) ?></td>
+                            <td><?= htmlspecialchars(($l->logradouro ?? '') . ($l->numero ? ', ' . $l->numero : ''), ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($l->bairro ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($l->cidade ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><span class="badge bg-info"><?= htmlspecialchars($l->sigla ?? $l->secretaria ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>

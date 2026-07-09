@@ -126,9 +126,8 @@ class EquipamentoServiceTest extends TestCase
     public function testValidateCoordenadasAcceptsValidFormat(): void
     {
         $svc = new \EquipamentoService($this->db);
-
         $svc->validateCoordenadas('-23.5505, -46.6333');
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testValidateCoordenadasRejectsInvalidFormat(): void
@@ -144,7 +143,7 @@ class EquipamentoServiceTest extends TestCase
         $svc = new \EquipamentoService($this->db);
 
         $svc->validateTipoSpecific(1, '', 0);
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testValidateTipoSpecificRejectsDvrWithoutModelo(): void
@@ -167,11 +166,6 @@ class EquipamentoServiceTest extends TestCase
 
     public function testParseJsonInputReturnsPostData(): void
     {
-        $testData = ['status_id' => 1, 'tipo_id' => 1];
-        $encoded = json_encode($testData);
-
-        stream_filter_register('test_input', 'Tests\Integration\TestInputStreamFilter');
-        // Cannot truly test php://input without mock - skip runtime test
-        $this->assertTrue(true);
+        $this->markTestIncomplete('php://input cannot be tested without stream mock');
     }
 }

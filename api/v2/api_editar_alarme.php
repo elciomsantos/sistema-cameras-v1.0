@@ -22,7 +22,7 @@ try {
 
     ApiResponse::success([
         'message' => 'Alarme atualizado com sucesso.',
-        'redirect' => '../../index.php?page=controle_alarmes',
+        'redirect' => '../../index.php?page=controle&modulo=alarmes',
     ]);
 
 } catch (Throwable $e) {

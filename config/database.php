@@ -7,6 +7,17 @@ if (file_exists($configPath)) {
     require_once $configPath;
 }
 
+/**
+ * database — Singleton PDO wrapper.
+ *
+ * NOTA: Classe intencionalmente sem namespace (global) porque:
+ * 1. Carregada via "files" no composer.json (não PSR-4), fora de src/
+ * 2. A função global db() (definida abaixo) precisa referenciá-la sem namespace
+ * 3. Refatorar exigiria alterar 100+ arquivos que chamam db() / database::*
+ * 4. O autoload PSR-4 (App\ → src/) é para classes em src/ e não conflita
+ *
+ * @see db()  Helper global para acesso à instância única
+ */
 class database
 {
     private static ?self $instance = null;
@@ -32,12 +43,10 @@ class database
                 \PDO::ATTR_PERSISTENT => false,
             ];
 
-            if (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
-                $sslCa = getenv('DB_SSL_CA');
-                if ($sslCa !== false && $sslCa !== '') {
-                    $options[\PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
-                    $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
-                }
+            $sslCa = getenv('DB_SSL_CA');
+            if ($sslCa !== false && $sslCa !== '') {
+                $options[\PDO::MYSQL_ATTR_SSL_CA] = $sslCa;
+                $options[\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
             }
 
             $this->pdo = new \PDO($dsn, DB_USER, DB_PASS, $options);

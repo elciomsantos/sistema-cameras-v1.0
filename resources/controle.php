@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('user');
 
-$modulo = $modulo ?? 'cameras';
+$modulo = $_GET['modulo'] ?? 'cameras';
 
 $isCamera = $modulo === 'cameras';
 

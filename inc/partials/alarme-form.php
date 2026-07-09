@@ -189,7 +189,7 @@ $isEdit = $modo === 'editar';
             <i class="fas fa-check me-1"></i>Finalizar Cadastro
         </button>
         <?php endif; ?>
-        <a href="?page=controle_alarmes" class="btn btn-secondary">Cancelar</a>
+        <a href="?page=controle&amp;modulo=alarmes" class="btn btn-secondary">Cancelar</a>
     </div>
 </form>
 

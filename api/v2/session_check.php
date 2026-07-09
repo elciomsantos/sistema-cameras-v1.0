@@ -5,11 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }

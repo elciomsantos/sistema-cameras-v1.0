@@ -40,6 +40,16 @@ function invalidateAndClearSession(): void
     clearLocalSessionState();
 }
 
+function finalizarSessaoTimeout(string $motivo, ?string $reason = null, bool $isApi = false): never
+{
+    invalidateAndClearSession();
+    if ($isApi) {
+        sendTimeoutResponse($motivo, $reason);
+    }
+    header('Location: index.php?page=login&timeout=1');
+    exit;
+}
+
 function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
 {
     if (!isset($_SESSION['usuario'])) {
@@ -48,23 +58,13 @@ function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
 
     $now = time();
     if (!isset($_SESSION['session_started_at'])) {
-        invalidateAndClearSession();
-        if ($isApi) {
-            sendTimeoutResponse('Sessao invalida. Realize login novamente.');
-        }
-        header('Location: index.php?page=login&timeout=1');
-        exit;
+        finalizarSessaoTimeout('Sessao invalida. Realize login novamente.', null, $isApi);
     }
 
     if (SESSION_ABSOLUTE_TIMEOUT > 0) {
         $elapsed = $now - (int)$_SESSION['session_started_at'];
         if ($elapsed >= SESSION_ABSOLUTE_TIMEOUT) {
-            invalidateAndClearSession();
-            if ($isApi) {
-                sendTimeoutResponse('Sessao encerrada por tempo maximo', 'absolute_timeout');
-            }
-            header('Location: index.php?page=login&timeout=1');
-            exit;
+            finalizarSessaoTimeout('Sessao encerrada por tempo maximo', 'absolute_timeout', $isApi);
         }
     }
 
@@ -77,12 +77,7 @@ function verificarTimeout($isApi = false, $tempo_maximo = SESSION_TIMEOUT)
     $time_left = $tempo_maximo - $inatividade;
 
     if ($inatividade >= $tempo_maximo) {
-        invalidateAndClearSession();
-        if ($isApi) {
-            sendTimeoutResponse('Sessao encerrada por inatividade');
-        }
-        header('Location: index.php?page=login&timeout=1');
-        exit;
+        finalizarSessaoTimeout('Sessao encerrada por inatividade', null, $isApi);
     }
 
     $_SESSION['ultimo_acesso'] = $now;

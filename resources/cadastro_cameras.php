@@ -27,7 +27,7 @@ unset($_SESSION['form_data']);
                 <h3 class="mb-0"><i class="fas fa-camera me-2"></i>Cadastro de C&acirc;mera</h3>
                 <p class="text-muted mb-0">Preencha os dados de identifica&ccedil;&atilde;o, rede e localiza&ccedil;&atilde;o do equipamento.</p>
             </div>
-            <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+            <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>
@@ -459,7 +459,7 @@ unset($_SESSION['form_data']);
                                     <i class="fas fa-check me-2"></i>Finalizar Cadastro
                                 </button>
                             </div>
-                            <a href="?page=controle_cameras" class="btn btn-secondary px-5 py-2">
+                            <a href="?page=controle&amp;modulo=cameras" class="btn btn-secondary px-5 py-2">
                                 <i class="fas fa-times me-2"></i>Cancelar
                             </a>
                         </div>

@@ -22,7 +22,7 @@ try {
                 <h2 class="mb-1"><i class="fas fa-bell me-2"></i>Relatorio de Alarmes</h2>
                 <p class="text-muted mb-0">Consulte e filtre os alarmes cadastrados.</p>
             </div>
-            <a href="?page=controle_alarmes" class="btn btn-outline-secondary">
+            <a href="?page=controle&amp;modulo=alarmes" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>

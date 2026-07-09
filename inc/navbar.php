@@ -22,7 +22,7 @@
                         <i class="fas fa-video me-1"></i>Cameras
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="?page=controle_cameras"><i class="fas fa-gauge-high me-2"></i>Painel de Cameras</a></li>
+                        <li><a class="dropdown-item" href="?page=controle&amp;modulo=cameras"><i class="fas fa-gauge-high me-2"></i>Painel de Cameras</a></li>
                         <li><a class="dropdown-item" href="?page=cadastro_cameras"><i class="fas fa-plus me-2"></i>Cadastro de Cameras</a></li>
                         <li><a class="dropdown-item" href="?page=listar_cameras"><i class="fas fa-list me-2"></i>Listar Cameras</a></li>
                         <li><a class="dropdown-item" href="?page=editar_cameras"><i class="fas fa-pen-to-square me-2"></i>Editar Cameras</a></li>
@@ -35,7 +35,7 @@
                         <i class="fas fa-bell me-1"></i>Alarmes
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="?page=controle_alarmes"><i class="fas fa-gauge-high me-2"></i>Painel de Alarmes</a></li>
+                        <li><a class="dropdown-item" href="?page=controle&amp;modulo=alarmes"><i class="fas fa-gauge-high me-2"></i>Painel de Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=cadastro_alarmes"><i class="fas fa-plus me-2"></i>Cadastro de Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=listar_alarmes"><i class="fas fa-list me-2"></i>Listar Alarmes</a></li>
                         <li><a class="dropdown-item" href="?page=editar_alarmes"><i class="fas fa-pen-to-square me-2"></i>Editar Alarmes</a></li>
@@ -100,6 +100,7 @@
                         <li><a class="dropdown-item" href="?page=listar_proprios"><i class="fas fa-building me-2"></i>Proprios Publicos</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><h6 class="dropdown-header">Tabelas Lookup</h6></li>
+                        <li><a class="dropdown-item" href="?page=admin_tabelas"><i class="fas fa-th-list me-2"></i>Painel de Tabelas</a></li>
                         <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=secretarias"><i class="fas fa-building me-2"></i>Secretarias</a></li>
                         <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=regioes"><i class="fas fa-map me-2"></i>Regioes</a></li>
                         <li><a class="dropdown-item" href="?page=admin_tabelas&tabela=tipos_locais"><i class="fas fa-tag me-2"></i>Tipos de Local</a></li>
@@ -126,7 +127,7 @@
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle me-1"></i>
-                        <strong><?= htmlspecialchars($_SESSION['usuario']->usuario ?? '') ?></strong>
+                        <strong><?= htmlspecialchars($_SESSION['usuario']->usuario ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
                         <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1): ?>
                         <span class="badge bg-warning ms-1">Trocar Senha</span>
                         <?php endif; ?>
@@ -135,13 +136,13 @@
                         <li>
                             <span class="dropdown-item-text text-muted small">
                                 <i class="fas fa-user me-1"></i>
-                                <?= htmlspecialchars($_SESSION['usuario']->nome ?? $_SESSION['usuario']->usuario) ?>
+                                <?= htmlspecialchars($_SESSION['usuario']->nome ?? $_SESSION['usuario']->usuario, ENT_QUOTES, 'UTF-8') ?>
                             </span>
                         </li>
                         <li>
                             <span class="dropdown-item-text text-muted small">
                                 <i class="fas fa-shield-alt me-1"></i>
-                                <?= htmlspecialchars($_SESSION['usuario']->nivel_acesso ?? 'user') ?>
+                                <?= htmlspecialchars($_SESSION['usuario']->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8') ?>
                                 <?php if (($_SESSION['usuario']->nivel_acesso ?? '') === 'supervisor'): ?>
                                 <span class="badge bg-info ms-1">Supervisor</span>
                                 <?php endif; ?>

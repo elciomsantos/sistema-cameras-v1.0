@@ -18,7 +18,7 @@ requererAcesso('user');
             <div>
                 <span class="badge bg-light text-dark">
                     <i class="fas fa-user-shield me-1"></i>
-                    <?= htmlspecialchars(strtoupper($_SESSION['usuario']->nivel_acesso ?? 'USER')) ?>
+                    <?= htmlspecialchars(strtoupper($_SESSION['usuario']->nivel_acesso ?? 'USER'), ENT_QUOTES, 'UTF-8') ?>
                 </span>
             </div>
         </div>
@@ -184,7 +184,7 @@ requererAcesso('user');
                             </div>
                             <h5 class="card-title">Painel de C&acirc;meras</h5>
                             <p class="card-text">Vis&atilde;o geral de todas as c&acirc;meras, status, localiza&ccedil;&atilde;o, cadastro, manuten&ccedil;&atilde;o e relat&oacute;rios</p>
-                            <a href="?page=controle_cameras" class="btn btn-primary w-100">
+                            <a href="?page=controle&amp;modulo=cameras" class="btn btn-primary w-100">
                                 <i class="fas fa-gauge-high me-2"></i>Acessar Painel
                             </a>
                         </div>
@@ -201,7 +201,7 @@ requererAcesso('user');
                             </div>
                             <h5 class="card-title">Painel de Alarmes</h5>
                             <p class="card-text">Vis&atilde;o geral dos alarmes, status, cadastro, manuten&ccedil;&atilde;o e relat&oacute;rios</p>
-                            <a href="?page=controle_alarmes" class="btn btn-danger w-100">
+                            <a href="?page=controle&amp;modulo=alarmes" class="btn btn-danger w-100">
                                 <i class="fas fa-gauge-high me-2"></i>Acessar Painel
                             </a>
                         </div>

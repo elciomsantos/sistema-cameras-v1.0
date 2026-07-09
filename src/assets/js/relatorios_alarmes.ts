@@ -331,7 +331,8 @@ document.addEventListener('DOMContentLoaded', function (): void {
     const headers = thead.querySelectorAll('th');
     headers.forEach((th, index) => {
       const label = (th as HTMLElement).textContent!.trim();
-      const saved = JSON.parse(localStorage.getItem('colunasVisiveisAlarmes') || '{}') as Record<string, boolean>;
+      let saved: Record<string, boolean> = {};
+      try { saved = JSON.parse(localStorage.getItem('colunasVisiveisAlarmes') || '{}'); } catch {}
       const checked = saved[label] !== false;
       const item = document.createElement('li');
       item.innerHTML = '<div class="dropdown-item py-1 px-2">'
@@ -357,11 +358,12 @@ document.addEventListener('DOMContentLoaded', function (): void {
       const label = (th as HTMLElement).textContent!.trim();
       state[label] = !th.classList.contains('column-hidden');
     });
-    localStorage.setItem('colunasVisiveisAlarmes', JSON.stringify(state));
+    try { localStorage.setItem('colunasVisiveisAlarmes', JSON.stringify(state)); } catch {}
   }
 
   function aplicarVisibilidadeSalva(): void {
-    const saved = JSON.parse(localStorage.getItem('colunasVisiveisAlarmes') || '{}') as Record<string, boolean>;
+    let saved: Record<string, boolean> = {};
+    try { saved = JSON.parse(localStorage.getItem('colunasVisiveisAlarmes') || '{}'); } catch {}
     if (Object.keys(saved).length === 0) return;
     const headers = document.querySelectorAll('#tabelaResultados thead th');
     headers.forEach((th, index) => {

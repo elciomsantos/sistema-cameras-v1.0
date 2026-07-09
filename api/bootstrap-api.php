@@ -169,11 +169,15 @@ function executeApiRequest(?string $endpointOverride = null): void
     $allowedOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
     $isOriginAllowed = false;
 
+    $hasWildcard = false;
     if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
         $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
         if (in_array('*', $configuredOrigins, true)) {
-            logWarning('APP_ALLOWED_ORIGINS contem "*" — remova para seguranca.', [], 'security');
+            $hasWildcard = true;
             $isOriginAllowed = true;
+            if (empty($allowedOrigin)) {
+                logWarning('APP_ALLOWED_ORIGINS contem "*" — Access-Control-Allow-Credentials nao sera enviado, mas restrinja a origens especificas para seguranca.', [], 'security');
+            }
         } else {
             $isOriginAllowed = in_array($allowedOrigin, $configuredOrigins, true);
         }
@@ -214,15 +218,12 @@ function executeApiRequest(?string $endpointOverride = null): void
     }
 
     if ($isOriginAllowed && !empty($allowedOrigin)) {
-        $originForVary = $allowedOrigin;
-        if (defined('APP_ALLOWED_ORIGINS') && APP_ALLOWED_ORIGINS !== '') {
-            $configuredOrigins = array_map('trim', explode(',', APP_ALLOWED_ORIGINS));
-            if (!in_array('*', $configuredOrigins, true)) {
-                $originForVary = $allowedOrigin;
-            }
+        if ($hasWildcard) {
+            header('Access-Control-Allow-Origin: *');
+        } else {
+            header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+            header('Access-Control-Allow-Credentials: true');
         }
-        header('Access-Control-Allow-Origin: ' . $originForVary);
-        header('Access-Control-Allow-Credentials: true');
     }
 
     if (!$exists) {

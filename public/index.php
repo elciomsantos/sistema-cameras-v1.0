@@ -66,6 +66,18 @@ if ($isProduction || isHttpsRequest()) {
 
 $isApi = str_starts_with($page, 'api/');
 
+/**
+ * Resolve o caminho do script da página.
+ *
+ * Ordem de precedência (primeiro match):
+ *   1. auth/       — ações de autenticação (login, logout, recuperar senha)
+ *   2. accounts/   — gestão de contas (CRUD usuários, admin)
+ *   3. resources/  — páginas do sistema (câmeras, alarmes, relatórios)
+ *
+ * Se houver colisão (mesmo nome em dois diretórios), auth/ vence sobre
+ * accounts/ que vence sobre resources/. Execute scripts/check_route_collisions.php
+ * para detectar colisões.
+ */
 function resolvePageScriptPath(string $page): ?string
 {
     $candidates = [

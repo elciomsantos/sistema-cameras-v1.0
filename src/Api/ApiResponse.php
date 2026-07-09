@@ -318,6 +318,8 @@ class ApiResponse
      */
     public static function send(array $response, int $httpCode): string
     {
+        $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
         if (self::$shouldExit) {
             http_response_code($httpCode);
             header('Content-Type: application/json; charset=utf-8');
@@ -327,7 +329,6 @@ class ApiResponse
             header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
         }
 
-        $json = json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         echo $json;
 
         if (self::$shouldExit) {

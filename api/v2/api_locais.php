@@ -11,6 +11,7 @@ try {
 
     $q = trim($_GET['q'] ?? '');
     $tipoLocalId = filter_input(INPUT_GET, 'tipo_local_id', FILTER_VALIDATE_INT);
+    $limit = filter_input(INPUT_GET, 'limit', FILTER_VALIDATE_INT, ['options' => ['default' => 20, 'min_range' => 1, 'max_range' => 100]]);
 
     $secretariaId = getUsuarioSecretariaId();
     $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
@@ -47,10 +48,11 @@ try {
                     ELSE 3
                 END,
                 l.nome
-            LIMIT 20";
+            LIMIT ?";
     $params[] = $q;
     $params[] = $q;
     $params[] = $q;
+    $params[] = $limit;
     $result = $db->query($sql, $params);
 
     if ($result['status'] === 'success') {

@@ -98,7 +98,7 @@ try {
 
     ApiResponse::success([
         'message' => 'Equipamento atualizado com sucesso!',
-        'redirect' => '../../index.php?page=controle_cameras',
+        'redirect' => '../../index.php?page=controle&modulo=cameras',
     ]);
 
 } catch (Throwable $e) {

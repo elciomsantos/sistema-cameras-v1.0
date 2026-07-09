@@ -26,7 +26,7 @@ $locaisList = $locaisService->getAllLocais();
                             <i class="fas fa-camera me-2"></i>Lista de C�meras Cadastradas
                         </h4>
                         <div>
-                            <a href="?page=controle_cameras" class="btn btn-outline-light btn-sm py-1 me-2"
+                            <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-light btn-sm py-1 me-2"
                                 title="Voltar ao painel" data-bs-toggle="tooltip">
                                 <i class="fas fa-arrow-left me-1"></i>Voltar
                             </a>

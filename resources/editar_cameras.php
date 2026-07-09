@@ -25,7 +25,7 @@ try {
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+                        <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i>Voltar
                         </a>
                     </div>
@@ -335,10 +335,10 @@ try {
                                 <button type="submit" class="btn btn-primary" id="btnSubmit">
                                     <i class="fas fa-save me-1"></i>Salvar Alteracoes
                                 </button>
-                                <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+                                <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                                     <i class="fas fa-arrow-left me-1"></i>Voltar
                                 </a>
-                                <a href="?page=controle_cameras" class="btn btn-secondary">Cancelar</a>
+                                <a href="?page=controle&amp;modulo=cameras" class="btn btn-secondary">Cancelar</a>
                             </div>
                     </form>
 

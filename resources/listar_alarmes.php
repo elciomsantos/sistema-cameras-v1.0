@@ -17,7 +17,7 @@ $canEdit = isset($_SESSION['usuario']->nivel_acesso)
                             <i class="fas fa-bell me-2"></i>Lista de Alarmes Cadastrados
                         </h4>
                         <div>
-                            <a href="?page=controle_alarmes" class="btn btn-outline-light btn-sm py-1 me-2"
+                            <a href="?page=controle&amp;modulo=alarmes" class="btn btn-outline-light btn-sm py-1 me-2"
                                 title="Voltar ao painel" data-bs-toggle="tooltip">
                                 <i class="fas fa-arrow-left me-1"></i>Voltar
                             </a>

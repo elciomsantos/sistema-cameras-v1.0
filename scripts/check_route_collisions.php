@@ -1,66 +1,59 @@
-#!/usr/bin/env php
 <?php
-
-declare(strict_types=1);
-
 /**
- * Verificador de colisão de rotas
- * 
- * Detecta arquivos com mesmo nome em pastas concorrentes no resolvePageScriptPath:
- * auth/, accounts/, resources/
- * 
+ * check_route_collisions.php
+ *
+ * Verifica se um mesmo nome de página existe em múltiplos diretórios
+ * (auth/, accounts/, resources/), o que causaria shadowing silencioso
+ * no roteador resolvePageScriptPath() em public/index.php.
+ *
  * Uso: php scripts/check_route_collisions.php
- *      php scripts/check_route_collisions.php --strict (exit code 1 se houver colisões)
+ * Saída: lista de colisões + exit code 0 (sem colisões) ou 1 (colisões encontradas)
  */
 
-$baseDir = __DIR__ . '/..';
-$folders = ['auth', 'accounts', 'resources'];
-$strictMode = in_array('--strict', $argv);
+$dirs = [
+    'auth'      => __DIR__ . '/../auth',
+    'accounts'  => __DIR__ . '/../accounts',
+    'resources' => __DIR__ . '/../resources',
+];
 
-$files = [];
-$collisions = [];
-
-foreach ($folders as $folder) {
-    $path = $baseDir . '/' . $folder;
-    if (!is_dir($path)) {
-        continue;
+$filesByDir = [];
+foreach ($dirs as $name => $dir) {
+    $files = glob($dir . '/*.php');
+    $map = [];
+    foreach ($files as $f) {
+        $base = basename($f);
+        $map[$base][] = $name;
     }
-    $files = glob($path . '/*.php');
-    foreach ($files as $file) {
-        $basename = basename($file);
-        $routes[$basename][] = $folder . '/' . $basename;
+    $filesByDir[$name] = $map;
+}
+
+$allFiles = [];
+foreach ($filesByDir as $name => $map) {
+    foreach ($map as $file => $dirsList) {
+        $allFiles[$file][] = $name;
     }
 }
 
-foreach ($routes as $name => $locations) {
-    if (count($locations) > 1) {
-        $collisions[$name] = $locations;
+$hasCollisions = false;
+ksort($allFiles);
+
+echo "=== Verificacao de colisoes de rota ===\n\n";
+
+foreach ($allFiles as $file => $dirsList) {
+    if (count($dirsList) > 1) {
+        $hasCollisions = true;
+        echo "COLISAO: {$file}\n";
+        echo "  Presente em: " . implode(', ', $dirsList) . "\n";
+        echo "  Vencedor (primeiro na ordem): {$dirsList[0]}\n";
+        echo "  Shadowed: " . implode(', ', array_slice($dirsList, 1)) . "\n\n";
     }
 }
 
-if (empty($collisions)) {
-    echo "✅ Nenhuma colisão de rotas detectada.\n";
+if (!$hasCollisions) {
+    echo "Nenhuma colisao encontrada.\n";
     exit(0);
 }
 
-echo "⚠️  Colisões de rotas detectadas (" . ($strictMode ? 'strict' : 'warning') . "):\n\n";
-foreach ($collisions as $name => $locations) {
-    echo "  {$name}:\n";
-    foreach ($locations as $loc) {
-        echo "    - {$loc}\n";
-    }
-    echo "\n";
-}
-
-echo "Total: " . count($collisions) . " colisão(ões).\n";
-echo "\nRegra de precedência em public/index.php:\n";
-echo "  1. auth/\n";
-echo "  2. accounts/\n";
-echo "  3. resources/\n";
-echo "\nO primeiro encontrado vence (pode ocultar funcionalidade intencional).\n";
-
-if ($strictMode) {
-    exit(1);
-}
-
-exit(0);
+echo "Total de " . count($allFiles) . " arquivos, " . count(array_filter($allFiles, fn($d) => count($d) > 1)) . " colisoes.\n";
+echo "Corrija renomeando ou removendo duplicatas.\n";
+exit(1);

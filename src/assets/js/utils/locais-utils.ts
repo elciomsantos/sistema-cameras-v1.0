@@ -53,7 +53,7 @@ export function initBuscarCep(cepInput: HTMLInputElement, apiBase: string): void
       return;
     }
 
-    fetch(apiBase + 'api_cep_lookup&cep=' + cep)
+    fetchWithTimeout(apiBase + 'api_cep_lookup&cep=' + cep)
       .then(r => r.json())
       .then(data => {
         if (data.success && data.data) {
@@ -133,7 +133,7 @@ export function initGeocode(apiBase: string): void {
     btnGeo.disabled = true;
     btnGeo.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    fetch(apiBase + 'api_geocode&q=' + encodeURIComponent(query))
+    fetchWithTimeout(apiBase + 'api_geocode&q=' + encodeURIComponent(query))
       .then(r => r.json())
       .then(data => {
         if (data.success && data.data && data.data.lat && data.data.lon) {

@@ -27,7 +27,7 @@ function ensureDir(dir) {
 
 function removeViteAssets(dir) {
     if (!existsSync(dir)) return;
-    const vitePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*-([A-Za-z0-9]{8,})\.\w+$/i;
+    const vitePattern = /^[a-z0-9]+(?:-[a-zA-Z0-9]+)*-[\w-]{6,}\.\w+$/i;
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
         if (entry.isDirectory()) continue;
         const name = entry.name;

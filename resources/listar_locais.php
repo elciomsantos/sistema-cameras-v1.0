@@ -189,7 +189,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <?php if ($canDelete): ?>
-                                    <form method="post" action="?page=action_excluir_locais" style="display:inline" onsubmit="return confirm('Tem certeza que deseja excluir o local &quot;<?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?>&quot;?');">
+                                    <form method="post" action="?page=action_excluir_locais" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o local &quot;<?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?>&quot;?');">
                                         <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                         <input type="hidden" name="id" value="<?= (int)$l->id ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">

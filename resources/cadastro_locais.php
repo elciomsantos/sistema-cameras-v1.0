@@ -60,12 +60,7 @@ unset($_SESSION['mensagem_erro_cadastro_local'], $_SESSION['mensagem_sucesso_cad
 </div>
 
 <?php if ($mensagem_sucesso): ?>
-<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-setTimeout(function() {
-    var el = document.getElementById('tipo_local_id');
-    if (el) el.focus();
-}, 100);
-</script>
+<?php $autofocusTipo = true; ?>
 <?php endif; ?>
 
 <?php vite_page_js('cadastro-locais'); ?>

@@ -12,7 +12,7 @@ requererAcesso('user');
                 <h2 class="mb-1"><i class="fas fa-tools me-2"></i>Manutenção de Câmeras</h2>
                 <p class="text-muted mb-0">Registre manutenções e acompanhe o histórico completo por equipamento.</p>
             </div>
-            <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+            <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>

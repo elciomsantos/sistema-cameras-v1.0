@@ -45,7 +45,7 @@ export function initAutocomplete(options: AutocompleteOptions): void {
       (input as unknown as Record<string, ReturnType<typeof setTimeout>>)._timer = setTimeout(() => {
         let url = apiUrlBase + '&q=' + encodeURIComponent(val);
         if (extraParams) url += extraParams();
-        fetch(url)
+        fetchWithTimeout(url)
           .then(r => r.json())
           .then(data => {
             dropdown.innerHTML = '';

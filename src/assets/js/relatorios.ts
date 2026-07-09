@@ -11,7 +11,11 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
   const apiUrl: string = `${window.APP_API_BASE}api_relatorios_cameras`;
   const itensPorPagina: number = 50;
-  const locaisList: Array<{id: number; nome: string}> = (window as any).LOCAIS_LIST || [];
+  const pageEl = document.querySelector('.relatorio-cameras-page') as HTMLElement | null;
+  let locaisList: Array<{id: number; nome: string}> = [];
+  if (pageEl?.dataset.locais) {
+    try { locaisList = JSON.parse(pageEl.dataset.locais); } catch { locaisList = []; }
+  }
   let paginaAtual: number = 1;
   let totalItens: number = 0;
   let _resizeObserver: ResizeObserver | null = null;
@@ -331,7 +335,8 @@ document.addEventListener('DOMContentLoaded', function (): void {
     const headers = thead.querySelectorAll('th');
     headers.forEach((th, index) => {
       const label = (th as HTMLElement).textContent!.trim();
-      const saved = JSON.parse(localStorage.getItem('colunasVisiveisCameras') || '{}') as Record<string, boolean>;
+      let saved: Record<string, boolean> = {};
+      try { saved = JSON.parse(localStorage.getItem('colunasVisiveisCameras') || '{}'); } catch {}
       const checked = saved[label] !== false;
       const item = document.createElement('li');
       item.innerHTML = '<div class="dropdown-item py-1 px-2">'
@@ -357,11 +362,12 @@ document.addEventListener('DOMContentLoaded', function (): void {
       const label = (th as HTMLElement).textContent!.trim();
       state[label] = !th.classList.contains('column-hidden');
     });
-    localStorage.setItem('colunasVisiveisCameras', JSON.stringify(state));
+    try { localStorage.setItem('colunasVisiveisCameras', JSON.stringify(state)); } catch {}
   }
 
   function aplicarVisibilidadeSalva(): void {
-    const saved = JSON.parse(localStorage.getItem('colunasVisiveisCameras') || '{}') as Record<string, boolean>;
+    let saved: Record<string, boolean> = {};
+    try { saved = JSON.parse(localStorage.getItem('colunasVisiveisCameras') || '{}'); } catch {}
     if (Object.keys(saved).length === 0) return;
     const headers = document.querySelectorAll('#tabelaResultados thead th');
     headers.forEach((th, index) => {

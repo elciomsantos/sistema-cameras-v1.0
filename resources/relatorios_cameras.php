@@ -21,14 +21,15 @@ try {
 
 <?php vite_page_css('relatorios-cameras'); ?>
 
-<div class="container-fluid mt-4 mb-4 relatorio-cameras-page">
+<div class="container-fluid mt-4 mb-4 relatorio-cameras-page"
+     data-locais='<?= json_encode(array_map(fn($l) => ['id' => (int)$l->id, 'nome' => $l->nome], $locaisList), JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h2 class="mb-1"><i class="fas fa-camera me-2"></i>Relat&oacute;rio de C&acirc;meras</h2>
                 <p class="text-muted mb-0">Consulte e filtre as c&acirc;meras do sistema.</p>
             </div>
-            <a href="?page=controle_cameras" class="btn btn-outline-secondary">
+            <a href="?page=controle&amp;modulo=cameras" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>
@@ -160,9 +161,6 @@ try {
     <div class="mt-3">Carregando dados...</div>
 </div>
 
-<script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
-window.LOCAIS_LIST = <?= json_encode(array_map(fn($l) => ['id' => (int)$l->id, 'nome' => $l->nome], $locaisList)) ?>;
-</script>
 <?php vite_page_js('relatorios-cameras'); ?>
 
 

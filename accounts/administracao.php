@@ -181,6 +181,18 @@ if ($r['status'] === 'success') $totalOperadoras = (int)($r['data'][0]->total ??
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-th-list fa-3x text-primary mb-3"></i>
+                                    <h5>Tabelas Lookup</h5>
+                                    <p>Gerenciar tabelas de referência do sistema</p>
+                                    <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                        <a href="?page=admin_tabelas" class="btn btn-primary">Abrir Painel</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

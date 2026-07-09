@@ -109,7 +109,7 @@ class EquipamentoServiceTest extends TestCase
             'marca_id' => 1,
         ];
         $svc->validateRequiredIds($data);
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testValidateCoordenadasAcceptsValid(): void
@@ -118,7 +118,7 @@ class EquipamentoServiceTest extends TestCase
         $svc->validateCoordenadas('-23.3105, -51.1628');
         $svc->validateCoordenadas('23.3105,51.1628');
         $svc->validateCoordenadas(null);
-        $this->assertTrue(true);
+        $this->expectNotToPerformAssertions();
     }
 
     public function testValidateCoordenadasRejectsInvalid(): void

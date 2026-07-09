@@ -11,12 +11,6 @@ $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $isSwaggerSpec = strpos($requestUri, '/swagger-spec') !== false;
 $isSwaggerJson = strpos($requestUri, '/swagger.json') !== false;
 
-// Requer autenticação admin para acessar Swagger
-configureSessionSecurity();
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 if (!isset($_SESSION['usuario'])) {
     http_response_code(401);
     header('Content-Type: application/json; charset=utf-8');

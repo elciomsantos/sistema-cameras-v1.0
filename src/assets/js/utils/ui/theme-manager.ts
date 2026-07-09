@@ -13,7 +13,8 @@ class ThemeManager {
     }
 
     detectSystemPreference(): void {
-        const savedTheme = localStorage.getItem(this.STORAGE_KEY);
+        let savedTheme: string | null = null;
+        try { savedTheme = localStorage.getItem(this.STORAGE_KEY); } catch {}
         if (savedTheme) {
             this.setTheme(savedTheme);
             return;
@@ -39,7 +40,7 @@ class ThemeManager {
             html.setAttribute('data-theme', 'light');
         }
 
-        localStorage.setItem(this.STORAGE_KEY, theme);
+        try { localStorage.setItem(this.STORAGE_KEY, theme); } catch {}
         this.updateToggleButton(isDark);
     }
 
@@ -47,7 +48,8 @@ class ThemeManager {
         const toggle = document.getElementById('themeToggle');
         if (toggle) {
             toggle.addEventListener('click', () => {
-                const currentTheme = localStorage.getItem(this.STORAGE_KEY) || 'light';
+                let currentTheme = 'light';
+                try { currentTheme = localStorage.getItem(this.STORAGE_KEY) || 'light'; } catch {}
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
                 this.setTheme(newTheme);
             });
@@ -77,7 +79,7 @@ class ThemeManager {
     }
 
     getCurrentTheme(): string {
-        return localStorage.getItem(this.STORAGE_KEY) || 'light';
+        try { return localStorage.getItem(this.STORAGE_KEY) || 'light'; } catch { return 'light'; }
     }
 }
 

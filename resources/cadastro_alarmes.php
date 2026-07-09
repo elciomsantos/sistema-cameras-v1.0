@@ -17,7 +17,7 @@ $regiaoList = array_map(fn($r) => (array)$r, $lookup->getRegioesList());
                 <h3 class="mb-0"><i class="fas fa-bell me-2"></i>Cadastro de Alarme</h3>
                 <p class="text-muted mb-0">Cadastre um novo alarme no sistema.</p>
             </div>
-            <a href="?page=controle_alarmes" class="btn btn-outline-secondary">
+            <a href="?page=controle&amp;modulo=alarmes" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i>Voltar
             </a>
         </div>

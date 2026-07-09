@@ -23,11 +23,15 @@ class RateLimiter
         $this->configs = $configs;
 
         if (!is_dir($this->storagePath)) {
-            if (!@mkdir($this->storagePath, 0755, true) && !is_dir($this->storagePath)) {
+            try {
+                if (!mkdir($this->storagePath, 0755, true) && !is_dir($this->storagePath)) {
+                    throw new RuntimeException('Failed to create storage directory');
+                }
+            } catch (Throwable) {
                 $this->storageFailed = true;
                 $fallbackPath = sys_get_temp_dir() . '/cftv_gml_ratelimit/ratelimit';
                 if (!is_dir($fallbackPath)) {
-                    @mkdir($fallbackPath, 0755, true);
+                    try { mkdir($fallbackPath, 0755, true); } catch (Throwable) {}
                 }
                 if (is_dir($fallbackPath)) {
                     $this->storagePath = $fallbackPath;
@@ -501,7 +505,11 @@ class RateLimiter
         $dir = $this->storagePath . '/' . $prefix;
 
         if (!is_dir($dir)) {
-            if (!@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            try {
+                if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
+                    throw new RuntimeException('Failed to create storage directory');
+                }
+            } catch (Throwable) {
                 $this->storageFailed = true;
             }
         }

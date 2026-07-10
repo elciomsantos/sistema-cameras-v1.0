@@ -354,7 +354,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟠 Brotli compression + mod_deflate Apache                ✅│
 │  🟠 Stream em exports LocaisService                          ✅│
 │  🟡 RateLimiter → token_bucket para GETs                     ✅│
-│  🟡 Logger level INFO em production                           │
+│  🟡 Logger level INFO em production                           ✅│
 │  🟡 thumbnails anexos                                         │
 │  🟡 particionamento auditoria_eventos                         │
 └───────────────────────────────────────────────────────────────┘

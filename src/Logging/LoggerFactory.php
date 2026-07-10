@@ -11,12 +11,14 @@ class LoggerFactory
         $logDir ??= self::resolveLogDir();
         $logger = new \Monolog\Logger($channel);
 
+        $level = isProduction() ? \Monolog\Level::Info : \Monolog\Level::Debug;
+
         try {
             if ($logDir !== null && is_dir($logDir) && is_writable($logDir)) {
                 $handler = new \Monolog\Handler\RotatingFileHandler(
                     $logDir . '/' . $channel . '.log',
                     30,
-                    \Monolog\Level::Debug
+                    $level
                 );
                 $handler->setFormatter(new \Monolog\Formatter\JsonFormatter());
                 $logger->pushHandler($handler);
@@ -27,7 +29,7 @@ class LoggerFactory
 
         $logger->pushHandler(new \Monolog\Handler\ErrorLogHandler(
             \Monolog\Handler\ErrorLogHandler::OPERATING_SYSTEM,
-            \Monolog\Level::Debug
+            $level
         ));
 
         return $logger;

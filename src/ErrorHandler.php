@@ -30,6 +30,11 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             'trace' => $exception->getTraceAsString(),
         ], $context);
 
+        // Report to Sentry in production
+        if (function_exists('captureSentryException')) {
+            captureSentryException($exception, ['context' => $context]);
+        }
+
         if (!headers_sent()) {
             http_response_code(500);
         }

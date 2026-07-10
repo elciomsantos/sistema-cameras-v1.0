@@ -364,7 +364,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟠 Repository Pattern + DatabaseInterface                   ✅│
 │  🟠 Service COI (services sem ApiResponse::exit)            ✅│
 │  🟠 Migrations versionadas + CI gates                        ✅│
-│  🟡 Sentry/APM                                               │
+│  🟡 Sentry/APM                                               ✅│
 └───────────────────────────────────────────────────────────────┘
 ```
 

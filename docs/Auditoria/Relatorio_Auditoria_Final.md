@@ -1,6 +1,6 @@
 openc# Relatório Executivo de Auditoria Completa — `sistema-cameras-v1.0`
 
-> **Versão:** 1.0 | **Data:** 09 de Julho de 2026 | **Stack:** PHP 8.2 + TypeScript/Vite 8 + MySQL 8.0/MariaDB 10.5
+> **Versão:** 1.0 | **Data:** 09 de Julho de 2026 | **Stack:** PHP 8.3 + TypeScript/Vite 8 + MySQL 8.0/MariaDB 10.5
 > **Cobertura:** ~284 arquivos versionados (120 PHP, 52 TS, 14 CSS, configs, Docker, CI/CD)
 > **Metodologia:** Análise baseada em evidências (`arquivo:linha`) — ver `Auditoria_Completa_Software.md` para diretrizes.
 
@@ -36,7 +36,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 
 **Stack Tecnológica:**
 
-- **Backend:** PHP 8.2+ (sem framework), PDO com `EMULATE_PREPARES=false`, Monolog 3.10, Composer
+- **Backend:** PHP 8.3+ (sem framework), PDO com `EMULATE_PREPARES=false`, Monolog 3.10, Composer
 - **Frontend:** TypeScript 5.8 (strict), Vite 8, Bootstrap 5.3 (via CDN), Chart.js 4.5, Font Awesome 6 (via CDN), Leaflet, PostCSS+cssnano
 - **Banco:** MySQL 8.0+ / MariaDB 10.5+ (Esquema em `config/DB/cftv_gml.sql`)
 - **Testes:** PHPUnit 10 (80 testes) + Vitest 4
@@ -360,7 +360,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 └───────────────────────────────────────────────────────────────┘
                               │
 ┌─ Sprint 3-5 (2-3 meses) ─────────────────────────────────────┐
-│  🟠 PHP 8.3 upgrade                                           │
+│  🟠 PHP 8.3 upgrade                                           ✅│
 │  🟠 Repository Pattern + DatabaseInterface                   │
 │  🟠 Service COI (services sem ApiResponse::exit)            │
 │  🟠 Migrations versionadas + CI gates                        │

@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 LABEL org.opencontainers.image.source="https://github.com/GhostTerminals/sistema-cameras-v1.0"
 LABEL org.opencontainers.image.description="Sistema de Gerenciamento de Cameras e Alarmes"

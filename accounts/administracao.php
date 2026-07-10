@@ -1,44 +1,60 @@
 <?php
 requererAcesso('supervisor');
 
-// Get statistics
 $db = db();
-
 $isAdmin = ($_SESSION['usuario']->nivel_acesso ?? '') === 'admin';
 
-// Count users (apenas admin ve)
-$totalUsers = 0;
-if ($isAdmin) {
-    $r = $db->query("SELECT COUNT(*) as total FROM usuarios");
-    if ($r['status'] === 'success') $totalUsers = (int)($r['data'][0]->total ?? 0);
-}
-
-// Contagens de locais por tipo (via JOIN em tipos_locais - case insensitive sem LIKE)
-// Uma unica query com LEFT JOIN + GROUP BY faz todas as contagens relevantes em 1 round-trip
-$contagensLocais = ['escolas' => 0, 'cmeis' => 0, 'proprios' => 0];
-$r = $db->query(
-    "SELECT tl.nome AS tipo, COUNT(l.id) AS total
-     FROM locais l
-     INNER JOIN tipos_locais tl ON tl.id = l.tipo_local_id
-     WHERE l.deleted_at IS NULL
-       AND tl.nome IN ('ESCOLA', 'CMEI', 'PREDIO PUBLICO')
-     GROUP BY tl.nome"
-);
-if ($r['status'] === 'success') {
-    foreach ($r['data'] as $row) {
-        if ($row->tipo === 'ESCOLA')         $contagensLocais['escolas']  = (int)$row->total;
-        elseif ($row->tipo === 'CMEI')      $contagensLocais['cmeis']    = (int)$row->total;
-        elseif ($row->tipo === 'PREDIO PUBLICO') $contagensLocais['proprios'] = (int)$row->total;
+$cacheKey = 'admin_stats_' . ($isAdmin ? 'full' : 'user');
+if (function_exists('apcu_fetch')) {
+    $cached = apcu_fetch($cacheKey);
+    if ($cached !== false) {
+        $totalUsers = $cached['users'] ?? 0;
+        $totalEscolas = $cached['escolas'] ?? 0;
+        $totalCmeis = $cached['cmeis'] ?? 0;
+        $totalProprios = $cached['proprios'] ?? 0;
+        $totalOperadoras = $cached['operadoras'] ?? 0;
     }
 }
-$totalEscolas  = $contagensLocais['escolas'];
-$totalCmeis    = $contagensLocais['cmeis'];
-$totalProprios = $contagensLocais['proprios'];
 
-// Count operadoras
-$totalOperadoras = 0;
-$r = $db->query("SELECT COUNT(*) as total FROM origem_link");
-if ($r['status'] === 'success') $totalOperadoras = (int)($r['data'][0]->total ?? 0);
+if (empty($cached)) {
+    $totalUsers = 0;
+    if ($isAdmin) {
+        $r = $db->query("SELECT COUNT(*) as total FROM usuarios");
+        if ($r['status'] === 'success') $totalUsers = (int)($r['data'][0]->total ?? 0);
+    }
+
+    $contagensLocais = ['escolas' => 0, 'cmeis' => 0, 'proprios' => 0];
+    $r = $db->query(
+        "SELECT tl.nome AS tipo, COUNT(l.id) AS total
+         FROM locais l
+         INNER JOIN tipos_locais tl ON tl.id = l.tipo_local_id
+         WHERE l.deleted_at IS NULL
+           AND tl.nome IN ('ESCOLA', 'CMEI', 'PREDIO PUBLICO')
+         GROUP BY tl.nome"
+    );
+    if ($r['status'] === 'success') {
+        foreach ($r['data'] as $row) {
+            if ($row->tipo === 'ESCOLA')         $contagensLocais['escolas']  = (int)$row->total;
+            elseif ($row->tipo === 'CMEI')      $contagensLocais['cmeis']    = (int)$row->total;
+            elseif ($row->tipo === 'PREDIO PUBLICO') $contagensLocais['proprios'] = (int)$row->total;
+        }
+    }
+    $totalEscolas  = $contagensLocais['escolas'];
+    $totalCmeis    = $contagensLocais['cmeis'];
+    $totalProprios = $contagensLocais['proprios'];
+
+    $totalOperadoras = 0;
+    $r = $db->query("SELECT COUNT(*) as total FROM origem_link");
+    if ($r['status'] === 'success') $totalOperadoras = (int)($r['data'][0]->total ?? 0);
+
+    if (function_exists('apcu_store')) {
+        apcu_store($cacheKey, [
+            'users' => $totalUsers, 'escolas' => $totalEscolas,
+            'cmeis' => $totalCmeis, 'proprios' => $totalProprios,
+            'operadoras' => $totalOperadoras,
+        ], 300);
+    }
+}
 ?>
 
 <div class="container-fluid mt-4">

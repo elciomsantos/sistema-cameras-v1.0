@@ -12,9 +12,16 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'CEP inválido.');
     }
 
-    $cacheDir = defined('APP_ROOT') ? APP_ROOT . '/storage/cep_cache/' : (sys_get_temp_dir() . '/cftv_gml_cep_cache/');
-    if (!is_dir($cacheDir) && !mkdir($cacheDir, 0700, true) && !is_dir($cacheDir)) {
+    $cacheKey = 'cep_' . $cep;
+
+    if (function_exists('apcu_fetch')) {
+        $cached = apcu_fetch($cacheKey);
+        if ($cached !== false) {
+            ApiResponse::success($cached);
+        }
     }
+
+    $cacheDir = defined('APP_ROOT') ? APP_ROOT . '/storage/cep_cache/' : (sys_get_temp_dir() . '/cftv_gml_cep_cache/');
     $cacheFile = $cacheDir . hash('sha256', $cep) . '.json';
     $cacheTtl = 86400;
 
@@ -23,14 +30,18 @@ try {
         if ($cached) {
             $data = json_decode($cached, true);
             if (is_array($data)) {
-                ApiResponse::success([
+                $result = [
                     'cep' => $data['cep'] ?? null,
                     'logradouro' => $data['logradouro'] ?? null,
                     'complemento' => $data['complemento'] ?? null,
                     'bairro' => $data['bairro'] ?? null,
                     'cidade' => $data['localidade'] ?? null,
                     'uf' => $data['uf'] ?? null,
-                ]);
+                ];
+                if (function_exists('apcu_store')) {
+                    apcu_store($cacheKey, $result, 86400);
+                }
+                ApiResponse::success($result);
             }
         }
     }
@@ -81,14 +92,18 @@ try {
 
     @file_put_contents($cacheFile, $raw, LOCK_EX);
 
-    ApiResponse::success([
+    $result = [
         'cep' => $data['cep'] ?? null,
         'logradouro' => $data['logradouro'] ?? null,
         'complemento' => $data['complemento'] ?? null,
         'bairro' => $data['bairro'] ?? null,
         'cidade' => $data['localidade'] ?? null,
         'uf' => $data['uf'] ?? null,
-    ]);
+    ];
+    if (function_exists('apcu_store')) {
+        apcu_store($cacheKey, $result, 86400);
+    }
+    ApiResponse::success($result);
 
 } catch (Throwable $e) {
     error_log('[api_cep_lookup] ' . $e->getMessage());

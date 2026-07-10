@@ -182,23 +182,6 @@
     `;
     }).join('');
 
-    tbody.querySelectorAll('.historico-select-checkbox').forEach((checkbox) => {
-      checkbox.addEventListener('change', () => {
-        const id = String((checkbox as HTMLElement).getAttribute('data-id') || '');
-        if (!id) return;
-        const item = state.historico.find((row) => String(row.id || '') === id);
-        if ((checkbox as HTMLInputElement).checked) {
-          state.selectedHistoricoIds.add(id);
-          if (item) state.selectedHistoricoRows[id] = item;
-        } else {
-          state.selectedHistoricoIds.delete(id);
-          delete state.selectedHistoricoRows[id];
-        }
-        updateSelectedCount(state.selectedHistoricoIds);
-        updateSelectAllCheckbox(state.selectedHistoricoIds, state.historico);
-      });
-    });
-
     updateSelectedCount(state.selectedHistoricoIds);
     updateSelectAllCheckbox(state.selectedHistoricoIds, state.historico);
   }
@@ -233,14 +216,6 @@
       </tr>
     `;
     }).join('');
-
-    tbody.querySelectorAll('.btn-start-os').forEach((button) => {
-      button.addEventListener('click', async () => {
-        const id = String((button as HTMLElement).getAttribute('data-id') || '');
-        if (!id) return;
-        await iniciarExecucaoOs(id);
-      });
-    });
   }
 
   function renderExecutingOrders(orders: Array<Record<string, unknown>>) {
@@ -273,14 +248,6 @@
       </tr>
     `;
     }).join('');
-
-    tbody.querySelectorAll('.btn-finalizar-os').forEach((button) => {
-      button.addEventListener('click', async () => {
-        const id = String((button as HTMLElement).getAttribute('data-id') || '');
-        if (!id) return;
-        await selectOrdemServico(id);
-      });
-    });
   }
 
   async function selectOrdemServico(osId: string) {
@@ -880,6 +847,48 @@
       updateSelectedCount(state.selectedHistoricoIds);
       updateSelectAllCheckbox(state.selectedHistoricoIds, state.historico);
     });
+
+    const historicoBody = document.getElementById('historicoManutencaoBody');
+    if (historicoBody) {
+      historicoBody.addEventListener('change', (event) => {
+        const target = event.target as HTMLElement;
+        if (!target.classList.contains('historico-select-checkbox')) return;
+        const id = String(target.getAttribute('data-id') || '');
+        if (!id) return;
+        const item = state.historico.find((row) => String(row.id || '') === id);
+        if ((target as HTMLInputElement).checked) {
+          state.selectedHistoricoIds.add(id);
+          if (item) state.selectedHistoricoRows[id] = item;
+        } else {
+          state.selectedHistoricoIds.delete(id);
+          delete state.selectedHistoricoRows[id];
+        }
+        updateSelectedCount(state.selectedHistoricoIds);
+        updateSelectAllCheckbox(state.selectedHistoricoIds, state.historico);
+      });
+    }
+
+    const ordensCadastradasBody = document.getElementById('ordensCadastradasBody');
+    if (ordensCadastradasBody) {
+      ordensCadastradasBody.addEventListener('click', async (event) => {
+        const target = (event.target as HTMLElement).closest('.btn-start-os');
+        if (!target) return;
+        const id = String(target.getAttribute('data-id') || '');
+        if (!id) return;
+        await iniciarExecucaoOs(id);
+      });
+    }
+
+    const ordensExecutandoBody = document.getElementById('ordensExecutandoBody');
+    if (ordensExecutandoBody) {
+      ordensExecutandoBody.addEventListener('click', async (event) => {
+        const target = (event.target as HTMLElement).closest('.btn-finalizar-os');
+        if (!target) return;
+        const id = String(target.getAttribute('data-id') || '');
+        if (!id) return;
+        await selectOrdemServico(id);
+      });
+    }
 
     (document.getElementById('btnExportarRapidoHistorico') as HTMLButtonElement | null)?.addEventListener('click', async () => {
       try { await exportarPdfHistorico(); } catch (error) { console.error(error); showMessage('danger', (error as Error).message || 'Falha ao exportar relatório.'); }

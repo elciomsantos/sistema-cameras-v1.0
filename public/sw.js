@@ -89,7 +89,25 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Assets estáticos (css, js, imagens) - Network first, cache only se 200
+  // Assets estáticos (css, js, imagens) - Cache-first para assets Vite com hash, network-first para o resto
+  const isViteHashedAsset = /\/assets\/.+\.[a-f0-9]{8}\.(js|css|woff2?|ttf|eot|png|jpe?g|gif|svg|webp)$/.test(url.pathname);
+
+  if (isViteHashedAsset) {
+    event.respondWith(
+      caches.match(request).then(cached => {
+        if (cached) return cached;
+        return fetch(request).then(response => {
+          if (response && response.status === 200 && response.type === 'basic') {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, responseToCache));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(request).then(response => {
       if (!response || response.status !== 200 || response.type !== 'basic') {

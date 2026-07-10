@@ -22,6 +22,15 @@ class LookupService
         if (!in_array($tableName, $this->allowedTables, true)) {
             return [];
         }
+
+        $cacheKey = "lookup_{$tableName}";
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($cacheKey);
+            if ($cached !== false) {
+                return $cached;
+            }
+        }
+
         $orderCol = 'nome';
         if ($tableName === 'transmissoes') {
             $orderCol = 'tipo';
@@ -29,7 +38,13 @@ class LookupService
             $orderCol = 'descricao';
         }
         $result = $this->db->query("SELECT * FROM {$tableName} ORDER BY {$orderCol}");
-        return $result['status'] === 'success' ? $result['data'] : [];
+        $data = $result['status'] === 'success' ? $result['data'] : [];
+
+        if (function_exists('apcu_store') && !empty($data)) {
+            apcu_store($cacheKey, $data, 300);
+        }
+
+        return $data;
     }
 
     public function getMultipleTableData(array $tableNames): array

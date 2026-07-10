@@ -197,7 +197,9 @@ class HomeDashboard extends (window.DashboardCore as any) {
         if (this.updateInterval) {
             clearInterval(this.updateInterval as number);
         }
-        this.updateInterval = window.setInterval(() => this.loadData(), 30000);
+        this.updateInterval = window.setInterval(() => {
+            if (!document.hidden) this.loadData();
+        }, 30000);
     }
 
     setupEventListeners() {

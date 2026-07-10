@@ -134,7 +134,13 @@ try {
         {$whereSql}
     ";
 
-    $countSql = "SELECT COUNT(*) AS total {$baseFrom}";
+    $countBaseFrom = "
+        FROM equipamentos e
+        LEFT JOIN status s ON e.status_id = s.id
+        {$whereSql}
+    ";
+
+    $countSql = "SELECT COUNT(*) AS total {$countBaseFrom}";
     $countResult = $db->query($countSql, $params);
     if (!$countResult || $countResult['status'] !== 'success') {
         ApiResponse::internalError('Erro ao contar câmeras.');

@@ -39,10 +39,13 @@ try {
     $db = db();
     $where = [];
     $params = [];
+    $extraJoins = '';
+    $extraJoinWhere = '';
 
     $usuarioSecretariaId = getUsuarioSecretariaId();
     if ($usuarioSecretariaId !== null && resolveUserAccessLevel($_SESSION['usuario'] ?? null) === 'user') {
-        $where[] = 'EXISTS (SELECT 1 FROM locais l WHERE l.alarme_conta = a.conta AND l.secretaria_id = :secretaria_id)';
+        $extraJoins .= ' LEFT JOIN locais l_sec ON l_sec.alarme_conta = a.conta AND l_sec.secretaria_id = :secretaria_id';
+        $extraJoinWhere = ' AND l_sec.id IS NOT NULL';
         $params[':secretaria_id'] = $usuarioSecretariaId;
     }
 
@@ -51,12 +54,18 @@ try {
         $params[':id'] = $id;
     }
     if ($status !== '') {
-        $where[] = 'a.status_id = (SELECT id FROM status WHERE nome = :status LIMIT 1)';
-        $params[':status'] = strtoupper($status);
+        $statusRow = $db->query("SELECT id FROM status WHERE nome = :status LIMIT 1", [':status' => strtoupper($status)]);
+        if (!empty($statusRow['data'])) {
+            $where[] = 'a.status_id = :status_id_resolved';
+            $params[':status_id_resolved'] = (int)$statusRow['data'][0]->id;
+        }
     }
     if ($regiao !== '') {
-        $where[] = 'a.regiao_id = (SELECT id FROM regioes WHERE nome = :regiao LIMIT 1)';
-        $params[':regiao'] = strtoupper($regiao);
+        $regiaoRow = $db->query("SELECT id FROM regioes WHERE nome = :regiao LIMIT 1", [':regiao' => strtoupper($regiao)]);
+        if (!empty($regiaoRow['data'])) {
+            $where[] = 'a.regiao_id = :regiao_id_resolved';
+            $params[':regiao_id_resolved'] = (int)$regiaoRow['data'][0]->id;
+        }
     }
     if ($conta !== '' && ctype_digit($conta)) {
         $where[] = 'a.conta = :conta';
@@ -118,9 +127,9 @@ try {
         $where[] = '(' . implode(' OR ', $buscaParts) . ')';
     }
 
-    $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where));
+    $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where) . $extraJoinWhere);
 
-    $countSql = "SELECT COUNT(*) AS total FROM central_alarmes a {$whereSql}";
+    $countSql = "SELECT COUNT(*) AS total FROM central_alarmes a {$extraJoins} {$whereSql}";
     $countResult = $db->query($countSql, $params);
 
     if (!$countResult || $countResult['status'] !== 'success') {
@@ -167,6 +176,7 @@ try {
         LEFT JOIN status s ON a.status_id = s.id
         LEFT JOIN regioes r ON a.regiao_id = r.id
         LEFT JOIN catalogo_modelos_alarmes m ON m.id = a.modelo_alarme_id
+        {$extraJoins}
         {$whereSql}
         ORDER BY a.data_atualizacao DESC, a.id DESC
         LIMIT :limit_val OFFSET :offset_val

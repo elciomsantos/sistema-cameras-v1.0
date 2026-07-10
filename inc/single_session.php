@@ -44,6 +44,10 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
 {
     ensureUserSessionsTable($db);
 
+    if (function_exists('apcu_delete')) {
+        apcu_delete("session_valid:{$usuarioId}");
+    }
+
     $pdo = $db->getConnection();
     $lockName = 'user_session_' . $usuarioId;
     $lockAcquired = false;
@@ -96,6 +100,11 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
 function invalidateUniqueSession(database $db, int $usuarioId, ?string $token = null): void
 {
     ensureUserSessionsTable($db);
+
+    if (function_exists('apcu_delete')) {
+        apcu_delete("session_valid:{$usuarioId}");
+    }
+
     if ($token) {
         $db->query(
             "UPDATE user_sessions
@@ -125,6 +134,15 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
     }
 
     ensureUserSessionsTable($db);
+
+    $cacheKey = "session_valid:{$usuarioId}:" . hash('xxh3', $token);
+    if (function_exists('apcu_fetch')) {
+        $cached = apcu_fetch($cacheKey);
+        if ($cached !== false) {
+            return (bool)$cached;
+        }
+    }
+
     $result = $db->query(
         "SELECT session_token_hash, session_id, active, last_seen, ip_address, user_agent
          FROM user_sessions
@@ -135,15 +153,24 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
     );
 
     if (($result['status'] ?? '') !== 'success' || empty($result['data'])) {
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, false, 5);
+        }
         return false;
     }
 
     $row = $result['data'][0];
     if ((int)($row->active ?? 0) !== 1) {
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, false, 5);
+        }
         return false;
     }
 
     if (!hash_equals((string)$row->session_token_hash, hashSessionToken($token))) {
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, false, 5);
+        }
         return false;
     }
 
@@ -162,6 +189,9 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
     }
 
     if ((string)$row->user_agent !== getSessionUserAgent()) {
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, false, 5);
+        }
         return false;
     }
 
@@ -189,6 +219,10 @@ function isUniqueSessionValid(database $db, int $usuarioId, ?string $token): boo
                 ':session_token_hash' => hashSessionToken($token),
             ]
         );
+    }
+
+    if (function_exists('apcu_store')) {
+        apcu_store($cacheKey, true, 5);
     }
 
     return true;

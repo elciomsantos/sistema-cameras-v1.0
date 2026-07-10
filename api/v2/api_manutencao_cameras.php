@@ -20,35 +20,55 @@ function loadManutencaoPayload(
     $defaults = getMaintenanceDefaultIds($db);
 
     if ($includeLists) {
-        $camerasQuery = "
-            SELECT
-                e.id,
-                COALESCE(l.nome, e.codigo_publico, CONCAT('EQUIPAMENTO ', e.id)) AS descricao,
-                l.nome AS local_nome,
-                l.logradouro AS local_logradouro,
-                l.numero AS local_numero,
-                l.bairro AS local_bairro,
-                l.cidade AS local_cidade,
-                l.uf AS local_uf,
-                l.cep AS local_cep,
-                ce.descricao AS tipo_logradouro,
-                EXISTS (SELECT 1 FROM equipamentos_manutencoes em WHERE em.equipamento_id = e.id AND em.os_status_id IN (1, 2)) AS em_manutencao,
-                e.ip,
-                e.numero_serie,
-                cm.nome AS modelo_nome,
-                te.nome AS tipo_equipamento_nome,
-                s.nome AS status_nome
-            FROM equipamentos e
-            LEFT JOIN locais l ON l.id = e.local_id
-            LEFT JOIN classificacao_enderecos ce ON ce.id = l.classificacao_endereco_id
-            LEFT JOIN catalogo_modelos cm ON cm.id = e.modelo_id
-            LEFT JOIN tipos_equipamento te ON te.id = COALESCE(e.tipo_equipamento_id, cm.tipo_equipamento_id)
-            LEFT JOIN status s ON s.id = e.status_id
-            WHERE e.deleted_at IS NULL
-            ORDER BY descricao ASC, e.id ASC
-        ";
-        $camerasResult = $db->query($camerasQuery);
-        $cameras = $camerasResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $camerasResult['data']) : [];
+        $camerasCacheKey = 'manut_cameras_list';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($camerasCacheKey);
+            if ($cached !== false) {
+                $cameras = $cached;
+            }
+        }
+
+        if (empty($cameras)) {
+            $camerasQuery = "
+                SELECT
+                    e.id,
+                    COALESCE(l.nome, e.codigo_publico, CONCAT('EQUIPAMENTO ', e.id)) AS descricao,
+                    l.nome AS local_nome,
+                    l.logradouro AS local_logradouro,
+                    l.numero AS local_numero,
+                    l.bairro AS local_bairro,
+                    l.cidade AS local_cidade,
+                    l.uf AS local_uf,
+                    l.cep AS local_cep,
+                    ce.descricao AS tipo_logradouro,
+                    IF(em_manut.cnt > 0, 1, 0) AS em_manutencao,
+                    e.ip,
+                    e.numero_serie,
+                    cm.nome AS modelo_nome,
+                    te.nome AS tipo_equipamento_nome,
+                    s.nome AS status_nome
+                FROM equipamentos e
+                LEFT JOIN locais l ON l.id = e.local_id
+                LEFT JOIN classificacao_enderecos ce ON ce.id = l.classificacao_endereco_id
+                LEFT JOIN catalogo_modelos cm ON cm.id = e.modelo_id
+                LEFT JOIN tipos_equipamento te ON te.id = COALESCE(e.tipo_equipamento_id, cm.tipo_equipamento_id)
+                LEFT JOIN status s ON s.id = e.status_id
+                LEFT JOIN (
+                    SELECT equipamento_id, COUNT(*) AS cnt
+                    FROM equipamentos_manutencoes
+                    WHERE os_status_id IN (1, 2)
+                    GROUP BY equipamento_id
+                ) em_manut ON em_manut.equipamento_id = e.id
+                WHERE e.deleted_at IS NULL
+                ORDER BY descricao ASC, e.id ASC
+            ";
+            $camerasResult = $db->query($camerasQuery);
+            $cameras = $camerasResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $camerasResult['data']) : [];
+
+            if (function_exists('apcu_store') && !empty($cameras)) {
+                apcu_store($camerasCacheKey, $cameras, 300);
+            }
+        }
 
         $statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome ASC");
         $statusOptions = $statusResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $statusResult['data']) : [];
@@ -379,6 +399,10 @@ try {
                 ApiResponse::internalError('Falha ao criar ordem de serviço.');
             }
 
+            if (function_exists('apcu_delete')) {
+                apcu_delete('manut_cameras_list');
+            }
+
             ApiResponse::created(['message' => 'Ordem de serviço cadastrada com sucesso.'], null);
         }
 
@@ -417,6 +441,10 @@ try {
             );
             if ($update['status'] !== 'success') {
                 ApiResponse::internalError('Falha ao iniciar execução da ordem de serviço.');
+            }
+
+            if (function_exists('apcu_delete')) {
+                apcu_delete('manut_cameras_list');
             }
 
             ApiResponse::success(['message' => 'Ordem de serviço em execução.']);
@@ -541,6 +569,10 @@ try {
             }
 
             $db->commit();
+
+            if (function_exists('apcu_delete')) {
+                apcu_delete('manut_cameras_list');
+            }
 
             ApiResponse::success(['message' => 'Ordem de serviço marcada como realizada com sucesso.']);
         }

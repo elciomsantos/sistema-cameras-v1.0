@@ -40,25 +40,29 @@ try {
             FROM locais l
             LEFT JOIN classificacao_enderecos ce ON ce.id = l.classificacao_endereco_id
             WHERE " . implode(' AND ', $where) . "
-            ORDER BY 
-                CASE 
-                    WHEN UPPER(l.nome) = UPPER(?) THEN 0
-                    WHEN UPPER(l.nome) LIKE UPPER(CONCAT(?, '%')) THEN 1
-                    WHEN UPPER(l.nome) LIKE UPPER(CONCAT('%', ?, '%')) THEN 2
-                    ELSE 3
-                END,
-                l.nome
+            ORDER BY l.nome ASC
             LIMIT ?";
-    $params[] = $q;
-    $params[] = $q;
-    $params[] = $q;
-    $params[] = $limit;
+    $fetchLimit = $limit * 3;
+    $params[] = $fetchLimit;
     $result = $db->query($sql, $params);
 
     if ($result['status'] === 'success') {
+        $rows = $result['data'] ?? [];
+        if ($q !== '' && count($rows) > 0) {
+            $qUpper = strtoupper($q);
+            usort($rows, function ($a, $b) use ($qUpper) {
+                $aNome = strtoupper($a->nome ?? '');
+                $bNome = strtoupper($b->nome ?? '');
+                $aScore = ($aNome === $qUpper) ? 0 : (str_starts_with($aNome, $qUpper) ? 1 : 2);
+                $bScore = ($bNome === $qUpper) ? 0 : (str_starts_with($bNome, $qUpper) ? 1 : 2);
+                return $aScore <=> $bScore;
+            });
+            $rows = array_slice($rows, 0, $limit);
+        }
+
         ApiResponse::success([
-            'data' => $result['data'] ?? [],
-            'count' => count($result['data'] ?? []),
+            'data' => $rows,
+            'count' => count($rows),
         ]);
     }
 

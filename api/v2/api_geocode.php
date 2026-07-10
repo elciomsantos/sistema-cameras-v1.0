@@ -143,12 +143,19 @@ try {
         }
 
         if ($parsed !== null) {
-            // Salvar no cache
             try {
                 $db->query(
                     "INSERT INTO geocode_cache (query_hash, query, response, created_at) VALUES (?, ?, ?, NOW()) ON DUPLICATE KEY UPDATE response = VALUES(response), created_at = NOW()",
                     [$cacheHash, $query, json_encode($parsed)]
                 );
+
+                if (function_exists('apcu_store')) {
+                    $purgeKey = 'geocode_purge_done';
+                    if (apcu_fetch($purgeKey) === false) {
+                        $db->query("DELETE FROM geocode_cache WHERE created_at < DATE_SUB(NOW(), INTERVAL 30 DAY) LIMIT 500");
+                        apcu_store($purgeKey, true, 3600);
+                    }
+                }
             } catch (Throwable $cacheErr) {
                 error_log('[api_geocode] Cache write failed: ' . $cacheErr->getMessage());
             }

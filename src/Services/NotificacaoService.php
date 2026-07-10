@@ -13,17 +13,89 @@ class NotificacaoService
 
     public function gerarPendencias(?int $secretariaId = null): int
     {
-        $geradas = 0;
+        $pendencias = $this->listarPendenciasManutencao($secretariaId);
+        if (empty($pendencias)) {
+            return 0;
+        }
 
-        $pendentes = $this->listarPendenciasManutencao($secretariaId);
-        foreach ($pendentes as $pend) {
-            if (!$this->jaExiste($pend['tipo'], $pend['entidade_tipo'], $pend['entidade_id'])) {
-                $this->criar($pend['tipo'], $pend['titulo'], $pend['mensagem'], $pend['link'], $pend['entidade_tipo'], $pend['entidade_id']);
-                $geradas++;
+        $existenteKeys = $this->batchExiste($pendencias);
+
+        $novas = [];
+        foreach ($pendencias as $pend) {
+            $key = $pend['tipo'] . '|' . $pend['entidade_tipo'] . '|' . $pend['entidade_id'];
+            if (!isset($existenteKeys[$key])) {
+                $novas[] = $pend;
             }
         }
 
-        return $geradas;
+        if (empty($novas)) {
+            return 0;
+        }
+
+        $this->batchCriar($novas);
+
+        return count($novas);
+    }
+
+    private function batchExiste(array $pendencias): array
+    {
+        if (empty($pendencias)) {
+            return [];
+        }
+
+        $conditions = [];
+        $params = [];
+        foreach ($pendencias as $pend) {
+            $conditions[] = '(tipo = ? AND entidade_tipo = ? AND entidade_id = ?)';
+            $params[] = $pend['tipo'];
+            $params[] = $pend['entidade_tipo'];
+            $params[] = $pend['entidade_id'];
+        }
+
+        $whereClause = implode(' OR ', $conditions);
+        $result = $this->db->query(
+            "SELECT tipo, entidade_tipo, entidade_id FROM notificacoes WHERE lida = 0 AND ({$whereClause})",
+            $params
+        );
+
+        $keys = [];
+        if (!empty($result['data'])) {
+            foreach ($result['data'] as $row) {
+                $key = $row->tipo . '|' . $row->entidade_tipo . '|' . $row->entidade_id;
+                $keys[$key] = true;
+            }
+        }
+
+        return $keys;
+    }
+
+    private function batchCriar(array $novas): void
+    {
+        if (empty($novas)) {
+            return;
+        }
+
+        $batches = array_chunk($novas, 50);
+
+        foreach ($batches as $lote) {
+            $values = [];
+            $params = [];
+            foreach ($lote as $pend) {
+                $values[] = '(?, ?, ?, ?, ?, ?)';
+                $params[] = $pend['tipo'];
+                $params[] = $pend['titulo'];
+                $params[] = $pend['mensagem'];
+                $params[] = $pend['link'];
+                $params[] = $pend['entidade_tipo'];
+                $params[] = $pend['entidade_id'];
+            }
+
+            $placeholders = implode(', ', $values);
+            $this->db->query(
+                "INSERT INTO notificacoes (tipo, titulo, mensagem, link, entidade_tipo, entidade_id) VALUES {$placeholders}",
+                $params
+            );
+        }
     }
 
     private function listarPendenciasManutencao(?int $secretariaId = null): array
@@ -103,23 +175,6 @@ class NotificacaoService
         }
 
         return $pendencias;
-    }
-
-    private function jaExiste(string $tipo, string $entidadeTipo, int $entidadeId): bool
-    {
-        $result = $this->db->query(
-            "SELECT id FROM notificacoes WHERE tipo = ? AND entidade_tipo = ? AND entidade_id = ? AND lida = 0 LIMIT 1",
-            [$tipo, $entidadeTipo, $entidadeId]
-        );
-        return !empty($result['data']);
-    }
-
-    private function criar(string $tipo, string $titulo, ?string $mensagem, ?string $link, string $entidadeTipo, int $entidadeId): void
-    {
-        $this->db->query(
-            "INSERT INTO notificacoes (tipo, titulo, mensagem, link, entidade_tipo, entidade_id) VALUES (?, ?, ?, ?, ?, ?)",
-            [$tipo, $titulo, $mensagem, $link, $entidadeTipo, $entidadeId]
-        );
     }
 
     public function getAll(int $page = 1, int $perPage = 20, string $filtroTipo = '', ?int $secretariaId = null): array

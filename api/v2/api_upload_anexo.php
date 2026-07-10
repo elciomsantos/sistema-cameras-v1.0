@@ -242,11 +242,10 @@ try {
     $caminhoRelativo = 'uploads/' . $subdir . '/' . $nomeArquivo;
     $anexoId = 0;
 
-    // Comprimir conteudo binario se valer a pena ( so se conteudo em BD )
+    // Comprimir conteudo binario se valer a pena ( so se conteudo em BD e < 1MB para evitar pico de memoria )
     $conteudoComprimido = 0;
-    if ($conteudoBinario !== null && function_exists('gzdeflate')) {
+    if ($conteudoBinario !== null && function_exists('gzdeflate') && strlen($conteudoBinario) < 1048576) {
         $compressed = @gzdeflate($conteudoBinario, 6);
-        // So usa o comprimido se for significativamente menor ( evita overheads em arquivos pequenos )
         if ($compressed !== false && strlen($compressed) < strlen($conteudoBinario)) {
             $conteudoBinario = $compressed;
             $conteudoComprimido = 1;

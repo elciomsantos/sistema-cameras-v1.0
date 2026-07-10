@@ -36,6 +36,13 @@
         "migrate:rollback": "php database/migrate.php --down 1"
     },
     "config": {
-        "disable-tls": false
+        "disable-tls": false,
+        "sort-packages": true,
+        "classmap-authoritative": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.0-dev"
+        }
     }
 }

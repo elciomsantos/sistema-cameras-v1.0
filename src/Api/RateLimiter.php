@@ -552,17 +552,12 @@ class RateLimiter
 
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'json') {
-                try {
-                    $data = json_decode(file_get_contents($file->getPathname()), true);
-                    if (is_array($data)) {
-                        $updatedAt = $data['updated_at'] ?? 0;
-                        if ($updatedAt < $cutoff) {
-                            $path = $file->getPathname();
-                            if (is_file($path)) { unlink($path); }
-                            $removed++;
-                        }
-                    }
-                } catch (Exception $e) {}
+                // filemtime é O(1) via inode — elimina leitura de JSON
+                if ($file->getMTime() < $cutoff) {
+                    $path = $file->getPathname();
+                    if (is_file($path)) { unlink($path); }
+                    $removed++;
+                }
             }
         }
 

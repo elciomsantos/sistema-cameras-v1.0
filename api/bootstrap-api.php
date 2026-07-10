@@ -128,9 +128,11 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $exists = file_exists($filepath);
 
+    $isGet = $_SERVER['REQUEST_METHOD'] === 'GET';
+
     $rateLimiter = new RateLimiter(
         storagePath: APP_ROOT . '/storage/ratelimit',
-        strategy: 'sliding_window',
+        strategy: $isGet ? 'token_bucket' : 'sliding_window',
         configs: [
             '/^auth:/' => [10, 60],
             '/^login:/' => [5, 60],

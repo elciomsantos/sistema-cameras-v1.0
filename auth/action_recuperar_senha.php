@@ -1,6 +1,9 @@
 <?php
 // Action handler: processa recuperacao de senha e redireciona
 
+require_once __DIR__ . '/../inc/check_access.php';
+requererAcesso('admin');
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['submit'])) {
     header('Location: index.php?page=recuperar_senha');
     exit;

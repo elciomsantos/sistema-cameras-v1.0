@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../inc/check_access.php';
-requererAcesso('user');
+requererAcesso('admin');
 
 $erro = $_SESSION['erro_recuperar'] ?? null;
 unset($_SESSION['erro_recuperar']);

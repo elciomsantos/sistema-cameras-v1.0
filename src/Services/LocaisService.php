@@ -201,7 +201,7 @@ class LocaisService
 
         $sql = "UPDATE locais SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL";
         $result = $this->db->query($sql, [$id]);
-        return $result['status'] === 'success' && $this->db->affectedRows() > 0;
+        return $result['status'] === 'success' && (int)($result['affected_rows'] ?? 0) > 0;
     }
 
     public function create(array $data): int

@@ -52,9 +52,14 @@ RUN a2dissite 000-default.conf && echo '<VirtualHost *:80>\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf && a2ensite 000-default.conf
 
-EXPOSE 80
+RUN sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+    && sed -i 's/:80/:8080/' /etc/apache2/sites-available/000-default.conf
+
+USER www-data
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl -sf http://localhost/ || exit 1
+    CMD curl -sf http://localhost:8080/ || exit 1
 
 CMD ["apache2-foreground"]

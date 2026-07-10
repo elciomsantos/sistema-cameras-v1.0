@@ -164,9 +164,6 @@ sistema-cameras-v1.0/
 │   └── trocar_senha.php        # Troca de senha (token)
 ├── api/                         # API RESTful v2
 │   ├── bootstrap-api.php       # Bootstrap + roteamento da API
-│   ├── RateLimiter.php         # Rate limiting sliding window
-│   ├── ApiResponse.php         # Respostas padronizadas
-│   ├── RequestValidator.php    # Validação de entrada
 │   └── v2/                     # Endpoints (30 arquivos)
 │       ├── api_alarmes.php
 │       ├── api_cameras.php
@@ -367,7 +364,7 @@ vendor/bin/phpunit tests/Unit/
 vendor/bin/phpunit tests/Api/
 ```
 
-**80 testes, 0 falhas, 0 warnings.**
+**170 testes, 0 falhas, 20 skipped, 1 incomplete.**
 
 | Suite | Testes | Cobertura |
 |-------|--------|-----------|
@@ -383,7 +380,7 @@ vendor/bin/phpunit tests/Api/
 - **Ícones**: Font Awesome 6
 - **Mapa**: Leaflet
 - **Testes**: PHPUnit 10, Vitest
-- **Análise**: PHPStan (nível max), PHP_CodeSniffer, Security Checker
+- **Análise**: PHPStan (nível 5), PHP_CodeSniffer, roave/security-advisories
 - **Build**: Vite, compression plugin, PurgeCSS
 
 ---

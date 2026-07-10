@@ -8,6 +8,16 @@ try {
     requireApiAuth('user', true);
     $currentUser = $_SESSION['usuario'];
 
+    $secretariaId = (int)($currentUser->secretaria_id ?? 0);
+    $dashboardCacheKey = "dashboard:{$secretariaId}";
+
+    if (function_exists('apcu_fetch')) {
+        $cached = apcu_fetch($dashboardCacheKey);
+        if (is_array($cached)) {
+            ApiResponse::success($cached);
+        }
+    }
+
     $db = db();
 
     $stats = [
@@ -160,7 +170,7 @@ try {
     ");
     $cameraTipoData = $result['status'] === 'success' ? $result['data'] : [];
 
-    ApiResponse::success([
+    $responsePayload = [
         'stats' => $stats,
         'tipos' => $tipos,
         'manutencoes' => $manutencoes,
@@ -172,7 +182,13 @@ try {
             'nome' => $currentUser->nome ?? $currentUser->usuario ?? 'Usuário',
             'nivel_acesso' => $currentUser->nivel_acesso ?? 'user'
         ],
-    ]);
+    ];
+
+    if (function_exists('apcu_store')) {
+        apcu_store($dashboardCacheKey, $responsePayload, 10);
+    }
+
+    ApiResponse::success($responsePayload);
 
 } catch (Throwable $e) {
     error_log('[api_dashboard] ' . $e->getMessage());

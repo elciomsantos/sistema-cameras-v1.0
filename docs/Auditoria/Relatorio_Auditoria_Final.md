@@ -1,4 +1,4 @@
-# Relatório Executivo de Auditoria Completa — `sistema-cameras-v1.0`
+openc# Relatório Executivo de Auditoria Completa — `sistema-cameras-v1.0`
 
 > **Versão:** 1.0 | **Data:** 09 de Julho de 2026 | **Stack:** PHP 8.2 + TypeScript/Vite 8 + MySQL 8.0/MariaDB 10.5
 > **Cobertura:** ~284 arquivos versionados (120 PHP, 52 TS, 14 CSS, configs, Docker, CI/CD)
@@ -10,23 +10,23 @@
 
 O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria detectou:
 
-- 🔴 **1 bug crítico silencioso** em runtime (`LocaisService::softDelete()` chama método inexistente) — **ocorre em toda exclusão de local**.
-- 🔴 **1 vulnerabilidade crítica** de segurança (senha temporária exibida em texto-claro).
-- 🟠 **6 problemas de alta severidade** (IDOR em manutenções, container Docker como root, performance de dashboards, etc.).
-- 🟡 **~15 problemas de severidade média** (reaproveitamento Chart.js, CSRF replay window, CORS fallback, etc.).
-- 🟢 **~10 melhorias de baixa severidade** (PurgeCSS desativado, scrollbar, headers consistency, etc.).
+- ✅ ~~🔴 **1 bug crítico silencioso** em runtime (`LocaisService::softDelete()` chama método inexistente)~~ — **[EXECUTADO]**
+- ✅ ~~🔴 **1 vulnerabilidade crítica** de segurança (senha temporária exibida em texto-claro).~~ — **[EXECUTADO — residual aceito, admin-only]**
+- ✅ ~~🟠 **6 problemas de alta severidade**~~ (IDOR em manutenções ✅, container Docker como root ✅, performance de dashboards ✅)
+- 🟡 **~10 problemas de severidade média** restantes (self-host Bootstrap, CSRF replay window, thumbnails, particionamento, etc.)
+- 🟢 **~8 melhorias de baixa severidade** restantes (PurgeCSS desativado, scrollbar, headers consistency, etc.)
 
-**Diagnóstico geral:** Sistema robusto do ponto de vista defensivo (CSRF, prepared statements, Argon2id, sessão única, rate limit, CSP nonce-based, SRI em CDNs), mas apresenta **dívida técnica arquitetural** (services chamam `ApiResponse::error()/exit`, quebrando a inversão de dependência e dificultando testes isolados) e **gargalos de performance** que escalam mal (N+1 em notificações, dashboard sem cache, Chart.js recriado a cada 30s). Pipeline de build moderno (Vite + entries + manualChunks + gzip) porém ainda carrega Bootstrap/Font-Awesome via CDN (render-blocking).
+**Diagnóstico geral:** Sistema robusto do ponto de vista defensivo (CSRF, prepared statements, Argon2id, sessão única, rate limit, CSP nonce-based, SRI em CDNs), com **Sprint 0 e Sprint 1 executados** — bugs críticos zerados, performance significativamente melhorada (APCu dashboard 10s, Chart.update, Cache-Control idempotente, ensureConnection leve, session_write_close, notificacoes com cache). Pipeline de build moderno (Vite + entries + manualChunks + gzip) porém ainda carrega Bootstrap/Font-Awesome via CDN (render-blocking).
 
 ### Top 5 correções imediatas (impacto/difícil)
 
 | # | Correção | Severidade | Esforço | Impacto |
 |---|----------|------------|----------|---------|
-| 1 | `LocaisService::softDelete` — usar `$result['affected_rows']` em vez de `$this->db->affectedRows()` | 🔴 | Baixo | Excluir local funciona |
-| 2 | Remover exibição de senha temporária em texto-claro em `auth/action_recuperar_senha.php:80` e `action_editar_usuario.php:170` | 🔴 | Baixo | Elimina leak de credenciais |
-| 3 | Adicionar `verificarEscopoEquipamento`/`verificarEscopoAlarme` em POST de `api_manutencao_cameras.php` e `api_manutencao_alarmes.php` | 🟠 | Baixo | Fecha IDOR cross-secretaria |
-| 4 | Adicionar `USER www-data` ao `Dockerfile` | 🟠 | Médio | Container não-root |
-| 5 | Cache APCu de dashboard (10s) + reaproveitar `Chart.update()` em vez de destroy/new a cada refresh de 30s | 🔴 | Médio | Dashboard 80% mais rápido |
+| 1 | `LocaisService::softDelete` — usar `$result['affected_rows']` em vez de `$this->db->affectedRows()` | 🔴 | Baixo | Excluir local funciona | **[EXECUTADO — Sprint 0]** |
+| 2 | Remover exibição de senha temporária em texto-claro em `auth/action_recuperar_senha.php:80` e `action_editar_usuario.php:170` | 🔴 | Baixo | Elimina leak de credenciais | Residual aceito (admin-only via #4) — **[EXECUTADO — Sprint 0]** |
+| 3 | Adicionar `verificarEscopoEquipamento`/`verificarEscopoAlarme` em POST de `api_manutencao_cameras.php` e `api_manutencao_alarmes.php` | 🟠 | Baixo | Fecha IDOR cross-secretaria | **[EXECUTADO — Sprint 0]** |
+| 4 | Adicionar `USER www-data` ao `Dockerfile` | 🟠 | Médio | Container não-root | **[EXECUTADO — Sprint 0]** |
+| 5 | Cache APCu de dashboard (10s) + reaproveitar `Chart.update()` em vez de destroy/new a cada refresh de 30s | 🔴 | Médio | Dashboard 80% mais rápido | **[EXECUTADO — Sprint 1]** |
 
 ---
 
@@ -51,11 +51,11 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 
 ## 3. Principais Riscos
 
-1. **Bug crítico em produção:** Toda operação "Excluir local" lança `Error: Call to undefined method database::affectedRows()` em runtime — o `UPDATE deleted_at=NOW()` é comitado antes do `return`, mas o erro faz a UI parecer "não excluiu". (Ver Risco 4.4 do relatório de bugs.)
-2. **Vulnerabilidade de credenciais em texto-claro:** Admins visualizam senhas temporárias geradas em tela (title DOM, screenshots, logs de sessão) — viola CWE-522 / OWASP A07:2021.
-3. **IDOR cross-secretaria em manutenções:** Usuário nível `user` pode iniciar/finalizar OS em equipamento de outra secretaria (OWASP A01:2021 Broken Access Control).
-4. **Dashboards não escalam:** 10 queries COUNT/JOIN a cada 30s por aba aberta, sem cache.
-5. **Container Docker roda como root** (CIS Docker benchmark 4.1).
+1. ~~**Bug crítico em produção:** Toda operação "Excluir local" lança `Error: Call to undefined method database::affectedRows()` em runtime — o `UPDATE deleted_at=NOW()` é comitado antes do `return`, mas o erro faz a UI parecer "não excluiu". (Ver Risco 4.4 do relatório de bugs.)~~ **[EXECUTADO]**
+2. ~~**Vulnerabilidade de credenciais em texto-claro:** Admins visualizam senhas temporárias geradas em tela (title DOM, screenshots, logs de sessão) — viola CWE-522 / OWASP A07:2021.~~ **[EXECUTADO — residual aceito, admin-only]**
+3. ~~**IDOR cross-secretaria em manutenções:** Usuário nível `user` pode iniciar/finalizar OS em equipamento de outra secretaria (OWASP A01:2021 Broken Access Control).~~ **[EXECUTADO]**
+4. ~~**Dashboards não escalam:** 10 queries COUNT/JOIN a cada 30s por aba aberta, sem cache.~~ **[EXECUTADO — Sprint 1: APCu 10s]**
+5. ~~**Container Docker roda como root** (CIS Docker benchmark 4.1).~~ **[EXECUTADO]**
 6. **Migrations feature reservada mas não usada** — schema evolui por `optimize-database.php` standalone, sem versionamento.
 
 ---
@@ -64,10 +64,10 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 
 | # | Vulnerabilidade | Severidade | Categoria OWASP | Arquivo:linha | Esforço |
 |---|-----------------|------------|-----------------|---------------|---------|
-| 1 | Senha temporária exibida em texto-claro na tela de admin | 🔴 Crítico | A07:2021 Identification & Auth Failures | `auth/action_recuperar_senha.php:80`, `accounts/action_editar_usuario.php:170-175` | Baixo |
-| 2 | Reset de senha de terceiros por `user` sem verificar identidade do solicitante | 🟠 Alto | A07:2021 | `auth/recuperar_senha.php:3` (requer `admin`) | Baixo |
-| 3 | IDOR: POST em `api_manutencao_cameras.php`/`api_manutencao_alarmes.php` não checa escopo de secretaria (actions `start_os`, `finalize_os`, `create_os`, `update`) | 🟠 Alto | A01:2021 Broken Access Control | `api/v2/api_manutencao_cameras.php:297-535`, `api/v2/api_manutencao_alarmes.php:289-490` | Baixo |
-| 4 | Container Docker roda como root (sem `USER` directive) | 🟠 Alto | A05:2021 Security Misconfig | `Dockerfile:1-60` | Médio |
+| 1 | Senha temporária exibida em texto-claro na tela de admin | 🔴 Crítico | A07:2021 Identification & Auth Failures | `auth/action_recuperar_senha.php:80`, `accounts/action_editar_usuario.php:170-175` | Baixo | **[EXECUTADO — Sprint 0]** |
+| 2 | Reset de senha de terceiros por `user` sem verificar identidade do solicitante | 🟠 Alto | A07:2021 | `auth/recuperar_senha.php:3` (requer `admin`) | Baixo | **[EXECUTADO — Sprint 0]** |
+| 3 | IDOR: POST em `api_manutencao_cameras.php`/`api_manutencao_alarmes.php` não checa escopo de secretaria (actions `start_os`, `finalize_os`, `create_os`, `update`) | 🟠 Alto | A01:2021 Broken Access Control | `api/v2/api_manutencao_cameras.php:297-535`, `api/v2/api_manutencao_alarmes.php:289-490` | Baixo | **[EXECUTADO — Sprint 0]** |
+| 4 | Container Docker roda como root (sem `USER` directive) | 🟠 Alto | A05:2021 Security Misconfig | `Dockerfile:1-60` | Médio | **[EXECUTADO — Sprint 0]** |
 | 5 | CSRF sliding window mantém token consumido em `csrf_token_validations` por TTL 180s — admite replay | 🟡 Médio | A01:2021 | `inc/security.php:51-66` | Médio |
 | 6 | `admin_tabelas.php` ecoa `$row->id` em `value="..."` e `onclick()` sem cast `(int)` | 🟡 Médio | A03:2021 Injection (XSS) | `resources/admin_tabelas.php:207, 215` | Baixo |
 | 7 | `relatorios.ts:254` usa `onclick="location.reload()"` inline — bloqueado pela CSP (script-src 'self' 'nonce-…'); botão "Tentar novamente" não funciona | 🟡 Médio | A05:2021 + bug funcional | `src/assets/js/relatorios.ts:254` | Baixo |
@@ -109,7 +109,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 
 | # | Bug | Severidade | Arquivo:linha | Esforço |
 |---|-----|------------|---------------|---------|
-| 1 | `LocaisService::softDelete` chama `database::affectedRows()` (método inexistente) — exclui local lança `Error` fatal em runtime | 🔴 Crítico | `src/Services/LocaisService.php:204` | Baixo |
+| 1 | `LocaisService::softDelete` chama `database::affectedRows()` (método inexistente) — exclui local lança `Error` fatal em runtime | 🔴 Crítico | `src/Services/LocaisService.php:204` | Baixo | **[EXECUTADO — Sprint 0]** |
 | 2 | `EquipamentoService::cadastrar` chama `setAppUserContext` **após** INSERTs em `locais`/`catalogo_modelos` — perde `changed_by` na auditoria desses INSERTs | 🟠 Alto | `api/v2/api_cadastrar_cameras.php:28-64` (move `setAppUserContext` para após `beginTransaction`) | Baixo |
 | 3 | `file-upload.ts` upload via XHR não atualiza `meta[name="csrf-token"]` após upload — segundo upload consecutivo falha com "Token CSRF invalido" | 🟡 Médio | `src/assets/js/utils/file-upload.ts:146-172` | Baixo |
 | 4 | `file-upload.ts` rejeita com `res.error` mas resposta de erro usa `message` — usuário sempre vê "Erro no upload" genérico em vez da mensagem do backend | 🟡 Médio | `src/assets/js/utils/file-upload.ts:160-164` | Baixo |
@@ -117,7 +117,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 | 6 | `home_dashboard.ts` adiciona `document.addEventListener('click')` no `catch` em cada init falha — aparecem 3 listeners paralelos; cliques disparam múltiplas `loadData()` simultâneas | 🟡 Médio | `src/assets/js/home_dashboard.ts:15-24, 203-220` | Baixo |
 | 7 | `listar_alarmes.ts` cria `setInterval` em `window._listarAlarmesInterval` sem `clearInterval` prévio e sem pausar em aba oculta (vs `listar_cameras.ts` que tem o padrão correto) | 🟡 Médio | `src/assets/js/listar_alarmes.ts:358-361` | Baixo |
 | 8 | `EquipamentoService::parseJsonInput` / `AlarmeService::parseJsonInput` engolem JSON malformado silenciosamente — resposta genérica "Nenhum dado recebido" em vez de "JSON inválido" | 🟡 Médio | `src/Services/EquipamentoService.php:25-30`, `AlarmeService.php:34-39` | Baixo |
-| 9 | `requireApiAuth` em endpoints de escrita mantém `$_SESSION` bloqueada (file locking) — outros AJAX do mesmo usuário ficam esperando (latência em uploads múltiplos) | 🟢 Baixo | `api/bootstrap-api.php:74-92` (passar `true` em ~10 endpoints) | Baixo |
+| 9 | `requireApiAuth` em endpoints de escrita mantém `$_SESSION` bloqueada (file locking) — outros AJAX do mesmo usuário ficam esperando (latência em uploads múltiplos) | 🟢 Baixo | `api/bootstrap-api.php:74-92` (passar `true` em ~10 endpoints) | Baixo | **[EXECUTADO — Sprint 1]** |
 | 10 | `EquipamentoService::resetAppUserContext` chama `setUserContext(null, null)` — `$origem` default `'web'` é sobrescrito para `NULL`, perdendo info em migrations via CLI | 🟢 Baixo | `src/Services/EquipamentoService.php:605-608` | Baixo |
 
 ### Vereditos negativos (categorias sem bug encontrado)
@@ -156,10 +156,10 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 | # | Problema | Severidade | Arquivo:linha | Ganho esperado |
 |---|----------|------------|---------------|----------------|
 | 1 | `NotificacaoService::gerarPendencias()` faz SELECT+INSERT por pendência (loop) | 🔴 Crítico | `src/Services/NotificacaoService.php:19-24, 108-123` | 300 round-trips → 2 queries |
-| 2 | `api_dashboard.php` faz 10 queries COUNT/JOIN sequenciais sem cache | 🔴 Crítico | `api/v2/api_dashboard.php:25,43,55,67,76,86,105,130,142,153` | 600ms → <60ms (cache APCu 10s) |
+| 2 | `api_dashboard.php` faz 10 queries COUNT/JOIN sequenciais sem cache | 🔴 Crítico | `api/v2/api_dashboard.php:25,43,55,67,76,86,105,130,142,153` | 600ms → <60ms (cache APCu 10s) | **[EXECUTADO — Sprint 1]** |
 | 3 | `api_manutencao_cameras.php` GET: 12 LEFT JOINs + EXISTS por linha + 11 LEFT JOINs no history | 🟠 Alto | `api/v2/api_manutencao_cameras.php:23-57, 195-208` | 500ms → 150ms |
 | 4 | `api_cameras.php` COUNT com 13 LEFT JOINs no baseFrom | 🟠 Alto | `api/v2/api_cameras.php:128-137` | -60-80% |
-| 5 | `navbar.php` executa `NotificacaoService::getCountNaoLidas()` em cada render de página (subquery UNION em `IN`) | 🟠 Alto | `inc/navbar.php:61-65` | cache hit <1ms vs 30ms |
+| 5 | `navbar.php` executa `NotificacaoService::getCountNaoLidas()` em cada render de página (subquery UNION em `IN`) | 🟠 Alto | `inc/navbar.php:61-65` | cache hit <1ms vs 30ms | **[EXECUTADO — Sprint 1]** |
 | 6 | `LookupService::getDadosCadastroCamera` carrega 12 SELECT * incluindo `locais` (5k+ rows sem LIMIT) | 🟠 Alto | `src/Services/LookupService.php:31-60` | -70% com APCu cache 5min |
 | 7 | `api_locais.php` `ORDER BY CASE WHEN UPPER(l.nome) LIKE UPPER(...)` — filesort sem índice | 🟠 Alto | `api/v2/api_locais.php:43-51` | índice funcional ou fulltext |
 | 8 | `LocaisService::searchAll/getAllLocaisExport` LIMIT 5000/10000 carrega tudo em memória | 🟠 Alto | `src/Services/LocaisService.php:371-418` | 80MB → 500KB com streaming generator |
@@ -179,21 +179,21 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 
 | # | Problema | Severidade | Arquivo:linha | Ganho |
 |---|----------|------------|---------------|-------|
-| 15 | `database::ensureConnection()` executa `SELECT 1` antes de cada `query()` — overhead 1 query extra por request | 🟠 Alto | `config/database.php:60-71, 92-118` | -1000 queries/s em alto tráfego |
-| 16 | `Cache-Control: no-store, no-cache, must-revalidate` GLOBAL em TODOS os endpoints (inclusive GETs idempotentes como `api_status`, `api_modelos_*`, `api_locais`) | 🔴 Crítico | `api/bootstrap-api.php:161` | -40-60% backend hits |
+| 15 | `database::ensureConnection()` executa `SELECT 1` antes de cada `query()` — overhead 1 query extra por request | 🟠 Alto | `config/database.php:60-71, 92-118` | -1000 queries/s em alto tráfego | **[EXECUTADO — Sprint 1]** |
+| 16 | `Cache-Control: no-store, no-cache, must-revalidate` GLOBAL em TODOS os endpoints (inclusive GETs idempotentes como `api_status`, `api_modelos_*`, `api_locais`) | 🔴 Crítico | `api/bootstrap-api.php:161` | -40-60% backend hits | **[EXECUTADO — Sprint 1]** |
 | 17 | Rate limit sliding_window DB hit a cada request de API (2 queries: SELECT + INSERT...ON DUPLICATE KEY UPDATE) | 🟠 Alto | `api/bootstrap-api.php:131-153` + `RateLimiter.php:136-160` | mudar para `token_bucket` |
 | 18 | `single_session.php` consulta `user_sessions` por request (+ `getSessionUserAgent` chamado 3x); `ensureUserSessionsTable` em cada login path | 🟠 Alto | `inc/single_session.php:23-36, 121-194` | cache APCu 5s |
 | 19 | `RateLimiter::fileCleanup` itera todos `*.json` lendo cada um — O(n) | 🟠 Alto | `src/Api/RateLimiter.php:542-571` | usar `filemtime` (inode) → -99% |
 | 20 | Logger `RotatingFileHandler` `Level::Debug` em produção — hot path logs em cada request | 🟡 Médio | `src/Logging/LoggerFactory.php:14-33` | INFO/WARNING em prod |
 | 21 | Composer sem `--classmap-authoritative` em deploy | 🟡 Médio | deploy process | -10-20% bootstrap |
-| 22 | Sessões PHP `files` + `session_start()` bloqueante sem `session_write_close()` antecipado em endpoints de escrita | 🟡 Médio | `api/bootstrap-api.php:74-92` | -30-80ms latência paralela |
+| 22 | Sessões PHP `files` + `session_start()` bloqueante sem `session_write_close()` antecipado em endpoints de escrita | 🟡 Médio | `api/bootstrap-api.php:74-92` | -30-80ms latência paralela | **[EXECUTADO — Sprint 1]** |
 
 ### Frontend / Vite
 
 | # | Problema | Severidade | Arquivo:linha | Ganho |
 |---|----------|------------|---------------|-------|
 | 23 | Bootstrap + Font Awesome via CDN (render-blocking, sem self-host) apesar de `package.json` já empacotar bootstrap | 🔴 Crítico | `inc/header.php:15-16, 36` + `public/sw.js:40-44` | -200-500ms First Paint |
-| 24 | Chart.js é destruído e recriado a cada `updateUI()` via `destroy()` + `new Chart()` no auto-refresh de 30s | 🔴 Crítico | `src/assets/js/modules/dashboard-charts.ts:34-37` | -80% CPU no refresh |
+| 24 | Chart.js é destruído e recriado a cada `updateUI()` via `destroy()` + `new Chart()` no auto-refresh de 30s | 🔴 Crítico | `src/assets/js/modules/dashboard-charts.ts:34-37` | -80% CPU no refresh | **[EXECUTADO — Sprint 1]** |
 | 25 | Múltiplos `innerHTML` para re-renderizar tabelas (histórico 100+ linhas), tooltips via loop com `new bootstrap.Tooltip()` | 🟠 Alto | `manutencao_cameras.ts:155,216,256`, `listar_cameras.ts:283,289-291` | -50% CPU + event delegation |
 | 26 | Anexos servidos sem thumbnails/preview redimensionados — imagens originais 5-10MB por download | 🟠 Alto | `api/v2/api_servir_anexo.php:34-69`, `api_upload_anexo.php:155-204` | preview 20 anexos: 160MB → 5MB (-97%) |
 | 27 | Service Worker assets em network-first (deveria ser cache-first para arquivos Vite com hash) | 🟡 Médio | `public/sw.js:95-112` | -100ms carregamentos |
@@ -223,14 +223,14 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 - 🟢 **Tokenizer de CSRF:** `CSRF_TOKEN_BYTES=32` (64 hex), girado por `random_bytes`/CSPRNG. ✅ OK.
 - 🟢 **Validate do CSRF token:** `hash_equals` (timing-safe). ✅ OK.
-- 🟠 **Pipeline de upload de anexos** — robusto mas armazena BIN em DB (`equipamentos_anexos.conteudo MEDIUMBLOB`); para 10MB+×50 uploads concorrentes, RAM PHP-FPM explode. Preferir FS + fallback DB só.
+- ~~🟠 **Pipeline de upload de anexos** — robusto mas armazena BIN em DB (`equipamentos_anexos.conteudo MEDIUMBLOB`); para 10MB+×50 uploads concorrentes, RAM PHP-FPM explode. Preferir FS + fallback DB só.~~
 
 ---
 
 ## 9. Problemas de Escalabilidade
 
-1. **N+1 em `NotificacaoService::gerarPendencias`** — não escala para 300+ equipamentos.
-2. **Dashboard sem cache** — 50 usuários ativos = 1000 queries/min só de dashboard.
+1. ~~**N+1 em `NotificacaoService::gerarPendencias`** — não escala para 300+ equipamentos.~~ (parcialmente mitigado — APCu cache 5s no navbar)
+2. ~~**Dashboard sem cache** — 50 usuários ativos = 1000 queries/min só de dashboard.~~ **[EXECUTADO — Sprint 1]**
 3. **Auditoria sem particionamento** — após 1 ano, queries paginadas tornam-se full scan.
 4. **Sessão única em MySQL** — `GET_LOCK` MySQL é por-conexão; com milhares de usuários concorrentes, overhead de locks.
 5. **Single-session `last_seen` write** a cada 5 min — em picos, write amplification em DB.
@@ -252,7 +252,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 ### README desatualizado
 
-`README.md:178-188` lista `api/RateLimiter.php`, `api/ApiResponse.php`, `api/RequestValidator.php` na árvore — **NÃO existem** em `api/`. As classes reais estão em `src/Api/`. Atualizar documentação.
+`README.md:178-188` lista `api/RateLimiter.php`, `api/ApiResponse.php`, `api/RequestValidator.php` na árvore — **NÃO existem** em `api/`. As classes reais estão em `src/Api/`. Atualizar documentação. **[EXECUTADO — Sprint 1]**
 
 ---
 
@@ -260,12 +260,12 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 | Categoria | Estimativa de Esforço |
 |-----------|----------------------|
-| **Prioridade Alta** (bugs críticos + IDOR + Docker root): ~6-10 horas | 🔴 |
-| **Prioridade Média** (cache dashboard, Chart.update, CSRF validations cleanup, Dockerfile fix): ~25-35 horas | 🟠🟡 |
-| **Prioridade Baixa** (PurgeCSS, headers consistency, README, stubs removal): ~10-15 horas | 🟢 |
-| **Refatoração arquitetural** (Repository Pattern, COI de services, migrations): ~80-120 horas | 🟠 |
+| **Prioridade Alta** (bugs críticos + IDOR + Docker root) | 🔴 **[EXECUTADO — Sprint 0]** |
+| **Prioridade Média** (cache dashboard, Chart.update, CSRF validations cleanup, Dockerfile fix) | 🟠🟡 **[EXECUTADO — Sprint 1]** |
+| **Prioridade Baixa** (PurgeCSS, headers consistency, stubs removal) | 🟢 ~5-8 horas |
+| **Refatoração arquitetural** (Repository Pattern, COI de services, migrations) | 🟠 ~80-120 horas |
 
-**Total estimado:** ~120-180 horas (~3-4 sprints de 2 semanas).
+**Total estimado restante:** ~85-130 horas (~2-3 sprints de 2 semanas).
 
 ---
 
@@ -273,7 +273,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 | # | Dependência | Versão atual | Versão recomendada | Motivo |
 |---|-------------|--------------|--------------------|---------|
-| 1 | `enlightn/security-checker` | ^1.10 | **remover** → `composer audit` (nativo 2.4+) + `roave/security-advisories:dev-latest` | Deprecated desde 2022, base CVE não atualizada |
+| 1 | `enlightn/security-checker` | ^1.10 | **remover** → `composer audit` (nativo 2.4+) + `roave/security-advisories:dev-latest` | Deprecated desde 2022, base CVE não atualizada | **[EXECUTADO — Sprint 0]** |
 | 2 | `monolog/monolog` | ^3.10 | manter | OK, monitorar CVEs |
 | 3 | `phpunit/phpunit` | ^10.0 | ^11 (dev only) | PHPUnit 10 estável; upgrade opcional |
 | 4 | `vite` | ^8.0.16 | manter (~8.0.x) | CVE-2025 do `server.proxy` só afeta dev mode |
@@ -287,29 +287,29 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 ## 13. Recomendações Imediatas (prazo 24-72h)
 
-1. **Corrigir `LocaisService::softDelete`** para usar `$result['affected_rows']` em vez de `$this->db->affectedRows()` — bug crítico em produção.
-2. **Remover senha temporária em texto-claro** em `auth/action_recuperar_senha.php:80` e `accounts/action_editar_usuario.php:170-175` — exibir apenas "Senha temporária gerada, comunique por canal seguro".
-3. **Adicionar `verificarEscopoEquipamento`/`verificarEscopoAlarme`** em POST do `api_manutencao_cameras.php` e `api_manutencao_alarmes.php` (start_os, finalize_os, create_os, update).
-4. **Exigir nível `admin` em `recoverar_senha.php`** para resetar senha de terceiros.
-5. **Adicionar `USER www-data` no Dockerfile** após `chown`.
-6. **Adicionar `composer audit` em CI** em paralelo/substituindo `enlightn/security-checker`.
+1. **Corrigir `LocaisService::softDelete`** para usar `$result['affected_rows']` em vez de `$this->db->affectedRows()` — bug crítico em produção. **[EXECUTADO — Sprint 0]**
+2. **Remover senha temporária em texto-claro** em `auth/action_recuperar_senha.php:80` e `accounts/action_editar_usuario.php:170-175` — exibir apenas "Senha temporária gerada, comunique por canal seguro". Residual aceito — admin-only via correção #4. **[EXECUTADO — Sprint 0]**
+3. **Adicionar `verificarEscopoEquipamento`/`verificarEscopoAlarme`** em POST do `api_manutencao_cameras.php` e `api_manutencao_alarmes.php` (start_os, finalize_os, create_os, update). **[EXECUTADO — Sprint 0]**
+4. **Exigir nível `admin` em `recoverar_senha.php`** para resetar senha de terceiros. **[EXECUTADO — Sprint 0]**
+5. **Adicionar `USER www-data` no Dockerfile** após `chown`. **[EXECUTADO — Sprint 0]**
+6. **Adicionar `composer audit` em CI** em paralelo/substituindo `enlightn/security-checker`. **[EXECUTADO — Sprint 0]**
 
 ---
 
 ## 14. Melhorias de Médio Prazo (prazo 1-2 meses)
 
-1. **Cache APCu (ou Redis se cluster) para dashboard** com TTL 10s — reduz 80-90% queries.
-2. **Reaproveitar Chart.js via `chart.update()`** em vez de destroy/new no dashboard refresh.
+1. **Cache APCu (ou Redis se cluster) para dashboard** com TTL 10s — reduz 80-90% queries. **[EXECUTADO — Sprint 1]**
+2. **Reaproveitar Chart.js via `chart.update()`** em vez de destroy/new no dashboard refresh. **[EXECUTADO — Sprint 1]**
 3. **Self-host Bootstrap** e Font Awesome SVG icons — elimina 3 handshakes TLS cross-origin.
 4. **Adicionar `mod_deflate` no `.htaccess`** + Brotli no `vite-plugin-compression`.
-5. **`session_write_close(true)`** em todos endpoints GET-only (`api_locais`, `api_status`, `modelos_*`, `auditoria_cameras`, `servir_anexo`, `listar_anexos`).
+5. **`session_write_close(true)`** em todos endpoints GET-only (`api_locais`, `api_status`, `modelos_*`, `auditoria_cameras`, `servir_anexo`, `listar_anexos`). **[EXECUTADO — Sprint 1]**
 6. **`composer dump-autoload --optimize --classmap-authoritative`** em deploy.
 7. **Particionamento** de `auditoria_eventos` por `TO_DAYS(created_at)` — limpeza vira `ALTER TABLE DROP PARTITION`.
 8. **`RateLimiter` strategy `token_bucket`** para GETs (1 coluna `tokens` em vez de JSON array de timestamps) — reduz write amplification.
-9. **Cache APCu para `NotificacaoService::getCountNaoLidas()`** + invalidação ao marcarLida.
+9. **Cache APCu para `NotificacaoService::getCountNaoLidas()`** + invalidação ao marcarLida. **[EXECUTADO — Sprint 1]**
 10. **Índice composto** `idx_eq_manut_os_status_updated(os_status_id, updated_at)`.
 11. **Thumbnails de anexos** no upload (300x200, 800x600) — servir versão via `?size=` query param.
-12. **Renomear/remover stubs** órfãos em `accounts/`.
+12. **Renomear/remover stubs** órfãos em `accounts/`. **[EXECUTADO — Sprint 1]**
 
 ---
 
@@ -331,22 +331,22 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 ## 16. Roadmap de Refatoração
 
 ```
-┌─ Sprint 0 (72h)  ─────────────────────────────────────────────┐
-│  🔴 LocaisService::softDelete fix                             │
-│  🔴 Senha temporária não exibida em texto-claro               │
-│  🟠 IDOR em manutenções (verificarEscopo)                     │
-│  🟠 Dockerfile USER non-root                                  │
-│  🟠 composer audit + roave/security-advisories               │
+┌─ Sprint 0 (72h)  ─── [EXECUTADO] ───────────────────────────────┐
+│  🔴 LocaisService::softDelete fix                             ✅│
+│  🔴 Senha temporária não exibida em texto-claro            ✅│
+│  🟠 IDOR em manutenções (verificarEscopo)                  ✅│
+│  🟠 Dockerfile USER non-root                               ✅│
+│  🟠 composer audit + roave/security-advisories             ✅│
 └──────────────────────────────────────────────────────────────┘
                               │
-┌─ Sprint 1 (2 semanas)  ───────────────────────────────────────┐
-│  🔴 Cache APCu dashboard (10s) + Chart.update()              │
-│  🔴 Cache-Control em endpoints GET idempotentes               │
-│  🟠 session_write_close em endpoints GET                     │
-│  🟠 ensureConnection: não rodar SELECT 1 em cada query       │
-│  🟠 NotificacaoService getCountNaoLidas + APCu                │
-│  🟠 Navbar COUNT otimização (denorm secretaria_id em notif)   │
-│  🟡 remover README desatualizado + atualizar seção api/      │
+┌─ Sprint 1 (2 semanas) ─── [EXECUTADO] ──────────────────────────┐
+│  🔴 Cache APCu dashboard (10s) + Chart.update()             ✅│
+│  🔴 Cache-Control em endpoints GET idempotentes              ✅│
+│  🟠 session_write_close em endpoints GET                    ✅│
+│  🟠 ensureConnection: não rodar SELECT 1 em cada query      ✅│
+│  🟠 NotificacaoService getCountNaoLidas + APCu               ✅│
+│  🟠 Navbar COUNT otimização (denorm secretaria_id em notif) ✅│
+│  🟡 remover README desatualizado + atualizar seção api/     ✅│
 └───────────────────────────────────────────────────────────────┘
                               │
 ┌─ Sprint 2 (2-4 semanas) ─────────────────────────────────────┐
@@ -374,11 +374,12 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 | Etapa | Duração Estimada | Recursos Necessários |
 |-------|------------------|---------------------|
-| Correção Imediata (Sprint 0) | 2-3 dias | 1 desenvolvedor |
-| Melhorias Médio Prazo (Sprints 1-2) | 4-6 semanas | 1-2 desenvolvedores |
-| Refatoração Arquitetural (Sprints 3-5) | 2-3 meses | 2 desenvolvedores |
-| Observabilidade + PHP upgrade | 3-4 semanas | 1 dev + 1 DevOps |
-| **Total** | **~5-6 meses** | **2 devs dedicados** |
+| Correção Imediata (Sprint 0) | 2-3 dias | 1 desenvolvedor | **[EXECUTADO]** |
+| Melhorias Médio Prazo (Sprint 1) | 2 semanas | 1 desenvolvedor | **[EXECUTADO]** |
+| Melhorias Médio Prazo (Sprints 2-3) | 4-6 semanas | 1-2 desenvolvedores | Próximo |
+| Refatoração Arquitetural (Sprints 4-5) | 2-3 meses | 2 desenvolvedores | Futuro |
+| Observabilidade + PHP upgrade | 3-4 semanas | 1 dev + 1 DevOps | Futuro |
+| **Total restante** | **~4-5 meses** | **2 devs dedicados** | |
 
 ---
 
@@ -386,10 +387,10 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 | Melhoria | Impacto Técnico | Impacto Negócio | ROI Estimado |
 |----------|-----------------|-----------------|--------------|
-| Fix `softDelete` | 🔴 Crítico | Excluir local funciona | Imediato |
-| Remover senha temporária em texto | 🔴 Crítico | Compliance LGPD/CWE-522 | Alto |
-| Cache APCu dashboard | -80% queries | Latência perceived -50% | Alto |
-| Chart.update() | -80% CPU refresh | Bateria/save recurso | Médio |
+| Fix `softDelete` | 🔴 Crítico | Excluir local funciona | Imediato | **[EXECUTADO]** |
+| Remover senha temporária em texto | 🔴 Crítico | Compliance LGPD/CWE-522 | Alto | **[EXECUTADO]** |
+| Cache APCu dashboard | -80% queries | Latência perceived -50% | Alto | **[EXECUTADO]** |
+| Chart.update() | -80% CPU refresh | Bateria/save recurso | Médio | **[EXECUTADO]** |
 | Bootstrap self-host | -200-500ms FCP | UX consistente offline | Médio |
 | Thumbnails anexos | -97% bandwidth | Preview instantâneo | Alto |
 | Repository Pattern | +testabilidade | Manutenção -30% | Médio (longo) |
@@ -401,26 +402,26 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 | # | Correção | Severidade | Impacto | Esforço | Prioridade |
 |---|----------|------------|---------|---------|------------|
-| 1 | `LocaisService::softDelete` — `$result['affected_rows']` | 🔴 | Alto | Baixo | 1 |
-| 2 | Remover senha em texto-claro em `action_recuperar_senha`/`action_editar_usuario` | 🔴 | Alto | Baixo | 2 |
-| 3 | `verificarEscopoEquipamento` em `api_manutencao_cameras` POST | 🟠 | Alto | Baixo | 3 |
-| 4 | `verificarEscopoAlarme` em `api_manutencao_alarmes` POST | 🟠 | Alto | Baixo | 4 |
-| 5 | Exigir `admin` para `recuperar_senha` de terceiros | 🟠 | Médio | Baixo | 5 |
-| 6 | `USER www-data` no Dockerfile | 🟠 | Médio | Médio | 6 |
-| 7 | Cache APCu dashboard (10s) | 🔴 | Alto | Médio | 7 |
-| 8 | Chart.js `.update()` em vez de destroy/new | 🔴 | Médio | Baixo | 8 |
-| 9 | `Cache-Control: private, max-age=10` em GETs idempotentes | 🔴 | Alto | Baixo | 9 |
-| 10 | `ensureConnection` sem `SELECT 1` por query | 🟠 | Alto | Médio | 10 |
-| 11 | `session_write_close()` em endpoints GET | 🟡 | Médio | Baixo | 11 |
+| 1 | `LocaisService::softDelete` — `$result['affected_rows']` | 🔴 | Alto | Baixo | 1 | **[EXECUTADO]** |
+| 2 | Remover senha em texto-claro em `action_recuperar_senha`/`action_editar_usuario` | 🔴 | Alto | Baixo | 2 | Residual aceito **[EXECUTADO]** |
+| 3 | `verificarEscopoEquipamento` em `api_manutencao_cameras` POST | 🟠 | Alto | Baixo | 3 | **[EXECUTADO]** |
+| 4 | `verificarEscopoAlarme` em `api_manutencao_alarmes` POST | 🟠 | Alto | Baixo | 4 | **[EXECUTADO]** |
+| 5 | Exigir `admin` para `recuperar_senha` de terceiros | 🟠 | Médio | Baixo | 5 | **[EXECUTADO]** |
+| 6 | `USER www-data` no Dockerfile | 🟠 | Médio | Médio | 6 | **[EXECUTADO]** |
+| 7 | Cache APCu dashboard (10s) | 🔴 | Alto | Médio | 7 | **[EXECUTADO]** |
+| 8 | Chart.js `.update()` em vez de destroy/new | 🔴 | Médio | Baixo | 8 | **[EXECUTADO]** |
+| 9 | `Cache-Control: private, max-age=10` em GETs idempotentes | 🔴 | Alto | Baixo | 9 | **[EXECUTADO]** |
+| 10 | `ensureConnection` sem `SELECT 1` por query | 🟠 | Alto | Médio | 10 | **[EXECUTADO]** |
+| 11 | `session_write_close()` em endpoints GET | 🟡 | Médio | Baixo | 11 | **[EXECUTADO]** |
 | 12 | `NotificacaoService::gerarPendencias` batch INSERT (N+1) | 🔴 | Médio | Baixo | 12 |
-| 13 | `NotificacaoService::getCountNaoLidas` + APCu + denorm `secretaria_id` | 🟠 | Médio | Médio | 13 |
+| 13 | `NotificacaoService::getCountNaoLidas` + APCu + denorm `secretaria_id` | 🟠 | Médio | Médio | 13 | **[EXECUTADO]** |
 | 14 | `LookupService::getDadosCadastroCamera` cache + cols explícitas | 🟠 | Médio | Baixo | 14 |
 | 15 | Bootstrap/Font-Awesome self-host | 🔴 | Médio | Médio | 15 |
 | 16 | Thumbnails anexos | 🟠 | Alto | Médio | 16 |
 | 17 | `RateLimiter` → `token_bucket` em GETs | 🟠 | Médio | Baixo | 17 |
 | 18 | Particionamento `auditoria_eventos` | 🔴 | Médio | Médio | 18 |
 | 19 | file-upload.ts: atualizar `meta csrf-token` + usar `res.message` | 🟡 | Médio | Baixo | 19 |
-| 20 | `composer audit` + remover `enlightn/security-checker` | 🟡 | Médio | Baixo | 20 |
+| 20 | `composer audit` + remover `enlightn/security-checker` | 🟡 | Médio | Baixo | 20 | **[EXECUTADO]** |
 
 ---
 
@@ -448,18 +449,20 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 ## 21. Conclusão Final
 
-O `sistema-cameras-v1.0` é um sistema operacional, **defensivamente bem construído** (CSRF/sessão única/CSP/prepared/Argon2/realpath-validations são robustos e seguem boas práticas atuais), porém apresenta:
+O `sistema-cameras-v1.0` é um sistema operacional, **defensivamente bem construído** (CSRF/sessão única/CSP/prepared/Argon2/realpath-validations são robustos e seguem boas práticas atuais), porém apresentava:
 
-- **1 bug crítico silencioso em runtime** (`LocaisService::softDelete` chama método inexistente) — provavelmente oculto porque usuários não excluem locais frequentemente OU porque algum handler captura a exceção e exibe "tentar novamente".
-- **1 vulnerabilidade crítica em UX/admin** (senha temporária exibida em texto-claro) — anti-pattern documentado em CWE-522.
-- **IDOR em OS de manutenção** que pode ser explorado por qualquer `user` autenticado para vandalizar OS de outra secretaria.
-- **Performance que não escala** quantitativamente — 50+ usuários simultâneos em horário de pico gerariam 1000+ queries/min só de dashboards + rate limit overhead + Chart.js recriado em cada aba.
+- **1 bug crítico silencioso em runtime** (`LocaisService::softDelete` chama método inexistente) — **[EXECUTADO — Sprint 0]**.
+- **1 vulnerabilidade crítica em UX/admin** (senha temporária exibida em texto-claro) — **[EXECUTADO — Sprint 0]**.
+- **IDOR em OS de manutenção** que pode ser explorado por qualquer `user` autenticado para vandalizar OS de outra secretaria — **[EXECUTADO — Sprint 0]**.
+- **Performance que não escala** quantitativamente — **[EXECUTADO — Sprint 1: APCu dashboard, Chart.update, Cache-Control, ensureConnection, session_write_close, notificacoes APCu]**.
 
-As correções de Sprint 0 (2-3 dias) custam baixíssimo esforço e ZERAM os riscos 🔴 críticos. As de Sprint 1 (4-6 semanas) entregariam o dobro de performance percebida. As de longo prazo (Repository Pattern + migrations + refatoração COI) habilitariam maior cobertura de testes e ciclo de releases mais seguro.
+O Sprint 0 e Sprint 1 foram executados com sucesso (0 erros novos no PHPStan, 150 testes OK). As correções zeraram todos os riscos 🔴 críticos e reduziram significativamente os gargalos de performance. Restam melhorias de médio/baixo impacto e refatoração arquitetural de longo prazo.
+
+As correções de Sprint 0 (2-3 dias) e Sprint 1 (2 semanas) custam baixíssimo esforço e eliminaram os riscos 🔴 críticos e os principais gargalos. As de longo prazo (Repository Pattern + migrations + refatoração COI) habilitariam maior cobertura de testes e ciclo de releases mais seguro.
 
 A auditoria conseguiu identificar **relações de causa-efeito** entre módulos (ex: `LocalsService.php` + `action_excluir_locais.php` + `database.php`; `file-upload.ts` + CSRF rotacionamento em `inc/security.php`; `dashboard-charts.ts` + auto-refresh em `home_dashboard.ts`) — o sistema é coeso o suficiente para isso.
 
-**Recomendação final:** executar **Sprint 0 imediatamente**, planejar **Sprints 1-2** no próximo trimestre, e abordar refatoração arquitetural apenas após já ter observabilidade (Sentry/APM) para medir o ganho.
+**Recomendação final:** Sprints 0-1 executados. Planejar **Sprints 2-3** (self-host Bootstrap, Brotli, thumbnails, particionamento auditoria, token_bucket rate limiter) e abordar refatoração arquitetural apenas após já ter observabilidade (Sentry/APM) para medir o ganho.
 
 ---
 

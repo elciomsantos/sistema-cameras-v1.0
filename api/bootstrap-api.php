@@ -158,7 +158,21 @@ function executeApiRequest(?string $endpointOverride = null): void
     header('X-Request-ID: ' . ApiResponse::getRequestId());
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+
+    $idempotentGetEndpoints = [
+        'ping', 'status', 'modelos_cameras', 'modelos_alarmes',
+        'locais', 'dashboard', 'cameras', 'alarmes',
+        'notificacoes', 'relatorios_cameras', 'listar_anexos',
+        'servir_anexo', 'auditoria_cameras', 'health',
+    ];
+    $isIdempotentGet = ($_SERVER['REQUEST_METHOD'] === 'GET')
+        && in_array($endpoint, $idempotentGetEndpoints, true);
+
+    if ($isIdempotentGet) {
+        header('Cache-Control: private, max-age=10, must-revalidate');
+    } else {
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    }
     header('Pragma: no-cache');
     header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'");
     // HSTS - Em produção, sempre enviar se configurado (mesmo atrás de proxy)
@@ -247,6 +261,9 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     if ($exists && file_exists($filepath)) {
         include $filepath;
+        if ($isIdempotentGet && !headers_sent() && session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
     } else {
         ApiResponse::notFound('endpoint', $endpoint);
     }

@@ -327,6 +327,9 @@ try {
             if ($alarmeCheck['status'] !== 'success' || empty($alarmeCheck['data'])) {
                 ApiResponse::notFound('alarme', $alarmeId);
             }
+            if (!verificarEscopoAlarme($alarmeId)) {
+                ApiResponse::forbidden('Alarme não pertence à sua secretaria.');
+            }
 
             $insert = $db->query(
                 "INSERT INTO alarmes_manutencoes
@@ -356,6 +359,10 @@ try {
 
             if (!$osId || !$alarmeId) {
                 ApiResponse::error('VALIDATION_ERROR', 'ID da OS e Alarme são obrigatórios.');
+            }
+
+            if (!verificarEscopoAlarme($alarmeId)) {
+                ApiResponse::forbidden('Alarme não pertence à sua secretaria.');
             }
 
             $osResult = $db->query(
@@ -419,6 +426,10 @@ try {
             }
             if ($pecasPrevistas !== null && strlen($pecasPrevistas) > 255) {
                 ApiResponse::error('VALIDATION_ERROR', 'Peças previstas não pode exceder 255 caracteres.');
+            }
+
+            if (!verificarEscopoAlarme($alarmeId)) {
+                ApiResponse::forbidden('Alarme não pertence à sua secretaria.');
             }
 
             $osResult = $db->query(

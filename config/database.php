@@ -59,14 +59,14 @@ class database
 
     private function ensureConnection(): void
     {
-        try {
-            $this->pdo->query("SELECT 1")->fetch();
-        } catch (\PDOException $e) {
-            if ($this->reconnectAttempts < self::MAX_RECONNECT_ATTEMPTS && !$this->inTransaction) {
-                $this->reconnectAttempts++;
-                logWarning('Connection lost, attempting reconnect', ['attempt' => $this->reconnectAttempts], 'database');
-                $this->connect();
-            }
+        $status = $this->pdo->getAttribute(\PDO::ATTR_CONNECTION_STATUS);
+        if ($status !== false && strpos($status, 'on ') === 0) {
+            return;
+        }
+        if ($this->reconnectAttempts < self::MAX_RECONNECT_ATTEMPTS && !$this->inTransaction) {
+            $this->reconnectAttempts++;
+            logWarning('Connection lost, attempting reconnect', ['attempt' => $this->reconnectAttempts], 'database');
+            $this->connect();
         }
     }
 

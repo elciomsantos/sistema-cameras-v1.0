@@ -164,47 +164,78 @@ class NotificacaoService
 
     public function getCountNaoLidas(?int $secretariaId = null): int
     {
-        if ($secretariaId === null) {
-            $result = $this->db->query("SELECT COUNT(*) AS total FROM notificacoes WHERE lida = 0");
-            return !empty($result['data']) ? (int)($result['data'][0]->total ?? 0) : 0;
+        $cacheKey = 'notif_count:' . ($secretariaId ?? 'all');
+        if (function_exists('apcu_fetch')) {
+            $cachedResult = apcu_fetch($cacheKey);
+            if ($cachedResult !== false) {
+                return (int)$cachedResult;
+            }
         }
 
-        $result = $this->db->query(
-            "SELECT COUNT(*) AS total FROM notificacoes
-             WHERE lida = 0
-               AND entidade_id IN (
-                   SELECT e.id FROM equipamentos e WHERE e.secretaria_id = ?
-                   UNION
-                   SELECT ca.id FROM central_alarmes ca LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE l.secretaria_id = ?
-               )",
-            [$secretariaId, $secretariaId]
-        );
-        return !empty($result['data']) ? (int)($result['data'][0]->total ?? 0) : 0;
+        if ($secretariaId === null) {
+            $result = $this->db->query("SELECT COUNT(*) AS total FROM notificacoes WHERE lida = 0");
+            $count = !empty($result['data']) ? (int)($result['data'][0]->total ?? 0) : 0;
+        } else {
+            $result = $this->db->query(
+                "SELECT COUNT(*) AS total FROM notificacoes
+                 WHERE lida = 0
+                   AND entidade_id IN (
+                       SELECT e.id FROM equipamentos e WHERE e.secretaria_id = ?
+                       UNION
+                       SELECT ca.id FROM central_alarmes ca LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE l.secretaria_id = ?
+                   )",
+                [$secretariaId, $secretariaId]
+            );
+            $count = !empty($result['data']) ? (int)($result['data'][0]->total ?? 0) : 0;
+        }
+
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, $count, 5);
+        }
+        return $count;
+    }
+
+    private function invalidateCountCache(?int $secretariaId = null): void
+    {
+        if (!function_exists('apcu_delete')) {
+            return;
+        }
+        apcu_delete('notif_count:all');
+        if ($secretariaId !== null) {
+            apcu_delete('notif_count:' . $secretariaId);
+        }
     }
 
     public function marcarLida(int $id): bool
     {
         $result = $this->db->query("UPDATE notificacoes SET lida = 1 WHERE id = ?", [$id]);
-        return $result['status'] === 'success';
+        if ($result['status'] === 'success') {
+            $this->invalidateCountCache();
+            return true;
+        }
+        return false;
     }
 
     public function marcarTodasLidas(?int $secretariaId = null): bool
     {
         if ($secretariaId === null) {
             $result = $this->db->query("UPDATE notificacoes SET lida = 1 WHERE lida = 0");
-            return $result['status'] === 'success';
+        } else {
+            $result = $this->db->query(
+                "UPDATE notificacoes SET lida = 1
+                 WHERE lida = 0
+                   AND entidade_id IN (
+                       SELECT e.id FROM equipamentos e WHERE e.secretaria_id = ?
+                       UNION
+                       SELECT ca.id FROM central_alarmes ca LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE l.secretaria_id = ?
+                   )",
+                [$secretariaId, $secretariaId]
+            );
         }
-
-        $result = $this->db->query(
-            "UPDATE notificacoes SET lida = 1
-             WHERE lida = 0
-               AND entidade_id IN (
-                   SELECT e.id FROM equipamentos e WHERE e.secretaria_id = ?
-                   UNION
-                   SELECT ca.id FROM central_alarmes ca LEFT JOIN locais l ON l.alarme_conta = ca.conta WHERE l.secretaria_id = ?
-               )",
-            [$secretariaId, $secretariaId]
-        );
-        return $result['status'] === 'success';
+        if ($result['status'] === 'success') {
+            $this->invalidateCountCache($secretariaId);
+            return true;
+        }
+        return false;
     }
 }

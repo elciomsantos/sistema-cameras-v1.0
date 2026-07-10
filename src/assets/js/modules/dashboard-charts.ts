@@ -32,7 +32,18 @@ class ChartManager {
         if (!canvas) return null;
         const ctx = canvas.getContext('2d');
         if (this.charts.has(canvasId)) {
-            this.charts.get(canvasId)!.destroy();
+            const existing = this.charts.get(canvasId)!;
+            if (existing.canvas && existing.canvas.parentElement && document.getElementById(canvasId)) {
+                const plugins = (options.plugins || {}) as Record<string, unknown>;
+                const hasCenterText = !!(plugins.centerText as any)?.text;
+                existing.data = data as any;
+                if (hasCenterText) {
+                    (existing.options as any).plugins = { ...(existing.options as any).plugins, centerText: plugins.centerText };
+                }
+                existing.update();
+                return existing;
+            }
+            existing.destroy();
             this.charts.delete(canvasId);
         }
         const plugins = (options.plugins || {}) as Record<string, unknown>;
@@ -163,25 +174,37 @@ class ChartManager {
             }
         });
         if (total === 0) {
-            const canvas = document.getElementById('alarmChart');
-            if (canvas) {
-                canvas.parentElement!.innerHTML = '<p class="text-muted text-center py-4">Nenhum dado de alarme dispon&iacute;vel.</p>';
+            if (this.charts.has('alarmChart')) {
+                this.charts.get('alarmChart')!.destroy();
+                this.charts.delete('alarmChart');
+            }
+            const emptyCanvas = document.getElementById('alarmChart');
+            if (emptyCanvas && emptyCanvas.parentElement) {
+                emptyCanvas.parentElement.innerHTML = '<p class="text-muted text-center py-4">Nenhum dado de alarme dispon&iacute;vel.</p>';
             }
             return;
         }
-        const labels: string[] = [];
-        const data: number[] = [];
-        const colors: string[] = [];
-        if (funcionando > 0) { labels.push('Funcionando'); data.push(funcionando); colors.push('#27ae60'); }
-        if (parada > 0) { labels.push('Parada'); data.push(parada); colors.push('#e74c3c'); }
-        if (semAlarme > 0) { labels.push('Sem Alarme'); data.push(semAlarme); colors.push('#95a5a6'); }
-        if (data.length === 0) return;
-        const canvas = document.getElementById('alarmChart');
+        let canvas = document.getElementById('alarmChart');
+        if (!canvas) {
+            const placeholders = document.querySelectorAll('.alarm-chart-placeholder');
+            if (placeholders.length > 0) {
+                const lastPlaceholder = placeholders[placeholders.length - 1];
+                lastPlaceholder.insertAdjacentHTML('beforeend', '<canvas id="alarmChart"></canvas>');
+                canvas = document.getElementById('alarmChart');
+            }
+        }
         if (!canvas) return;
+        const labels: string[] = [];
+        const dataValues: number[] = [];
+        const colors: string[] = [];
+        if (funcionando > 0) { labels.push('Funcionando'); dataValues.push(funcionando); colors.push('#27ae60'); }
+        if (parada > 0) { labels.push('Parada'); dataValues.push(parada); colors.push('#e74c3c'); }
+        if (semAlarme > 0) { labels.push('Sem Alarme'); dataValues.push(semAlarme); colors.push('#95a5a6'); }
+        if (dataValues.length === 0) return;
         this.createChart('alarmChart', 'doughnut', {
             labels,
             datasets: [{
-                data,
+                data: dataValues,
                 backgroundColor: colors,
                 borderWidth: 0
             }]

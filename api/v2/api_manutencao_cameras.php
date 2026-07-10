@@ -348,6 +348,9 @@ try {
             if ($equipResult['status'] !== 'success' || empty($equipResult['data'])) {
                 ApiResponse::notFound('câmera', $equipamentoId);
             }
+            if (!verificarEscopoEquipamento($equipamentoId)) {
+                ApiResponse::forbidden('Câmera não pertence à sua secretaria.');
+            }
             $equipamento = (array)$equipResult['data'][0];
             $secretariaId = (int)($equipamento['secretaria_id'] ?? 0);
             if ($secretariaId <= 0) {
@@ -385,6 +388,10 @@ try {
 
             if (!$osId || !$equipamentoId) {
                 ApiResponse::error('VALIDATION_ERROR', 'ID da OS e Câmera são obrigatórios.');
+            }
+
+            if (!verificarEscopoEquipamento($equipamentoId)) {
+                ApiResponse::forbidden('Câmera não pertence à sua secretaria.');
             }
 
             $osResult = $db->query(
@@ -454,6 +461,10 @@ try {
             }
             if ($pecasPrevistas !== null && strlen($pecasPrevistas) > 255) {
                 ApiResponse::error('VALIDATION_ERROR', 'Peças previstas não pode exceder 255 caracteres.');
+            }
+
+            if (!verificarEscopoEquipamento($equipamentoId)) {
+                ApiResponse::forbidden('Câmera não pertence à sua secretaria.');
             }
 
             $osResult = $db->query(

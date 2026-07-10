@@ -1231,22 +1231,47 @@ BEGIN
 END$$
 
 -- =====================================================
--- PROCEDURE PARA LIMPEZA DE LOGS (com lote)
+-- PROCEDURE PARA LIMPEZA DE LOGS (por particionamento)
 -- =====================================================
+-- Para tabelas particionadas, DROP PARTITION é O(1) em vez de DELETE em loop.
+-- Esta procedure identifica partições antigas e as remove.
 CREATE PROCEDURE sp_limpar_auditoria_antiga(IN dias INT)
 BEGIN
-    DECLARE registros_removidos INT DEFAULT 0;
-    DECLARE total_removidos INT DEFAULT 0;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE part_name VARCHAR(64);
+    DECLARE part_limit DATE;
+    DECLARE cutoff DATE;
+    DECLARE sql_stmt TEXT;
 
-    REPEAT
-        DELETE FROM auditoria_eventos
-        WHERE created_at < DATE_SUB(NOW(), INTERVAL dias DAY)
-        LIMIT 10000;
-        SET registros_removidos = ROW_COUNT();
-        SET total_removidos = total_removidos + registros_removidos;
-    UNTIL registros_removidos = 0 END REPEAT;
+    SET cutoff = DATE_SUB(CURDATE(), INTERVAL dias DAY);
 
-    SELECT CONCAT('Removidos ', total_removidos, ' registros de auditoria') AS resultado;
+    -- Cursor: partições com data de corte menor que o cutoff
+    DECLARE cur CURSOR FOR
+        SELECT PARTITION_NAME, PARTITION_DESCRIPTION
+        FROM INFORMATION_SCHEMA.PARTITIONS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'auditoria_eventos'
+          AND PARTITION_NAME != 'p_future'
+          AND PARTITION_ORDINAL_POSITION IS NOT NULL
+          AND CAST(PARTITION_DESCRIPTION AS UNSIGNED) < TO_DAYS(cutoff);
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+    loop_partitions: LOOP
+        FETCH cur INTO part_name, part_limit;
+        IF done THEN
+            LEAVE loop_partitions;
+        END IF;
+
+        SET sql_stmt = CONCAT('ALTER TABLE auditoria_eventos DROP PARTITION ', part_name);
+        PREPARE stmt FROM sql_stmt;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END LOOP;
+    CLOSE cur;
+
+    SELECT CONCAT('Partições anteriores a ', cutoff, ' removidas via DROP PARTITION') AS resultado;
 END$$
 
 CREATE PROCEDURE sp_limpar_login_attempts_antigos(IN dias INT)

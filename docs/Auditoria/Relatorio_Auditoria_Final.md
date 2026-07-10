@@ -171,7 +171,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 | # | Problema | Severidade | Arquivo:linha | Ganho |
 |---|----------|------------|---------------|-------|
 | 11 | 12 triggers AFTER INSERT/UPDATE/DELETE com `JSON_OBJECT` de 18 campos + colunas `GENERATED STORED` em `auditoria_eventos` | 🔴 Crítico | `config/DB/cftv_gml.sql:858-1280` | -30-50% INSERT/UPDATE batch |
-| 12 | `auditoria_eventos` sem particionamento — `sp_limpar_auditoria_antiga` faz DELETE LIMIT 1000 em loop | 🔴 Crítico | `config/DB/cftv_gml.sql:759-781, 1234-1280` | DROP PARTITION é O(1) |
+| 12 | `auditoria_eventos` sem particionamento — `sp_limpar_auditoria_antiga` faz DELETE LIMIT 1000 em loop | 🔴 Crítico | `config/DB/cftv_gml.sql:759-781, 1234-1280` | DROP PARTITION é O(1) | **[EXECUTADO — Sprint 2.7]** |
 | 13 | `idx_eq_manut_os_status_updated` ausente — `ORDER BY updated_at` com `WHERE os_status_id=2` faz filesort | 🟡 Médio | `api/v2/api_manutencao_cameras.php:171` | -50% |
 | 14 | `locais.cep VARCHAR(10) NULL` sem índice | 🟢 Baixo | `config/DB/cftv_gml.sql:382` | depende de uso |
 
@@ -356,7 +356,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟡 RateLimiter → token_bucket para GETs                     ✅│
 │  🟡 Logger level INFO em production                           ✅│
 │  🟡 thumbnails anexos                                         ✅│
-│  🟡 particionamento auditoria_eventos                         │
+│  🟡 particionamento auditoria_eventos                         ✅│
 └───────────────────────────────────────────────────────────────┘
                               │
 ┌─ Sprint 3-5 (2-3 meses) ─────────────────────────────────────┐

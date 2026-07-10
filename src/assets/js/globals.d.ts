@@ -148,7 +148,7 @@ declare class Chart {
 // jQuery (loaded via CDN on some pages)
 declare var $: any;
 
-// Bootstrap global (loaded via importmap or CDN)
+// Bootstrap global (loaded via Vite module entry bootstrap.ts)
 declare var bootstrap: {
   Toast: new (el: HTMLElement, opts?: Record<string, unknown>) => {
     show(): void;

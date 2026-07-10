@@ -99,3 +99,25 @@ function vite_page_js(string $entryName): void
 <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
     <?php endif;
 }
+
+function vite_bootstrap_css(): ?string
+{
+    $manifest = vite_manifest();
+    foreach ($manifest as $entry) {
+        if (!empty($entry['isEntry']) && ($entry['name'] ?? '') === 'bootstrap' && !empty($entry['css'])) {
+            return $entry['css'][0];
+        }
+    }
+    return null;
+}
+
+function vite_bootstrap_js(): ?string
+{
+    $manifest = vite_manifest();
+    foreach ($manifest as $entry) {
+        if (!empty($entry['isEntry']) && ($entry['name'] ?? '') === 'bootstrap-js') {
+            return $entry['file'];
+        }
+    }
+    return null;
+}

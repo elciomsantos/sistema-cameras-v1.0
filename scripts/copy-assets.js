@@ -11,6 +11,7 @@
 import { existsSync, mkdirSync, copyFileSync, readdirSync, unlinkSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { brotliCompressSync, constants } from 'zlib';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -80,6 +81,38 @@ if (jsFiles.length > 0) {
 if (cssFiles.length > 0) {
     console.log('[postbuild] CSS:', cssFiles.join(', '));
 }
+
+console.log('[postbuild] Gerando compressão Brotli...');
+let brotliCount = 0;
+function compressBrotli(dir) {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) continue;
+        const filePath = join(dir, entry.name);
+        const ext = entry.name.split('.').pop();
+        if (['js', 'css', 'html', 'json', 'svg'].includes(ext) && !entry.name.endsWith('.gz') && !entry.name.endsWith('.br')) {
+            try {
+                const content = readFileSync(filePath);
+                if (content.length < 1024) continue;
+                const compressed = brotliCompressSync(content, {
+                    params: {
+                        [constants.BROTLI_PARAM_QUALITY]: constants.BROTLI_MAX_QUALITY,
+                        [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_TEXT,
+                    },
+                });
+                if (compressed.length < content.length) {
+                    writeFileSync(filePath + '.br', compressed);
+                    brotliCount++;
+                }
+            } catch (err) {
+                console.warn(`[postbuild] Brotli skip: ${entry.name} — ${err.message}`);
+            }
+        }
+    }
+}
+compressBrotli(JS_DIR);
+compressBrotli(PUBLIC_ASSETS);
+console.log(`[postbuild] Brotli: ${brotliCount} arquivos comprimidos.`);
 
 console.log('[postbuild] Gerando sw-assets.json...');
 const MANIFEST_PATH = resolve(__dirname, '../dist/.vite/manifest.json');

@@ -38,10 +38,7 @@ self.addEventListener('install', event => {
       }),
       caches.open(ASSETS_CACHE).then(cache => {
         return cache.addAll([
-          'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-          'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-          'https://code.jquery.com/jquery-3.7.1.min.js',
-          'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js'
+          'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
         ]).catch(err => {
           console.error('[SW] Failed to cache CDN assets:', err);
         });

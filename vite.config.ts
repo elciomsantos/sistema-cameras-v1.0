@@ -12,6 +12,13 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['legacy-js-api', 'import', 'global-builtin'],
+      },
+    },
+  },
   publicDir: '../public',
   build: {
     outDir: '../dist',
@@ -22,6 +29,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './index.html',
+        bootstrap: './assets/scss/bootstrap.scss',
+        'bootstrap-js': './assets/js/bootstrap.ts',
         'manutencao-cameras': './assets/js/entries/manutencao-cameras.ts',
         'manutencao-alarmes': './assets/js/entries/manutencao-alarmes.ts',
         'home-dashboard': './assets/js/entries/home-dashboard.ts',

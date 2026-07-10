@@ -198,7 +198,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 | 26 | Anexos servidos sem thumbnails/preview redimensionados — imagens originais 5-10MB por download | 🟠 Alto | `api/v2/api_servir_anexo.php:34-69`, `api_upload_anexo.php:155-204` | preview 20 anexos: 160MB → 5MB (-97%) |
 | 27 | Service Worker assets em network-first (deveria ser cache-first para arquivos Vite com hash) | 🟡 Médio | `public/sw.js:95-112` | -100ms carregamentos |
 | 28 | `vite.config.ts` sourcemap `hidden` em produção sem error-tracking (Sentry/etc.) — overhead build | 🟡 Médio | `vite.config.ts:53` | -25% build, -30% dist |
-| 29 | Compression só gzip (sem brotli) | 🟡 Médio | `vite.config.ts:67-73` + sem `mod_deflate` Apache | -25% payload |
+| 29 | Compression só gzip (sem brotli) | 🟡 Médio | `vite.config.ts:67-73` + sem `mod_deflate` Apache | -25% payload | **[EXECUTADO — Sprint 2]** |
 | 30 | `postcss.config.js` PurgeCSS declarado em devDeps mas **não plugado** | 🟢 Baixo | `postcss.config.js:4-8` | -90% CSS local |
 | 31 | `home_dashboard.ts` refresh 30s hardcoded sem `visibilitychange` handler (consome bateria/JS thread em aba oculta) | 🟢 Baixo | `src/assets/js/home_dashboard.ts:196-201` | -50% calls em background |
 
@@ -300,8 +300,8 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 
 1. **Cache APCu (ou Redis se cluster) para dashboard** com TTL 10s — reduz 80-90% queries. **[EXECUTADO — Sprint 1]**
 2. **Reaproveitar Chart.js via `chart.update()`** em vez de destroy/new no dashboard refresh. **[EXECUTADO — Sprint 1]**
-3. **Self-host Bootstrap** e Font Awesome SVG icons — elimina 3 handshakes TLS cross-origin.
-4. **Adicionar `mod_deflate` no `.htaccess`** + Brotli no `vite-plugin-compression`.
+3. **Self-host Bootstrap** e Font Awesome SVG icons — elimina 3 handshakes TLS cross-origin. **[EXECUTADO — Sprint 2: Bootstrap self-host SCSS + JS via Vite]**
+4. **Adicionar `mod_deflate` no `.htaccess`** + Brotli no `vite-plugin-compression`. **[EXECUTADO — Sprint 2: mod_deflate + Brotli via script pós-build]**
 5. **`session_write_close(true)`** em todos endpoints GET-only (`api_locais`, `api_status`, `modelos_*`, `auditoria_cameras`, `servir_anexo`, `listar_anexos`). **[EXECUTADO — Sprint 1]**
 6. **`composer dump-autoload --optimize --classmap-authoritative`** em deploy.
 7. **Particionamento** de `auditoria_eventos` por `TO_DAYS(created_at)` — limpeza vira `ALTER TABLE DROP PARTITION`.
@@ -349,9 +349,9 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟡 remover README desatualizado + atualizar seção api/     ✅│
 └───────────────────────────────────────────────────────────────┘
                               │
-┌─ Sprint 2 (2-4 semanas) ─────────────────────────────────────┐
-│  🔴 Bootstrap self-host (SCSS) + Font Awesome SVG icons     │
-│  🟠 Brotli compression + mod_deflate Apache                   │
+┌─ Sprint 2 (2-4 semanas) ─── [EM ANDAMENTO] ──────────────────────┐
+│  🔴 Bootstrap self-host (SCSS) + Font Awesome SVG icons     ✅│
+│  🟠 Brotli compression + mod_deflate Apache                ✅│
 │  🟠 Stream em exports LocaisService                          │
 │  🟡 RateLimiter → token_bucket para GETs                     │
 │  🟡 Logger level INFO em production                           │

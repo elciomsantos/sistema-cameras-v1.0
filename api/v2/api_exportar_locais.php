@@ -29,7 +29,6 @@ if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
 }
 
 $locaisService = new LocaisService();
-$locais = $locaisService->getAllLocaisExport($filters);
 
 if ($format === 'csv') {
     header('Content-Type: text/csv; charset=utf-8');
@@ -47,7 +46,8 @@ if ($format === 'csv') {
     $output = fopen('php://output', 'w');
     fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
     fputcsv($output, ['Nome', 'Tipo', 'Regiao', 'Logradouro', 'Numero', 'Bairro', 'Cidade', 'UF', 'CEP', 'Secretaria', 'Tem Alarme', 'Tem Camera', 'Cameras', 'Outros Equip.', 'Horario Funcionamento']);
-    foreach ($locais as $l) {
+
+    foreach ($locaisService->streamLocaisExport($filters) as $l) {
         fputcsv($output, [
             $sanitizeCsv($l->nome ?? ''),
             $sanitizeCsv($l->tipo_local_nome ?? ''),
@@ -69,6 +69,8 @@ if ($format === 'csv') {
     fclose($output);
     exit;
 }
+
+$locais = $locaisService->getAllLocaisExport($filters);
 
 $data = array_map(function ($l) {
     return [

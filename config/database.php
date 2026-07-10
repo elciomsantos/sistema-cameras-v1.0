@@ -224,6 +224,59 @@ class database
         $sql = "INSERT INTO `$table` ($columnsSql) VALUES ($placeholders)";
         return $this->query($sql, $data);
     }
+
+    /**
+     * Retorna um Generator que yielda rows uma a uma — útil para exports grandes
+     * sem carregar tudo em memória. Usa PDO::FETCH_NUM para menor overhead.
+     *
+     * @return \Generator<int, array>
+     */
+    public function queryCursor(string $sql, array $params = []): \Generator
+    {
+        $this->ensureConnection();
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+
+            if (!empty($params)) {
+                foreach ($params as $key => $value) {
+                    $paramType = \PDO::PARAM_STR;
+                    if (is_int($value)) {
+                        $paramType = \PDO::PARAM_INT;
+                    } elseif (is_null($value)) {
+                        $paramType = \PDO::PARAM_NULL;
+                    }
+                    if (is_int($key)) {
+                        $stmt->bindValue($key + 1, $value, $paramType);
+                    } else {
+                        $stmt->bindValue($key, $value, $paramType);
+                    }
+                }
+            }
+
+            $stmt->execute();
+            $stmt->setFetchMode(\PDO::FETCH_OBJ);
+
+            while ($row = $stmt->fetch()) {
+                yield $row;
+            }
+
+            $stmt->closeCursor();
+        } catch (\PDOException $err) {
+            if ($this->isConnectionLostError($err) && !$this->inTransaction) {
+                try {
+                    $this->connect();
+                    yield from $this->queryCursor($sql, $params);
+                    return;
+                } catch (\Throwable $retryErr) {
+                    logError('Database error after reconnect', ['error' => $retryErr->getMessage()], 'database');
+                    throw new \RuntimeException('Erro interno no banco de dados.');
+                }
+            }
+            logError('Database error', ['error' => $err->getMessage()], 'database');
+            throw new \RuntimeException('Erro interno no banco de dados.');
+        }
+    }
 }
 
 /**

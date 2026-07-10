@@ -416,4 +416,32 @@ class LocaisService
         $result = $this->db->query($sql, $params);
         return $result['status'] === 'success' ? $result['data'] : [];
     }
+
+    /**
+     * Streaming generator para export — yielda rows sem carregar tudo em memória.
+     *
+     * @return \Generator<int, object>
+     */
+    public function streamLocaisExport(array $filters = []): \Generator
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        $this->applyFiltersWhere($filters, $where, $params);
+
+        $whereClause = implode(' AND ', $where);
+
+        $sql = "SELECT l.*, s.sigla, tl.nome as tipo_local_nome, r.nome as regiao_nome,
+            COALESCE(eq.total_cameras, 0) as total_cameras,
+            COALESCE(eq.total_outros, 0) as total_outros
+        FROM locais l
+            LEFT JOIN secretarias s ON l.secretaria_id = s.id
+            LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+            LEFT JOIN regioes r ON l.regiao_id = r.id
+            {$this->equipCountJoin()}
+        WHERE {$whereClause}
+        ORDER BY l.nome";
+
+        yield from $this->db->queryCursor($sql, $params);
+    }
 }

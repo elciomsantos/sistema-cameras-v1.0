@@ -324,7 +324,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 7. **CI/CD com quality gates** (SonarQube, Snyk, coverage >80%). Atualmente cobertura limitada.
 8. **Refatoração services para injetar `database` via interface `DatabaseInterface`** — habilita testes com SQLite in-memory.
 9. **Padrão `dc.js` async**: mover `session_write_close()` depois que CSRF foi validado, mas antes das queries — habilita AJAX concurrency total.
-10. **Streaming de exports** com generators em `LocaisService::getAllLocaisExport()` (cursor PDO + `fopen('php://output')`).
+10. **Streaming de exports** com generators em `LocaisService::getAllLocaisExport()` (cursor PDO + `fopen('php://output')`). **[EXECUTADO — Sprint 2: streamLocaisExport() + queryCursor()]**
 
 ---
 
@@ -352,7 +352,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 ┌─ Sprint 2 (2-4 semanas) ─── [EM ANDAMENTO] ──────────────────────┐
 │  🔴 Bootstrap self-host (SCSS) + Font Awesome SVG icons     ✅│
 │  🟠 Brotli compression + mod_deflate Apache                ✅│
-│  🟠 Stream em exports LocaisService                          │
+│  🟠 Stream em exports LocaisService                          ✅│
 │  🟡 RateLimiter → token_bucket para GETs                     │
 │  🟡 Logger level INFO em production                           │
 │  🟡 thumbnails anexos                                         │

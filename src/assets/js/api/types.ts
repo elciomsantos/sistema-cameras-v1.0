@@ -329,6 +329,7 @@ export interface AnexoData {
   usuario_nome: string;
   url: string;
   tamanho_formatado: string;
+  thumbnails?: { small: string | null; medium: string | null };
 }
 
 export interface AnexosResponse {

@@ -94,9 +94,18 @@ try {
 
     $db->commit();
 
-    // Excluir arquivo fisico apos commit do DB, apenas se existir (FS pode ser read-only/banco-only)
-    if ($caminhoAbsoluto !== false && is_file($caminhoAbsoluto) && !@unlink($caminhoAbsoluto)) {
-        error_log('[api_excluir_anexo] Nao foi possivel excluir o arquivo: ' . $caminhoAbsoluto);
+    // Excluir thumbnails e arquivo fisico apos commit do DB
+    if ($caminhoAbsoluto !== false) {
+        $pathInfo = pathinfo($caminhoAbsoluto);
+        if (isset($pathInfo['dirname'], $pathInfo['filename'], $pathInfo['extension'])) {
+            foreach (['_sm', '_md'] as $suffix) {
+                $thumbPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . $suffix . '.' . $pathInfo['extension'];
+                if (is_file($thumbPath)) { @unlink($thumbPath); }
+            }
+        }
+        if (is_file($caminhoAbsoluto) && !@unlink($caminhoAbsoluto)) {
+            error_log('[api_excluir_anexo] Nao foi possivel excluir o arquivo: ' . $caminhoAbsoluto);
+        }
     }
 
     ApiResponse::success(['message' => 'Anexo excluido com sucesso.']);

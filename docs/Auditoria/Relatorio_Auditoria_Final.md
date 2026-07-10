@@ -195,7 +195,7 @@ O sistema **está operando sem erros HTTP 500 visíveis**, porém a auditoria de
 | 23 | Bootstrap + Font Awesome via CDN (render-blocking, sem self-host) apesar de `package.json` já empacotar bootstrap | 🔴 Crítico | `inc/header.php:15-16, 36` + `public/sw.js:40-44` | -200-500ms First Paint |
 | 24 | Chart.js é destruído e recriado a cada `updateUI()` via `destroy()` + `new Chart()` no auto-refresh de 30s | 🔴 Crítico | `src/assets/js/modules/dashboard-charts.ts:34-37` | -80% CPU no refresh | **[EXECUTADO — Sprint 1]** |
 | 25 | Múltiplos `innerHTML` para re-renderizar tabelas (histórico 100+ linhas), tooltips via loop com `new bootstrap.Tooltip()` | 🟠 Alto | `manutencao_cameras.ts:155,216,256`, `listar_cameras.ts:283,289-291` | -50% CPU + event delegation |
-| 26 | Anexos servidos sem thumbnails/preview redimensionados — imagens originais 5-10MB por download | 🟠 Alto | `api/v2/api_servir_anexo.php:34-69`, `api_upload_anexo.php:155-204` | preview 20 anexos: 160MB → 5MB (-97%) |
+| 26 | Anexos servidos sem thumbnails/preview redimensionados — imagens originais 5-10MB por download | 🟠 Alto | `api/v2/api_servir_anexo.php:34-69`, `api_upload_anexo.php:155-204` | preview 20 anexos: 160MB → 5MB (-97%) | **[EXECUTADO — Sprint 2.6]** |
 | 27 | Service Worker assets em network-first (deveria ser cache-first para arquivos Vite com hash) | 🟡 Médio | `public/sw.js:95-112` | -100ms carregamentos |
 | 28 | `vite.config.ts` sourcemap `hidden` em produção sem error-tracking (Sentry/etc.) — overhead build | 🟡 Médio | `vite.config.ts:53` | -25% build, -30% dist |
 | 29 | Compression só gzip (sem brotli) | 🟡 Médio | `vite.config.ts:67-73` + sem `mod_deflate` Apache | -25% payload | **[EXECUTADO — Sprint 2]** |
@@ -355,7 +355,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟠 Stream em exports LocaisService                          ✅│
 │  🟡 RateLimiter → token_bucket para GETs                     ✅│
 │  🟡 Logger level INFO em production                           ✅│
-│  🟡 thumbnails anexos                                         │
+│  🟡 thumbnails anexos                                         ✅│
 │  🟡 particionamento auditoria_eventos                         │
 └───────────────────────────────────────────────────────────────┘
                               │

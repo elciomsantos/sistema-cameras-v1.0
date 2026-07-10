@@ -12,10 +12,16 @@ try {
         ApiResponse::error('VALIDATION_ERROR', 'ID do anexo nao informado.');
     }
 
+    $size = isset($_GET['size']) ? strtolower(trim($_GET['size'])) : null;
+    $allowedSizes = ['small', 'medium'];
+    if ($size !== null && !in_array($size, $allowedSizes, true)) {
+        ApiResponse::error('VALIDATION_ERROR', 'Size invalido. Use: small, medium.');
+    }
+
     $db = db();
 
     $result = $db->query(
-        "SELECT id, caminho, mime_type, nome_original, conteudo, conteudo_comprimido, tamanho FROM equipamentos_anexos WHERE id = :id",
+        "SELECT id, caminho, mime_type, nome_original, conteudo, conteudo_comprimido, tamanho, thumbnails FROM equipamentos_anexos WHERE id = :id",
         [':id' => $id]
     );
 
@@ -99,6 +105,16 @@ try {
 
     if (!is_file($caminhoAbsoluto) || !is_readable($caminhoAbsoluto)) {
         ApiResponse::notFound('arquivo');
+    }
+
+    // Servir thumbnail se size foi solicitado
+    if ($size !== null && is_file($caminhoAbsoluto)) {
+        $thumbSuffix = $size === 'small' ? '_sm' : '_md';
+        $thumbPathInfo = pathinfo($caminhoAbsoluto);
+        $thumbPath = $thumbPathInfo['dirname'] . '/' . $thumbPathInfo['filename'] . $thumbSuffix . '.' . ($thumbPathInfo['extension'] ?? 'jpg');
+        if (is_file($thumbPath) && is_readable($thumbPath)) {
+            $caminhoAbsoluto = $thumbPath;
+        }
     }
 
     $mimeType = $anexo->mime_type ?? mime_content_type($caminhoAbsoluto) ?: 'application/octet-stream';

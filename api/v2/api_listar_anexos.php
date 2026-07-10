@@ -83,6 +83,13 @@ try {
         $ar = (array)$row;
         $ar['url'] = $baseUrl . '/index.php?page=api/api_servir_anexo&id=' . $row->id;
         $ar['tamanho_formatado'] = formatFileSize((int)$row->tamanho);
+
+        $thumbnails = json_decode($row->thumbnails ?? '{}', true) ?? [];
+        $ar['thumbnails'] = [
+            'small' => !empty($thumbnails['small']) ? $baseUrl . '/index.php?page=api/api_servir_anexo&id=' . $row->id . '&size=small' : null,
+            'medium' => !empty($thumbnails['medium']) ? $baseUrl . '/index.php?page=api/api_servir_anexo&id=' . $row->id . '&size=medium' : null,
+        ];
+
         return $ar;
     }, $result['data'] ?? []);
 

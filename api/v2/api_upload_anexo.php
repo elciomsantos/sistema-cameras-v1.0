@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/helpers/thumbnails.php';
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
@@ -151,6 +153,7 @@ try {
     }
 
     $conteudoBinario = null;
+    $thumbnailPaths = [];
 
     $imageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
     if (in_array($detectedMime, $imageMimes, true)) {
@@ -202,9 +205,13 @@ try {
         if (is_resource($src) || (is_object($src) && get_class($src) === 'GdImage')) {
             @imagedestroy($src);
         }
+
+        $thumbnailPaths = [];
+        if ($salvarEmDisco) {
+            $thumbnailPaths = generateThumbnails($caminhoAbsoluto, $detectedMime);
+        }
     } else {
         $headerValidators = [
-            'application/pdf' => "\x25\x50\x44\x46",
             'application/msword' => "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => "\x50\x4B\x03\x04",
             'application/vnd.ms-excel' => "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1",
@@ -267,6 +274,9 @@ try {
             $insertData['conteudo'] = $conteudoBinario;
             $insertData['conteudo_comprimido'] = $conteudoComprimido;
         }
+        if (!empty($thumbnailPaths)) {
+            $insertData['thumbnails'] = json_encode($thumbnailPaths);
+        }
 
         $result = $db->insert('equipamentos_anexos', $insertData);
 
@@ -279,6 +289,9 @@ try {
     } catch (Throwable $e) {
         if ($db->inTransaction()) { $db->rollback(); }
         if ($salvarEmDisco && isset($caminhoAbsoluto) && is_file($caminhoAbsoluto)) { @unlink($caminhoAbsoluto); }
+        foreach ($thumbnailPaths as $thumbPath) {
+            if (is_file($thumbPath)) { @unlink($thumbPath); }
+        }
         error_log('Erro ao inserir anexo: ' . $e->getMessage());
         ApiResponse::internalError('Erro ao registrar anexo no banco de dados.');
     }

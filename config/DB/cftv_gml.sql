@@ -1401,6 +1401,7 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     caminho VARCHAR(500) NOT NULL,
     conteudo MEDIUMBLOB NULL COMMENT 'Conteudo binario do anexo (armazenamento em BD quando FS e read-only)',
     conteudo_comprimido TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1=conteudo esta gzdeflate-comprimido',
+    thumbnails JSON NULL COMMENT 'Caminhos dos thumbnails gerados {"small":"...","medium":"..."}',
     mime_type VARCHAR(100) NOT NULL,
     tamanho INT UNSIGNED NOT NULL COMMENT 'Tamanho em bytes',
     descricao VARCHAR(500) NULL,

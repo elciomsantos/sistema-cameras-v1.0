@@ -32,7 +32,7 @@ function getPreviewHtml(anexo: AnexoData): HTMLElement {
 
     if (isImage) {
         const img = document.createElement('img')
-        img.src = anexo.url
+        img.src = anexo.thumbnails?.small || anexo.url
         img.alt = anexo.nome_original || ''
         img.className = 'anexo-preview-img'
         img.loading = 'lazy'

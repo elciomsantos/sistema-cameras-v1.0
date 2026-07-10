@@ -28,7 +28,10 @@
     "scripts": {
         "test": "phpunit --do-not-cache-result",
         "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
-        "security-audit": "composer audit"
+        "security-audit": "composer audit",
+        "migrate": "php database/migrate.php",
+        "migrate:status": "php database/migrate.php --status",
+        "migrate:rollback": "php database/migrate.php --down 1"
     },
     "config": {
         "disable-tls": false

@@ -72,7 +72,7 @@ jobs:
           ENVEOF
 
       - name: PHP syntax check
-        run: find api config src inc auth accounts -name '*.php' -print0 | xargs -0 -n1 php -l
+        run: find api config src inc auth accounts database -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: PHPStan analysis
         run: vendor/bin/phpstan analyse --no-progress

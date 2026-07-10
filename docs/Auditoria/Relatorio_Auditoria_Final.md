@@ -363,7 +363,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 │  🟠 PHP 8.3 upgrade                                           ✅│
 │  🟠 Repository Pattern + DatabaseInterface                   ✅│
 │  🟠 Service COI (services sem ApiResponse::exit)            ✅│
-│  🟠 Migrations versionadas + CI gates                        │
+│  🟠 Migrations versionadas + CI gates                        ✅│
 │  🟡 Sentry/APM                                               │
 └───────────────────────────────────────────────────────────────┘
 ```

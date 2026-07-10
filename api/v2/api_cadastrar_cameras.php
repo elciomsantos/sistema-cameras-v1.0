@@ -1,8 +1,10 @@
 <?php
 
+use App\Exception\ServiceException;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
+        ApiResponse::error('BAD_REQUEST', 'Apenas POST e permitido');
     }
 
     EquipamentoService::requireAccess();
@@ -13,16 +15,16 @@ try {
 
     $nomeLocal = trim((string)($data['nome_local'] ?? ''));
     if ($nomeLocal === '') {
-        ApiResponse::error('VALIDATION_ERROR', 'Informe o nome/local da câmera.');
+        ApiResponse::error('VALIDATION_ERROR', 'Informe o nome/local da camera.');
     }
     if (strlen($nomeLocal) > 255) {
-        ApiResponse::error('VALIDATION_ERROR', 'Nome do local muito longo (máx. 255 caracteres).');
+        ApiResponse::error('VALIDATION_ERROR', 'Nome do local muito longo (max. 255 caracteres).');
     }
 
     $tipoLocalId = max(1, (int)($data['tipo_local_id'] ?? 0));
     $checkTipoLocal = db()->query("SELECT id FROM tipos_locais WHERE id = ? LIMIT 1", [$tipoLocalId]);
     if ($checkTipoLocal['status'] !== 'success' || empty($checkTipoLocal['data'])) {
-        ApiResponse::error('VALIDATION_ERROR', 'Tipo de local selecionado não encontrado.');
+        ApiResponse::error('VALIDATION_ERROR', 'Tipo de local selecionado nao encontrado.');
     }
 
     $svc->beginTransaction();
@@ -33,13 +35,12 @@ try {
         $data['tipo_logradouro'] ?? null
     );
 
-    // Verifica duplicidade por patrimonio ou numero de serie ( entre ativos )
     $dup = $svc->checkDuplicidade($fields['patrimonio'], $fields['numero_serie']);
     if ($dup['duplicado']) {
-        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimônio' : 'Número de série';
+        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimonio' : 'Numero de serie';
         ApiResponse::error(
             'CONFLICT',
-            "Já existe um equipamento cadastrado com este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade não permitida."
+            "Ja existe um equipamento cadastrado com este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade nao permitida."
         );
     }
 
@@ -69,6 +70,8 @@ try {
         'redirect' => 'index.php?page=controle&modulo=cameras',
     ], $equipId);
 
+} catch (ServiceException $e) {
+    ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {
     $rolledBack = false;
 

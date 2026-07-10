@@ -1,8 +1,10 @@
 <?php
 
+use App\Exception\ServiceException;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
+        ApiResponse::error('BAD_REQUEST', 'Apenas POST e permitido');
     }
 
     EquipamentoService::requireAccess();
@@ -32,20 +34,19 @@ try {
     $localId = (int)($data['local_id'] ?? 0);
 
     if ($equipId < 1 || $localId < 1) {
-        ApiResponse::error('VALIDATION_ERROR', 'IDs inválidos.');
+        ApiResponse::error('VALIDATION_ERROR', 'IDs invalidos.');
     }
 
     if (!verificarEscopoEquipamento($equipId)) {
         ApiResponse::forbidden('Camera nao pertence a sua secretaria.');
     }
 
-    // Verifica duplicidade por patrimonio ou numero de serie ( entre ativos, excluindo o proprio )
     $dup = $svc->checkDuplicidade($fields['patrimonio'], $fields['numero_serie'], $equipId);
     if ($dup['duplicado']) {
-        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimônio' : 'Número de série';
+        $campoLabel = $dup['campo'] === 'patrimonio' ? 'Patrimonio' : 'Numero de serie';
         ApiResponse::error(
             'CONFLICT',
-            "Outro equipamento já usa este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade não permitida."
+            "Outro equipamento ja usa este {$campoLabel} (ID: {$dup['equipamento_id']}). Duplicidade nao permitida."
         );
     }
 
@@ -55,7 +56,6 @@ try {
         $data['tipo_logradouro'] ?? null
     );
 
-    // Preserve existing model when not submitted (e.g., user only changed status)
     if (empty($data['modelo_existente']) && empty($data['novo_modelo_nome'])) {
         $current = db()->query(
             "SELECT modelo_id FROM equipamentos WHERE id = ?",
@@ -64,7 +64,7 @@ try {
         if ($current['status'] === 'success' && !empty($current['data'])) {
             $data['modelo_existente'] = (int)$current['data'][0]->modelo_id;
         } else {
-            ApiResponse::error('VALIDATION_ERROR', 'Não foi possível recuperar o modelo do equipamento.');
+            ApiResponse::error('VALIDATION_ERROR', 'Nao foi possivel recuperar o modelo do equipamento.');
         }
     }
     $modeloId = $svc->resolveModelo($fields['marca_id'], $fields['tipo_id'], $data);
@@ -101,6 +101,8 @@ try {
         'redirect' => '../../index.php?page=controle&modulo=cameras',
     ]);
 
+} catch (ServiceException $e) {
+    ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {
     try {
         if (isset($svc) && db()->getConnection()->inTransaction()) {
@@ -112,5 +114,5 @@ try {
 
     $msg = $e->getMessage();
     error_log('[api_editar_camera] ' . $msg . ' | File: ' . $e->getFile() . ':' . $e->getLine());
-    ApiResponse::internalError('Erro ao editar câmera: ' . $msg);
+    ApiResponse::internalError('Erro ao editar camera: ' . $msg);
 }

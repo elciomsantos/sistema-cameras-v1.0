@@ -362,7 +362,7 @@ Ver seção **4. Vulnerabilidades Encontradas** acima. Adicionais:
 ┌─ Sprint 3-5 (2-3 meses) ─────────────────────────────────────┐
 │  🟠 PHP 8.3 upgrade                                           ✅│
 │  🟠 Repository Pattern + DatabaseInterface                   ✅│
-│  🟠 Service COI (services sem ApiResponse::exit)            │
+│  🟠 Service COI (services sem ApiResponse::exit)            ✅│
 │  🟠 Migrations versionadas + CI gates                        │
 │  🟡 Sentry/APM                                               │
 └───────────────────────────────────────────────────────────────┘

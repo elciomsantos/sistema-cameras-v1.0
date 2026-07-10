@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Exception\ServiceException;
+
 class AlarmeService
 {
     private $db;
@@ -29,12 +31,12 @@ class AlarmeService
     {
         $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
         if ($contentLength > 10 * 1024 * 1024) {
-            ApiResponse::error('BAD_REQUEST', 'Payload muito grande. Máximo: 10MB.');
+            throw ServiceException::badRequest('Payload muito grande. Maximo: 10MB.');
         }
         $jsonInput = json_decode(file_get_contents('php://input'), true);
         $data = is_array($jsonInput) ? $jsonInput : [];
         if (empty($data)) {
-            ApiResponse::error('BAD_REQUEST', 'Nenhum dado recebido.');
+            throw ServiceException::badRequest('Nenhum dado recebido.');
         }
         return $data;
     }
@@ -54,13 +56,13 @@ class AlarmeService
         $validator->validate($rules);
 
         if ($validator->fails()) {
-            ApiResponse::validationError($validator->errors());
+            throw new ServiceException('VALIDATION_ERROR', implode('; ', $validator->errors()));
         }
 
         $status = trim((string)($data['status'] ?? ''));
         $permitidos = $this->getStatusPermitidos();
         if (!in_array($status, $permitidos, true)) {
-            ApiResponse::error('VALIDATION_ERROR', 'Status inválido. Use: ' . implode(', ', $permitidos));
+            throw ServiceException::validation('Status invalido. Use: ' . implode(', ', $permitidos));
         }
 
         $statusLookup = $this->db->query(
@@ -85,18 +87,18 @@ class AlarmeService
 
         $ip = trim((string)($data['ip'] ?? ''));
         if ($ip !== '' && !filter_var($ip, FILTER_VALIDATE_IP)) {
-            ApiResponse::error('VALIDATION_ERROR', 'IP inválido.');
+            throw ServiceException::validation('IP invalido.');
         }
 
         $mac = trim((string)($data['mac'] ?? ''));
         if ($mac !== '' && !preg_match('/^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/', $mac)) {
-            ApiResponse::error('VALIDATION_ERROR', 'MAC inválido.');
+            throw ServiceException::validation('MAC invalido.');
         }
 
         $conta = max(1, (int)($data['conta'] ?? 0));
         $local = trim((string)($data['local'] ?? ''));
         if ($local === '' || $status === '') {
-            ApiResponse::error('VALIDATION_ERROR', 'Local e Status são obrigatórios.');
+            throw ServiceException::validation('Local e Status sao obrigatorios.');
         }
 
         return [
@@ -141,7 +143,7 @@ class AlarmeService
             [$params['conta']]
         );
         if ($check['status'] === 'success' && !empty($check['data'])) {
-            ApiResponse::error('VALIDATION_ERROR', 'Já existe um alarme cadastrado com a conta ' . $params['conta'] . '.');
+            throw ServiceException::validation('Ja existe um alarme cadastrado com a conta ' . $params['conta'] . '.');
         }
 
         $this->db->beginTransaction();

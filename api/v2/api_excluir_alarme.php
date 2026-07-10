@@ -1,8 +1,10 @@
 <?php
 
+use App\Exception\ServiceException;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
+        ApiResponse::error('BAD_REQUEST', 'Apenas POST e permitido');
     }
 
     requireApiAuth('supervisor');
@@ -10,11 +12,11 @@ try {
     $rawBody = file_get_contents('php://input');
     $body = json_decode($rawBody, true);
     if (!is_array($body)) {
-        ApiResponse::error('BAD_REQUEST', 'Corpo da requisição deve ser JSON.');
+        ApiResponse::error('BAD_REQUEST', 'Corpo da requisicao deve ser JSON.');
     }
     $id = (int)($body['id'] ?? 0);
     if (!$id) {
-        ApiResponse::error('VALIDATION_ERROR', 'ID não informado.');
+        ApiResponse::error('VALIDATION_ERROR', 'ID nao informado.');
     }
 
     $db = db();
@@ -35,9 +37,11 @@ try {
     $svc->excluir($id);
 
     ApiResponse::success([
-        'message' => 'Alarme excluído com sucesso',
+        'message' => 'Alarme excluido com sucesso',
     ]);
 
+} catch (ServiceException $e) {
+    ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {
     error_log('[api_excluir_alarme] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao excluir alarme.');

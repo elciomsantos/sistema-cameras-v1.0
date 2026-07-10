@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Exception\ServiceException;
+
 class EquipamentoService
 {
     private $db;
@@ -20,12 +22,12 @@ class EquipamentoService
     {
         $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
         if ($contentLength > 10 * 1024 * 1024) {
-            ApiResponse::error('BAD_REQUEST', 'Payload muito grande. Máximo: 10MB.');
+            throw ServiceException::badRequest('Payload muito grande. Maximo: 10MB.');
         }
         $jsonInput = json_decode(file_get_contents('php://input'), true);
         $data = is_array($jsonInput) ? $jsonInput : [];
         if (empty($data)) {
-            ApiResponse::error('BAD_REQUEST', 'Nenhum dado recebido.');
+            throw ServiceException::badRequest('Nenhum dado recebido.');
         }
         return $data;
     }
@@ -632,6 +634,6 @@ class EquipamentoService
     {
         $this->rollback();
         error_log("[$logPrefix] " . $e->getMessage());
-        ApiResponse::internalError('Erro ao processar requisição.');
+        throw ServiceException::internal('Erro ao processar requisicao.');
     }
 }

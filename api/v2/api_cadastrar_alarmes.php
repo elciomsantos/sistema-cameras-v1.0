@@ -1,8 +1,10 @@
 <?php
 
+use App\Exception\ServiceException;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
+        ApiResponse::error('BAD_REQUEST', 'Apenas POST e permitido');
     }
 
     $svc = new AlarmeService();
@@ -18,6 +20,8 @@ try {
         'redirect' => '../../index.php?page=editar_alarmes&id=' . $id,
     ], $id);
 
+} catch (ServiceException $e) {
+    ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {
     error_log('[api_cadastrar_alarmes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao cadastrar alarme.');

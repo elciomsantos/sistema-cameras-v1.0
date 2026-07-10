@@ -7,6 +7,12 @@ if (file_exists($configPath)) {
     require_once $configPath;
 }
 
+// Load interface before class definition (loaded via Composer files, before PSR-4 classmap)
+$interfacePath = __DIR__ . '/../src/Database/DatabaseInterface.php';
+if (file_exists($interfacePath)) {
+    require_once $interfacePath;
+}
+
 /**
  * database — Singleton PDO wrapper.
  *
@@ -17,8 +23,9 @@ if (file_exists($configPath)) {
  * 4. O autoload PSR-4 (App\ → src/) é para classes em src/ e não conflita
  *
  * @see db()  Helper global para acesso à instância única
+ * @implements \App\Database\DatabaseInterface
  */
-class database
+class database implements \App\Database\DatabaseInterface
 {
     private static ?self $instance = null;
     private \PDO $pdo;
@@ -89,7 +96,7 @@ class database
         $this->query("SET @app_origem = ?", [$origem]);
     }
 
-    public function query($sql, $params = [])
+    public function query($sql, $params = []): array
     {
         $this->ensureConnection();
 
@@ -163,7 +170,7 @@ class database
             || $e->getCode() === '08S01';
     }
     
-    public function lastInsertId()
+    public function lastInsertId(): string|false
     {
         return $this->pdo->lastInsertId();
     }
@@ -173,7 +180,7 @@ class database
         return $this->pdo->inTransaction();
     }
 
-    public function beginTransaction()
+    public function beginTransaction(): bool
     {
         try {
             $result = $this->pdo->beginTransaction();
@@ -185,20 +192,20 @@ class database
         }
     }
     
-    public function commit()
+    public function commit(): bool
     {
         $this->inTransaction = false;
         return $this->pdo->commit();
     }
     
-    public function rollback()
+    public function rollback(): bool
     {
         $this->inTransaction = false;
         return $this->pdo->rollBack();
     }
     
     // Metodo auxiliar para INSERT simples
-    public function insert($table, $data)
+    public function insert($table, $data): array
     {
         // Whitelist de tabelas permitidas para evitar SQL injection
         $tabelasPermitidas = [

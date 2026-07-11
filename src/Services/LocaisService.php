@@ -18,7 +18,7 @@ class LocaisService
         $params = [];
 
         if (!empty($filters['nome'])) {
-            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+            $where[] = 'l.nome LIKE ?';
             $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
         }
         if (!empty($filters['secretaria_id'])) {
@@ -67,7 +67,7 @@ class LocaisService
         $params = [];
 
         if (!empty($filters['nome'])) {
-            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+            $where[] = 'l.nome LIKE ?';
             $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
         }
         if (!empty($filters['secretaria_id'])) {
@@ -105,7 +105,7 @@ class LocaisService
 
     public function checkDuplicado(string $nome, ?int $secretariaId, ?int $excludeId = null): bool
     {
-        $sql = "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id <=> ? AND deleted_at IS NULL";
+        $sql = "SELECT id FROM locais WHERE nome = ? AND secretaria_id <=> ? AND deleted_at IS NULL";
         $params = [$nome, $secretariaId];
         if ($excludeId !== null) {
             $sql .= ' AND id != ?';
@@ -152,7 +152,7 @@ class LocaisService
         $params = [$tipoNome];
 
         if ($search !== '') {
-            $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
+            $where .= ' AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ?)';
             $searchParam = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
             $params[] = $searchParam;
             $params[] = $searchParam;
@@ -181,7 +181,7 @@ class LocaisService
         $params = [$tipoNome];
 
         if ($search !== '') {
-            $where .= ' AND (UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?))';
+            $where .= ' AND (l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ?)';
             $searchParam = '%' . str_replace(['%', '_'], ['\%', '\_'], $search) . '%';
             $params[] = $searchParam;
             $params[] = $searchParam;
@@ -277,7 +277,7 @@ class LocaisService
     {
         $where[] = 'l.deleted_at IS NULL';
         if (!empty($filters['search'])) {
-            $where[] = '(UPPER(l.nome) LIKE UPPER(?) OR UPPER(l.logradouro) LIKE UPPER(?) OR UPPER(l.bairro) LIKE UPPER(?) OR UPPER(l.cidade) LIKE UPPER(?))';
+            $where[] = '(l.nome LIKE ? OR l.logradouro LIKE ? OR l.bairro LIKE ? OR l.cidade LIKE ?)';
             $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['search']) . '%';
             $params[] = $like;
             $params[] = $like;
@@ -285,7 +285,7 @@ class LocaisService
             $params[] = $like;
         }
         if (!empty($filters['nome'])) {
-            $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+            $where[] = 'l.nome LIKE ?';
             $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['nome']) . '%';
         }
         if (!empty($filters['tipo_local_id'])) {

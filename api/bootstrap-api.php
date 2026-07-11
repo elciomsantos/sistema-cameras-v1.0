@@ -173,11 +173,10 @@ function executeApiRequest(?string $endpointOverride = null): void
         && in_array($endpoint, $idempotentGetEndpoints, true);
 
     if ($isIdempotentGet) {
-        header('Cache-Control: private, max-age=10, must-revalidate');
+        ApiResponse::setCacheControl('private, max-age=10, must-revalidate');
     } else {
-        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        ApiResponse::setCacheControl('no-store, no-cache, must-revalidate, max-age=0');
     }
-    header('Pragma: no-cache');
     header("Content-Security-Policy: default-src 'none'; script-src 'none'; style-src 'none'; connect-src 'self'; form-action 'none'; frame-ancestors 'none'; base-uri 'none'");
     // HSTS - Em produção, sempre enviar se configurado (mesmo atrás de proxy)
     if (isProduction() || isHttpsRequest()) {

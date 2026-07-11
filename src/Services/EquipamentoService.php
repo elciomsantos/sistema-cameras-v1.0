@@ -201,8 +201,8 @@ class EquipamentoService
         }
 
         $localResult = $this->db->query(
-            "SELECT id FROM locais WHERE UPPER(nome) = UPPER(?) AND secretaria_id = ? LIMIT 1",
-            [strtoupper($nomeLocal), $secretariaId]
+            "SELECT id FROM locais WHERE nome = ? AND secretaria_id = ? LIMIT 1",
+            [$nomeLocal, $secretariaId]
         );
 
         if ($localResult['status'] === 'success' && !empty($localResult['data'])) {
@@ -267,7 +267,7 @@ class EquipamentoService
         if ($tipoLogradouro === null || $tipoLogradouro === '') {
             return null;
         }
-        $ceResult = $this->db->query("SELECT id FROM classificacao_enderecos WHERE UPPER(descricao) = UPPER(?) LIMIT 1", [trim($tipoLogradouro)]);
+        $ceResult = $this->db->query("SELECT id FROM classificacao_enderecos WHERE descricao = ? LIMIT 1", [trim($tipoLogradouro)]);
         if ($ceResult['status'] === 'success' && !empty($ceResult['data'])) {
             return (int)$ceResult['data'][0]->id;
         }
@@ -299,7 +299,7 @@ class EquipamentoService
             }
 
             $check = $this->db->query(
-                "SELECT id FROM catalogo_modelos WHERE tipo_equipamento_id = ? AND marca_id = ? AND UPPER(nome) = UPPER(?)",
+                "SELECT id FROM catalogo_modelos WHERE tipo_equipamento_id = ? AND marca_id = ? AND nome = ?",
                 [$tipoId, $marcaId, $novoModelo]
             );
 
@@ -314,7 +314,7 @@ class EquipamentoService
             );
             if ($insertModelo['status'] !== 'success') {
                 $recheck = $this->db->query(
-                    "SELECT id FROM catalogo_modelos WHERE tipo_equipamento_id = ? AND marca_id = ? AND UPPER(nome) = UPPER(?)",
+                    "SELECT id FROM catalogo_modelos WHERE tipo_equipamento_id = ? AND marca_id = ? AND nome = ?",
                     [$tipoId, $marcaId, $novoModelo]
                 );
                 if ($recheck['status'] === 'success' && !empty($recheck['data'])) {

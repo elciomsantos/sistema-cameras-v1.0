@@ -18,7 +18,7 @@ try {
     $params = [];
 
     if ($q !== '') {
-        $where[] = 'UPPER(l.nome) LIKE UPPER(?)';
+        $where[] = 'l.nome LIKE ?';
         $params[] = '%' . str_replace(['%', '_'], ['\%', '\_'], $q) . '%';
     }
 

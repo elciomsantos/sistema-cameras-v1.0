@@ -23,22 +23,36 @@ if (!function_exists('getInputPayload')) {
 if (!function_exists('getMaintenanceDefaultIds')) {
     function getMaintenanceDefaultIds(database $db): array
     {
+        $cacheKey = 'manut_default_ids';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($cacheKey);
+            if ($cached !== false) {
+                return $cached;
+            }
+        }
+
         $statusId = null;
         $procedimentoId = null;
 
-        $statusResult = $db->query("SELECT id FROM status WHERE UPPER(nome) = 'MANUTENCAO' LIMIT 1");
+        $statusResult = $db->query("SELECT id FROM status WHERE nome = 'MANUTENCAO' LIMIT 1");
         if ($statusResult['status'] === 'success' && !empty($statusResult['data'])) {
             $statusId = (int)$statusResult['data'][0]->id;
         }
 
-        $procedimentoResult = $db->query("SELECT id FROM procedimentos WHERE UPPER(nome) = 'MANUTENCAO' LIMIT 1");
+        $procedimentoResult = $db->query("SELECT id FROM procedimentos WHERE nome = 'MANUTENCAO' LIMIT 1");
         if ($procedimentoResult['status'] === 'success' && !empty($procedimentoResult['data'])) {
             $procedimentoId = (int)$procedimentoResult['data'][0]->id;
         }
 
-        return [
+        $result = [
             'status_id' => $statusId,
             'procedimento_id' => $procedimentoId,
         ];
+
+        if (function_exists('apcu_store')) {
+            apcu_store($cacheKey, $result, 300);
+        }
+
+        return $result;
     }
 }

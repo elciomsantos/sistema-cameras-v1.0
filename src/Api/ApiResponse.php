@@ -23,6 +23,7 @@ class ApiResponse
 {
     private static string $requestId = '';
     private static bool $shouldExit = true;
+    private static ?string $cacheControl = null;
     private static array $errorCodes = [
         // 2xx Success
         'SUCCESS' => 200,
@@ -293,6 +294,15 @@ class ApiResponse
     }
 
     /**
+     * Define o cabeçalho Cache-Control a ser usado em send()
+     * Se não chamado, usa 'no-store, no-cache, must-revalidate, max-age=0'
+     */
+    public static function setCacheControl(?string $cacheControl): void
+    {
+        self::$cacheControl = $cacheControl;
+    }
+
+    /**
      * Ativa/desativa modo de teste (suprime exit e headers)
      */
     public static function setTestMode(bool $testMode): void
@@ -324,9 +334,14 @@ class ApiResponse
             http_response_code($httpCode);
             header('Content-Type: application/json; charset=utf-8');
             header('X-Content-Type-Options: nosniff');
-            header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-            header('Pragma: no-cache');
-            header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+            $cacheControl = self::$cacheControl ?? 'no-store, no-cache, must-revalidate, max-age=0';
+            header("Cache-Control: {$cacheControl}");
+
+            // Pragma: no-cache only for non-cacheable responses
+            if (str_contains($cacheControl, 'no-store')) {
+                header('Pragma: no-cache');
+                header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+            }
 
             if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['csrf_tokens'])) {
                 header('X-CSRF-Token: ' . end($_SESSION['csrf_tokens']));

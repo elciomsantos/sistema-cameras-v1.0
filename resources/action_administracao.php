@@ -42,11 +42,11 @@ try {
             }
 
             if ($acao === 'criar') {
-                $check = $db->query("SELECT id FROM secretarias WHERE UPPER(nome) = UPPER(?)", [trim($campos['nome'])]);
+                $check = $db->query("SELECT id FROM secretarias WHERE nome = ?", [trim($campos['nome'])]);
                 if (!empty($check['data'])) {
                     throw new RuntimeException('Já existe uma secretaria com este nome.');
                 }
-                $checkSigla = $db->query("SELECT id FROM secretarias WHERE UPPER(sigla) = UPPER(?)", [trim($campos['sigla'])]);
+                $checkSigla = $db->query("SELECT id FROM secretarias WHERE sigla = ?", [trim($campos['sigla'])]);
                 if (!empty($checkSigla['data'])) {
                     throw new RuntimeException('Já existe uma secretaria com esta sigla.');
                 }
@@ -76,7 +76,7 @@ try {
             $nome = trim($campos['nome']);
 
             if ($acao === 'criar') {
-                $check = $db->query("SELECT id FROM {$tabela} WHERE UPPER(nome) = UPPER(?)", [$nome]);
+                $check = $db->query("SELECT id FROM {$tabela} WHERE nome = ?", [$nome]);
                 if (!empty($check['data'])) {
                     $labels = ['regioes' => 'região', 'tipos_locais' => 'tipo de local', 'tipos_equipamento' => 'tipo de equipamento', 'tipos_secretaria' => 'tipo de secretaria', 'marcas' => 'marca', 'status' => 'status'];
                     throw new RuntimeException('Já existe um(a) ' . $labels[$tabela] . ' com este nome.');

@@ -66,6 +66,7 @@ try {
                SUM(CASE WHEN COALESCE(s.nome, 'ATIVO') = 'ATIVO' THEN 1 ELSE 0 END) as manutencao
         FROM central_alarmes ca
         LEFT JOIN status s ON ca.status_id = s.id
+        WHERE ca.deleted_at IS NULL
     ");
     if ($result['status'] === 'success' && !empty($result['data'])) {
         $row = $result['data'][0];
@@ -79,6 +80,7 @@ try {
         JOIN central_alarmes ca ON am.alarme_id = ca.id
         WHERE am.data_hora < DATE_SUB(NOW(), INTERVAL 7 DAY)
           AND am.os_status_id IN (1, 2)
+          AND ca.deleted_at IS NULL
     ");
     $stats['alarmes_atrasadas'] = $result['status'] === 'success' ? (int)($result['data'][0]->atrasadas ?? 0) : 0;
 
@@ -126,6 +128,7 @@ try {
         LEFT JOIN (
             SELECT equipamento_id, MAX(data_hora) as data_hora
             FROM equipamentos_manutencoes
+            WHERE os_status_id IN (1, 2)
             GROUP BY equipamento_id
         ) m ON m.equipamento_id = e.id
         WHERE e.deleted_at IS NULL
@@ -154,6 +157,7 @@ try {
             COUNT(*) as quantidade
         FROM central_alarmes ca
         LEFT JOIN status s ON ca.status_id = s.id
+        WHERE ca.deleted_at IS NULL
         GROUP BY ca.status_id, s.nome
         ORDER BY quantidade DESC
     ");
@@ -184,7 +188,7 @@ try {
     ];
 
     if (function_exists('apcu_store')) {
-        apcu_store($dashboardCacheKey, $responsePayload, 10);
+        apcu_store($dashboardCacheKey, $responsePayload, 60);
     }
 
     ApiResponse::success($responsePayload);

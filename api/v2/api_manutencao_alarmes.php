@@ -30,11 +30,35 @@ function loadManutencaoPayload(
         );
         $alarme = $alarmeResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $alarmeResult['data']) : [];
 
-        $statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome ASC");
-        $statusOptions = $statusResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $statusResult['data']) : [];
+        $statusCacheKey = 'manut_status_options';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($statusCacheKey);
+            if ($cached !== false) {
+                $statusOptions = $cached;
+            }
+        }
+        if (empty($statusOptions)) {
+            $statusResult = $db->query("SELECT id, nome FROM status ORDER BY nome ASC");
+            $statusOptions = $statusResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $statusResult['data']) : [];
+            if (function_exists('apcu_store') && !empty($statusOptions)) {
+                apcu_store($statusCacheKey, $statusOptions, 300);
+            }
+        }
 
-        $procedimentosResult = $db->query("SELECT id, nome FROM procedimentos ORDER BY nome ASC");
-        $procedimentoOptions = $procedimentosResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $procedimentosResult['data']) : [];
+        $procedimentosCacheKey = 'manut_procedimento_options';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($procedimentosCacheKey);
+            if ($cached !== false) {
+                $procedimentoOptions = $cached;
+            }
+        }
+        if (empty($procedimentoOptions)) {
+            $procedimentosResult = $db->query("SELECT id, nome FROM procedimentos ORDER BY nome ASC");
+            $procedimentoOptions = $procedimentosResult['status'] === 'success' ? array_map(fn($row) => (array)$row, $procedimentosResult['data']) : [];
+            if (function_exists('apcu_store') && !empty($procedimentoOptions)) {
+                apcu_store($procedimentosCacheKey, $procedimentoOptions, 300);
+            }
+        }
     }
 
     $whereParts = [];

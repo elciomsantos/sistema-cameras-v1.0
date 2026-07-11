@@ -31,14 +31,6 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
   pagination: Pagination;
 }
 
-export interface ApiErrorResponse {
-  success: false;
-  code: string;
-  message: string;
-  data: Record<string, unknown>;
-  meta: ApiMeta;
-}
-
 // =========================================================================
 // Entity Data Types
 // =========================================================================
@@ -332,18 +324,9 @@ export interface AnexoData {
   thumbnails?: { small: string | null; medium: string | null };
 }
 
-export interface AnexosResponse {
-  data: AnexoData[];
-  total: number;
-}
-
 export interface ModeloItem {
   id: number;
   nome: string;
-}
-
-export interface ModelosResponse {
-  modelos: ModeloItem[];
 }
 
 export interface HealthResponse {
@@ -430,13 +413,3 @@ export interface CreatedResponse extends ApiResponse<{
 // Generic helper types for paginated/filter queries
 // =========================================================================
 
-export interface QueryFilters {
-  page?: number;
-  per_page?: number;
-  busca?: string;
-  status?: string;
-  local_id?: string;
-  regiao?: string;
-  local?: string;
-  pesquisa?: string;
-}

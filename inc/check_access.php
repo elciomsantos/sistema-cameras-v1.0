@@ -69,19 +69,6 @@ function requererEscopoLocal(int $localId): void
     }
 }
 
-function verificarUsuarioSecretaria(?int $secretariaId): bool
-{
-    $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return false;
-
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
-
-    $userSecretariaId = getUsuarioSecretariaId();
-    if ($userSecretariaId === null) return true;
-
-    return $secretariaId !== null && $secretariaId === $userSecretariaId;
-}
-
 function verificarEscopoEquipamento(int $equipamentoId): bool
 {
     $usuario = $_SESSION['usuario'] ?? null;

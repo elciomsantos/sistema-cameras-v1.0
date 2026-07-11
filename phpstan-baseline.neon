@@ -81,31 +81,6 @@ parameters:
 			path: config/database.php
 
 		-
-			message: "#^Access to constant LEVEL_DEBUG on an unknown class Sentry\\\\Breadcrumb\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
-			message: "#^Access to constant LEVEL_ERROR on an unknown class Sentry\\\\Breadcrumb\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
-			message: "#^Access to constant LEVEL_INFO on an unknown class Sentry\\\\Breadcrumb\\.$#"
-			count: 2
-			path: config/sentry.php
-
-		-
-			message: "#^Access to constant LEVEL_WARNING on an unknown class Sentry\\\\Breadcrumb\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
-			message: "#^Access to constant TYPE_DEFAULT on an unknown class Sentry\\\\Breadcrumb\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
 			message: "#^Anonymous function has invalid return type Sentry\\\\Event\\.$#"
 			count: 1
 			path: config/sentry.php
@@ -126,11 +101,6 @@ parameters:
 			path: config/sentry.php
 
 		-
-			message: "#^Call to static method addBreadcrumb\\(\\) on an unknown class Sentry\\\\SentrySdk\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
 			message: "#^Call to static method captureException\\(\\) on an unknown class Sentry\\\\SentrySdk\\.$#"
 			count: 1
 			path: config/sentry.php
@@ -147,11 +117,6 @@ parameters:
 
 		-
 			message: "#^Call to static method getCurrent\\(\\) on an unknown class Sentry\\\\State\\\\Hub\\.$#"
-			count: 1
-			path: config/sentry.php
-
-		-
-			message: "#^Instantiated class Sentry\\\\Breadcrumb not found\\.$#"
 			count: 1
 			path: config/sentry.php
 

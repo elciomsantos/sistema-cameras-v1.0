@@ -34,16 +34,6 @@ type DashboardProblemaItem = import('./api/types').DashboardProblemaItem;
 type DashboardManutencaoItem = import('./api/types').DashboardManutencaoItem;
 type AlarmeOption = import('./api/types').AlarmeOption;
 
-// Legacy AnexoData kept for backward compat (string id vs number id)
-interface AnexoDataLegacy {
-  id: string;
-  url: string;
-  nome_original: string;
-  mime_type: string | null;
-  tamanho: number;
-  tamanho_formatado?: string;
-}
-
 // ===== Global bare functions (used as bare names, not window.x) =====
 declare function fetchWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeout?: number): Promise<Response>;
 declare function showToast(message: string, type?: 'success' | 'danger' | 'warning' | 'info'): void;

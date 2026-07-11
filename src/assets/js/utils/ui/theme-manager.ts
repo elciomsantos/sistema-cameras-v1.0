@@ -83,90 +83,6 @@ class ThemeManager {
     }
 }
 
-class SkeletonLoader {
-    loaders: Map<string, { element: HTMLElement; skeleton: string }> = new Map();
-
-    create(elementId: string, options: { lines?: number; type?: string } = {}): void {
-        const element = document.getElementById(elementId);
-        if (!element) {
-            console.warn('Element ' + elementId + ' not found');
-            return;
-        }
-
-        const { lines = 3, type = 'text' } = options;
-        const skeleton = this.buildSkeleton(type, lines);
-
-        element.innerHTML = skeleton;
-        element.classList.add('skeleton-container', 'loading');
-        this.loaders.set(elementId, { element, skeleton });
-    }
-
-    buildSkeleton(type: string, lines: number): string {
-        switch (type) {
-            case 'card':
-                return [
-                    '<div class="skeleton-card">',
-                    '<div class="skeleton skeleton-heading"></div>',
-                    Array(lines).fill(null).map(() => '<div class="skeleton skeleton-text"></div>').join(''),
-                    '</div>'
-                ].join('');
-
-            case 'avatar':
-                return [
-                    '<div class="sk-flex-gap">',
-                    '<div class="skeleton skeleton-avatar"></div>',
-                    '<div class="sk-flex-1">',
-                    '<div class="skeleton skeleton-heading"></div>',
-                    '<div class="skeleton skeleton-text"></div>',
-                    '</div>',
-                    '</div>'
-                ].join('');
-
-            case 'list':
-                return [
-                    '<div class="skeleton-card">',
-                    Array(lines).fill(null).map(() => [
-                        '<div class="sk-flex-gap-mb">',
-                        '<div class="skeleton sk-avatar-list"></div>',
-                        '<div class="sk-flex-1">',
-                        '<div class="skeleton skeleton-text sk-text-60"></div>',
-                        '<div class="skeleton skeleton-text sk-text-40"></div>',
-                        '</div>',
-                        '</div>'
-                    ].join('')).join(''),
-                    '</div>'
-                ].join('');
-
-            case 'text':
-            default:
-                return [
-                    '<div class="skeleton-card">',
-                    Array(lines).fill(null).map(() => '<div class="skeleton skeleton-text"></div>').join(''),
-                    '</div>'
-                ].join('');
-        }
-    }
-
-    remove(elementId: string): void {
-        const loader = this.loaders.get(elementId);
-        if (loader) {
-            loader.element.innerHTML = '';
-            loader.element.classList.remove('skeleton-container', 'loading');
-            this.loaders.delete(elementId);
-        }
-    }
-
-    async show(elementId: string, duration: number = 2000, options: { lines?: number; type?: string } = {}): Promise<void> {
-        this.create(elementId, options);
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                this.remove(elementId);
-                resolve();
-            }, duration);
-        });
-    }
-}
-
 class AccessibilityHelper {
     static init(): void {
         this.setupAriaLabels();
@@ -211,7 +127,6 @@ class AccessibilityHelper {
 
 function initThemeFeatures(): void {
     new ThemeManager();
-    new SkeletonLoader();
     AccessibilityHelper.init();
 }
 

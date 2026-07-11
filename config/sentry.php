@@ -76,28 +76,5 @@ function captureSentryException(\Throwable $exception, array $context = []): voi
     SentrySdk::captureException($exception);
 }
 
-function captureSentryMessage(string $message, string $level = 'info', array $context = []): void
-{
-    if (!isProduction() || empty(getenv('SENTRY_DSN'))) {
-        return;
-    }
-
-    $breadcrumbLevel = match ($level) {
-        'debug' => Breadcrumb::LEVEL_DEBUG,
-        'info' => Breadcrumb::LEVEL_INFO,
-        'warning' => Breadcrumb::LEVEL_WARNING,
-        'error' => Breadcrumb::LEVEL_ERROR,
-        default => Breadcrumb::LEVEL_INFO,
-    };
-
-    SentrySdk::addBreadcrumb(new Breadcrumb(
-        $breadcrumbLevel,
-        Breadcrumb::TYPE_DEFAULT,
-        'log',
-        $message,
-        $context
-    ));
-}
-
 // Auto-initialize on load
 initSentry();

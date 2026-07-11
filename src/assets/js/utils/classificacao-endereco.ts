@@ -10,16 +10,3 @@ export const CLASSIFICACAO_MAP: Record<string, number> = {
     'CHACARA': 9,
     'OUTRO': 10,
 };
-
-export const CLASSIFICACOES = [
-    { id: 1, descricao: 'RUA' },
-    { id: 2, descricao: 'AVENIDA' },
-    { id: 3, descricao: 'TRAVESSA' },
-    { id: 4, descricao: 'RODOVIA' },
-    { id: 5, descricao: 'ALAMEDA' },
-    { id: 6, descricao: 'PRACA' },
-    { id: 7, descricao: 'PARQUE' },
-    { id: 8, descricao: 'ESTRADA RURAL' },
-    { id: 9, descricao: 'CHACARA' },
-    { id: 10, descricao: 'OUTRO' },
-];

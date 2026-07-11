@@ -10,7 +10,8 @@ class ChartManager {
             const center = meta.data[0] as any;
             if (!center) return;
             const cx = center.x, cy = center.y;
-            const text = (chart as any).config.options.plugins?.centerText?.text || '';
+            const ct = (chart as any).$centerText || {};
+            const text = ct.text || '';
             const lines = String(text).split('\n');
             const lineHeight = 14;
             const startY = cy - ((lines.length - 1) * lineHeight) / 2;
@@ -18,9 +19,9 @@ class ChartManager {
             ctx.textBaseline = 'middle';
             lines.forEach((line: string, i: number) => {
                 ctx.font = i === 0
-                    ? `bold ${((chart as any).config.options.plugins?.centerText?.size || 18)}px 'Segoe UI', sans-serif`
-                    : `${((chart as any).config.options.plugins?.centerText?.subSize || 11)}px 'Segoe UI', sans-serif`;
-                ctx.fillStyle = (chart as any).config.options.plugins?.centerText?.color || '#2c3e50';
+                    ? `bold ${ct.size || 18}px 'Segoe UI', sans-serif`
+                    : `${ct.subSize || 11}px 'Segoe UI', sans-serif`;
+                ctx.fillStyle = ct.color || '#2c3e50';
                 ctx.fillText(line, cx, startY + i * lineHeight);
             });
             ctx.restore();
@@ -31,14 +32,15 @@ class ChartManager {
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
         if (!canvas) return null;
         const ctx = canvas.getContext('2d');
+        const plugins = (options.plugins || {}) as Record<string, unknown>;
+        const hasCenterText = !!(plugins.centerText as any)?.text;
+        const centerTextData = hasCenterText ? plugins.centerText : null;
         if (this.charts.has(canvasId)) {
             const existing = this.charts.get(canvasId)!;
             if (existing.canvas && existing.canvas.parentElement && document.getElementById(canvasId)) {
-                const plugins = (options.plugins || {}) as Record<string, unknown>;
-                const hasCenterText = !!(plugins.centerText as any)?.text;
                 existing.data = data as any;
                 if (hasCenterText) {
-                    (existing.options as any).plugins = { ...(existing.options as any).plugins, centerText: plugins.centerText };
+                    (existing as any).$centerText = centerTextData;
                 }
                 existing.update();
                 return existing;
@@ -46,8 +48,7 @@ class ChartManager {
             existing.destroy();
             this.charts.delete(canvasId);
         }
-        const plugins = (options.plugins || {}) as Record<string, unknown>;
-        const hasCenterText = !!(plugins.centerText as any)?.text;
+        const { centerText: _, ...restPlugins } = plugins as any;
         const defaultOptions: Record<string, unknown> = {
             responsive: true,
             maintainAspectRatio: false,
@@ -60,21 +61,24 @@ class ChartManager {
                         font: { size: 10 }
                     }
                 },
-                ...plugins
+                ...restPlugins
             },
             cutout: '75%'
         };
-        if (hasCenterText) {
-            (defaultOptions as any).plugins = { ...(defaultOptions as any).plugins };
-            (defaultOptions as any).plugins.centerText = plugins.centerText;
-        }
         const chartPlugins = hasCenterText ? [this.centerTextPlugin] : [];
-        const chart = new (window as any).Chart(ctx, {
+        const chartConfig: any = {
             type,
             data,
             options: { ...defaultOptions, ...options },
             plugins: chartPlugins
-        }) as Chart;
+        };
+        if (hasCenterText) {
+            delete chartConfig.options.plugins.centerText;
+        }
+        const chart = new (window as any).Chart(ctx, chartConfig) as Chart;
+        if (hasCenterText) {
+            (chart as any).$centerText = centerTextData;
+        }
         this.charts.set(canvasId, chart);
         return chart;
     }

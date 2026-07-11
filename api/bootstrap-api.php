@@ -105,9 +105,9 @@ function executeApiRequest(?string $endpointOverride = null): void
     $allowedEndpoints = [
         'alarmes', 'auditoria_cameras', 'cadastrar_alarmes', 'cadastrar_cameras',
         'cameras', 'cep_lookup', 'dashboard',         'editar_alarme', 'editar_camera',
-        'excluir_alarme', 'excluir_anexo', 'excluir_camera', 'exportar_locais', 'geocode', 'get_modelos', 'health',
+        'excluir_alarme', 'excluir_anexo', 'excluir_camera', 'exportar_locais', 'geocode', 'health',
         'limpar_sessoes_orfas', 'listar_anexos', 'locais', 'manutencao_alarmes',
-        'manutencao_cameras', 'manutencao_utils', 'modelos_alarmes', 'modelos_cameras',
+        'manutencao_cameras', 'modelos_alarmes', 'modelos_cameras',
         'notificacoes',
         'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'session_check',
         'status', 'swagger', 'upload_anexo',

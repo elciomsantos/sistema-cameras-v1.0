@@ -59,7 +59,6 @@ return [
     'api/api_editar_camera',
     'api/api_editar_alarme',
     'api/api_excluir_camera',
-    'api/api_get_modelos',
     'api/api_modelos_cameras',
     'api/api_modelos_alarmes',
     'api/api_locais',

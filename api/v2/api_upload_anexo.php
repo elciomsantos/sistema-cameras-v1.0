@@ -142,7 +142,7 @@ try {
     $salvarEmDisco = is_dir($uploadDir) && is_writable($uploadDir);
     if (!$salvarEmDisco) {
         if (!is_dir($uploadDir)) {
-            $salvarEmDisco = @mkdir($uploadDir, 0755, true) && is_writable($uploadDir);
+            $salvarEmDisco = @mkdir($uploadDir, 0700, true) && is_writable($uploadDir);
         }
         if (!$salvarEmDisco) {
             // Sem FS writable — guardar no BD

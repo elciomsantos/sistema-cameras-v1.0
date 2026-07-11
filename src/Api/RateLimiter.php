@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 class RateLimiter
 {
-    private const STORAGE_DIR = 'ratelimit';
-
     private string $storagePath;
     private string $strategy;
     private array $configs;
@@ -18,7 +16,7 @@ class RateLimiter
         array $configs = []
     ) {
         $defaultPath = defined('APP_ROOT') ? APP_ROOT . '/storage/ratelimit' : (sys_get_temp_dir() . '/cftv_gml_ratelimit');
-        $this->storagePath = rtrim($storagePath ?? $defaultPath, '/') . '/' . self::STORAGE_DIR;
+        $this->storagePath = rtrim($storagePath ?? $defaultPath, '/') . '/';
         $this->strategy = $strategy;
         $this->configs = $configs;
 
@@ -29,7 +27,7 @@ class RateLimiter
                 }
             } catch (Throwable) {
                 $this->storageFailed = true;
-                $fallbackPath = sys_get_temp_dir() . '/cftv_gml_ratelimit/ratelimit';
+                $fallbackPath = sys_get_temp_dir() . '/cftv_gml_ratelimit/';
                 if (!is_dir($fallbackPath)) {
                     try { mkdir($fallbackPath, 0755, true); } catch (Throwable) {}
                 }

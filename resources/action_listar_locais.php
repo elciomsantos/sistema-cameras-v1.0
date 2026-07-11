@@ -37,7 +37,7 @@ if ($nivel !== 'admin' && $usuarioSecretariaId !== null) {
     $filters['secretaria_id'] = $usuarioSecretariaId;
 }
 
-$allLocais = $locaisService->searchAll($filters);
+$allLocais = $locaisService->streamLocaisExport($filters);
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="locais_' . date('Y-m-d') . '.csv"');

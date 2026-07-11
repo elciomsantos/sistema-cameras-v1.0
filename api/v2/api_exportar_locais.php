@@ -70,10 +70,9 @@ if ($format === 'csv') {
     exit;
 }
 
-$locais = $locaisService->getAllLocaisExport($filters);
-
-$data = array_map(function ($l) {
-    return [
+$data = [];
+foreach ($locaisService->streamLocaisExport($filters) as $l) {
+    $data[] = [
         'id' => (int)$l->id,
         'nome' => $l->nome ?? '',
         'tipo_local' => $l->tipo_local_nome ?? '',
@@ -91,6 +90,6 @@ $data = array_map(function ($l) {
         'total_outros' => (int)($l->total_outros ?? 0),
         'horario_funcionamento' => $l->horario_funcionamento ?? '',
     ];
-}, $locais);
+}
 
 ApiResponse::success(['locais' => $data, 'total' => count($data)]);

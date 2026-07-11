@@ -6,6 +6,8 @@ use App\Exception\ServiceException;
 
 class AlarmeService
 {
+    use ParsesInput;
+
     private $db;
 
     public function __construct($db = null)
@@ -20,32 +22,6 @@ class AlarmeService
             return array_map(fn($row) => (string)$row->nome, $result['data']);
         }
         return ['Ativo', 'Inativo', 'Desligado', 'Manutenção', 'Pendente'];
-    }
-
-    public static function requireAccess(): void
-    {
-        requireApiAuth('supervisor');
-    }
-
-    public static function parseJsonInput(): array
-    {
-        $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
-        if ($contentLength > 10 * 1024 * 1024) {
-            throw ServiceException::badRequest('Payload muito grande. Maximo: 10MB.');
-        }
-        $raw = file_get_contents('php://input');
-        if ($raw === '' || $raw === false) {
-            throw ServiceException::badRequest('Nenhum dado recebido.');
-        }
-        $jsonInput = json_decode($raw, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw ServiceException::badRequest('JSON invalido: ' . json_last_error_msg());
-        }
-        $data = is_array($jsonInput) ? $jsonInput : [];
-        if (empty($data)) {
-            throw ServiceException::badRequest('Nenhum dado recebido.');
-        }
-        return $data;
     }
 
     public function validateInput(array $data, bool $requireId = false): array

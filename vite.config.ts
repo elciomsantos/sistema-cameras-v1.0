@@ -59,7 +59,7 @@ export default defineConfig({
         },
       },
     },
-    sourcemap: 'hidden',
+    sourcemap: false,
     minify: 'esbuild',
   },
   server: {

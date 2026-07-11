@@ -6,37 +6,13 @@ use App\Exception\ServiceException;
 
 class EquipamentoService
 {
+    use ParsesInput;
+
     private $db;
 
     public function __construct($db = null)
     {
         $this->db = $db ?? db();
-    }
-
-    public static function requireAccess(): void
-    {
-        requireApiAuth('supervisor');
-    }
-
-    public static function parseJsonInput(): array
-    {
-        $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
-        if ($contentLength > 10 * 1024 * 1024) {
-            throw ServiceException::badRequest('Payload muito grande. Maximo: 10MB.');
-        }
-        $raw = file_get_contents('php://input');
-        if ($raw === '' || $raw === false) {
-            throw ServiceException::badRequest('Nenhum dado recebido.');
-        }
-        $jsonInput = json_decode($raw, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw ServiceException::badRequest('JSON invalido: ' . json_last_error_msg());
-        }
-        $data = is_array($jsonInput) ? $jsonInput : [];
-        if (empty($data)) {
-            throw ServiceException::badRequest('Nenhum dado recebido.');
-        }
-        return $data;
     }
 
     public function extractCommonData(array $data): array
@@ -613,7 +589,7 @@ class EquipamentoService
 
     public function resetAppUserContext(): void
     {
-        $this->db->setUserContext(null, null);
+        $this->db->setUserContext(null);
     }
 
     public function beginTransaction(): void

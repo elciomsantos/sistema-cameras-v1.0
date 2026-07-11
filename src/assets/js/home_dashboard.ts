@@ -35,8 +35,9 @@ class HomeDashboard extends (window.DashboardCore as any) {
     async loadData() {
         if (this._loading) return;
         this._loading = true;
+        const isInitialLoad = this.data === null;
         try {
-            this.setLoading(true);
+            if (!isInitialLoad) this.setLoading(true);
             const endpoint = `${this.getApiBase()}api_dashboard`;
             const payload = await this.fetchData(endpoint) as ApiResponse<Record<string, unknown>>;
             this.data = payload && payload.success ? payload : null;

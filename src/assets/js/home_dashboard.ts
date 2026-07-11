@@ -1,6 +1,7 @@
 class HomeDashboard extends (window.DashboardCore as any) {
     chartManager: any;
     _loading = false;
+    private _listenersAbort: AbortController | null = null;
 
     constructor() {
         super();
@@ -203,6 +204,12 @@ class HomeDashboard extends (window.DashboardCore as any) {
     }
 
     setupEventListeners() {
+        if (this._listenersAbort) {
+            this._listenersAbort.abort();
+        }
+        this._listenersAbort = new AbortController();
+        const signal = this._listenersAbort.signal;
+
         document.addEventListener('click', (e: MouseEvent) => {
             const target = e.target as HTMLElement;
             if (target.matches('#logout') || target.closest('#logout')) {
@@ -219,13 +226,13 @@ class HomeDashboard extends (window.DashboardCore as any) {
                 e.preventDefault();
                 window.location.href = (typeof BASE_URL !== 'undefined' ? BASE_URL : '') + '/index.php?page=settings' as string;
             }
-        });
+        }, { signal });
 
         const menuToggle = document.getElementById('menu-toggle');
         if (menuToggle) {
             menuToggle.addEventListener('click', () => {
                 document.body.classList.toggle('sidebar-collapsed');
-            });
+            }, { signal });
         }
     }
 
@@ -249,6 +256,10 @@ class HomeDashboard extends (window.DashboardCore as any) {
     destroy() {
         if (this.updateInterval) {
             clearInterval(this.updateInterval as number);
+        }
+        if (this._listenersAbort) {
+            this._listenersAbort.abort();
+            this._listenersAbort = null;
         }
         if ((window as any)._homeTooltips) {
             (window as any)._homeTooltips.forEach((t: any) => t.dispose());

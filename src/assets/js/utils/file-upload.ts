@@ -157,8 +157,13 @@ function uploadFile(
         xhr.addEventListener('load', function () {
             try {
                 const res = JSON.parse(xhr.responseText) as ApiResponse<unknown>
+                const newCsrf = xhr.getResponseHeader('X-CSRF-Token')
+                if (newCsrf) {
+                    const meta = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+                    if (meta) meta.setAttribute('content', newCsrf)
+                }
                 if (res.success) resolve((res as any).data?.resource?.anexo || (res as any).anexo)
-                else reject(new Error(res.error || 'Erro no upload'))
+                else reject(new Error((res as any).message || 'Erro no upload'))
             } catch (e) {
                 reject(new Error('Resposta invalida do servidor'))
             }
@@ -314,7 +319,7 @@ function doDelete(container: HTMLElement, id: string, nome: string): void {
         if (res.success) {
             loadAnexos(container)
         } else {
-            window.showToast!(res.error || 'Erro ao excluir anexo', 'danger')
+            window.showToast!((res as any).message || 'Erro ao excluir anexo', 'danger')
         }
     }).catch(function () {
         window.showToast!('Erro de conexão ao excluir anexo.', 'danger')

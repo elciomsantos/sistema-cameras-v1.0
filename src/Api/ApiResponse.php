@@ -327,6 +327,10 @@ class ApiResponse
             header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
             header('Pragma: no-cache');
             header('Expires: Wed, 11 Jan 1984 05:00:00 GMT');
+
+            if (session_status() === PHP_SESSION_ACTIVE && !empty($_SESSION['csrf_tokens'])) {
+                header('X-CSRF-Token: ' . end($_SESSION['csrf_tokens']));
+            }
         }
 
         echo $json;

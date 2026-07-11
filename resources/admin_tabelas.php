@@ -204,7 +204,7 @@ if ($tabela !== '' && !isset($allTables[$tabela])) {
                                 <?php endforeach; ?>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-warning" title="Editar"
-                                        onclick="editar(<?= $row->id ?>, <?= htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') ?>)">
+                                        onclick="editar(<?= (int)$row->id ?>, <?= htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') ?>)">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form method="post" action="?page=action_administracao" class="d-inline"
@@ -212,7 +212,7 @@ if ($tabela !== '' && !isset($allTables[$tabela])) {
                                         <input type="hidden" name="csrf_token" value="<?= getCsrfToken() ?>">
                                         <input type="hidden" name="tabela" value="<?= $tabela ?>">
                                         <input type="hidden" name="acao" value="excluir">
-                                        <input type="hidden" name="id" value="<?= $row->id ?>">
+                                        <input type="hidden" name="id" value="<?= (int)$row->id ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>

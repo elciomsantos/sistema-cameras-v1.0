@@ -355,6 +355,9 @@ function initListarAlarmes(): void {
             }
         });
 
+        if ((window as any)._listarAlarmesInterval) {
+            clearInterval((window as any)._listarAlarmesInterval);
+        }
         (window as any)._listarAlarmesInterval = setInterval(() => carregarListaAlarmes(currentPage), 120000);
         window.addEventListener('beforeunload', function() {
             clearInterval((window as any)._listarAlarmesInterval);

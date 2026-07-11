@@ -251,12 +251,17 @@ document.addEventListener('DOMContentLoaded', function (): void {
                     <i class="fas fa-exclamation-triangle fa-2x mb-3"></i><br>
                     <h5>Erro ao carregar dados</h5>
                     <p class="text-muted">${safeMsg}</p>
-                    <button class="btn btn-sm btn-primary mt-2" onclick="location.reload()">
+                    <button class="btn btn-sm btn-primary mt-2" id="btn-tentar-novamente">
                         <i class="fas fa-sync-alt"></i> Tentar novamente
                     </button>
                 </td>
             </tr>
         `;
+
+    const btnTentar = document.getElementById('btn-tentar-novamente');
+    if (btnTentar) {
+      btnTentar.addEventListener('click', () => location.reload());
+    }
 
     totalRegistros.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro na busca';
   }

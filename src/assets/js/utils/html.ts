@@ -11,7 +11,7 @@ const SAFE_TAGS = new Set([
   'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'blockquote', 'pre', 'code',
 ])
 const SAFE_ATTRS = new Set([
-  'class', 'style', 'src', 'alt', 'href', 'target', 'rel',
+  'class', 'src', 'alt', 'href', 'target', 'rel',
   'width', 'height', 'id', 'title',
 ])
 
@@ -32,11 +32,17 @@ export function sanitizeHtml(input: string): string {
         }
       }
       const lc = el.tagName.toLowerCase()
-      if (lc === 'a' && el.getAttribute('href')?.toLowerCase().startsWith('javascript:')) {
-        el.setAttribute('href', '#')
+      if (lc === 'a') {
+        const href = el.getAttribute('href')?.toLowerCase().trim()
+        if (!href || href.startsWith('javascript:') || href.startsWith('data:')) {
+          el.setAttribute('href', '#')
+        }
       }
-      if (lc === 'img' && !el.getAttribute('src')) {
-        el.removeAttribute('src')
+      if (lc === 'img') {
+        const src = el.getAttribute('src')?.toLowerCase().trim()
+        if (!src || src.startsWith('data:')) {
+          el.removeAttribute('src')
+        }
       }
     }
     Array.from(node.childNodes).forEach(clean)

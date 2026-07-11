@@ -160,6 +160,8 @@ function executeApiRequest(?string $endpointOverride = null): void
     header('X-Request-ID: ' . ApiResponse::getRequestId());
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
+    header('Referrer-Policy: no-referrer');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
 
     $idempotentGetEndpoints = [
         'ping', 'status', 'modelos_cameras', 'modelos_alarmes',

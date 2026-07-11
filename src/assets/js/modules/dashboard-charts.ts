@@ -179,12 +179,27 @@ class ChartManager {
                 this.charts.delete('alarmChart');
             }
             const emptyCanvas = document.getElementById('alarmChart');
+            if (emptyCanvas) {
+                emptyCanvas.style.display = 'none';
+            }
+            const placeholder = emptyCanvas?.parentElement?.querySelector('.alarm-empty-msg');
+            if (placeholder) {
+                placeholder.remove();
+            }
             if (emptyCanvas && emptyCanvas.parentElement) {
-                emptyCanvas.parentElement.innerHTML = '<p class="text-muted text-center py-4">Nenhum dado de alarme dispon&iacute;vel.</p>';
+                const msg = document.createElement('p');
+                msg.className = 'text-muted text-center py-4 alarm-empty-msg';
+                msg.textContent = 'Nenhum dado de alarme disponível.';
+                emptyCanvas.parentElement.appendChild(msg);
             }
             return;
         }
         let canvas = document.getElementById('alarmChart');
+        if (canvas) {
+            canvas.style.display = '';
+            const emptyMsg = canvas.parentElement?.querySelector('.alarm-empty-msg');
+            if (emptyMsg) emptyMsg.remove();
+        }
         if (!canvas) {
             const placeholders = document.querySelectorAll('.alarm-chart-placeholder');
             if (placeholders.length > 0) {

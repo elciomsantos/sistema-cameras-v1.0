@@ -64,7 +64,7 @@ $actions = $isCamera ? [
 
                     <div class="row">
                         <?php foreach ($actions as $a): ?>
-                        <?php if (userHasAccess($a['access'] ?? 'user')): ?>
+                        <?php if (userHasAccess($a['access'])): ?>
                         <div class="col-md-3 mb-3">
                             <div class="card h-100">
                                 <div class="card-body text-center">

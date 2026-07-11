@@ -1,7 +1,6 @@
-includes:
-    - phpstan-baseline.neon
-
 parameters:
+    bootstrapFiles:
+        - phpstan-stubs.php
     level: 5
     treatPhpDocTypesAsCertain: false
     paths:
@@ -12,3 +11,5 @@ parameters:
         - auth
         - accounts
         - config
+    excludePaths:
+        - config/sentry.php

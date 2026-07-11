@@ -4,6 +4,12 @@ requererAcesso('supervisor');
 $db = db();
 $isAdmin = ($_SESSION['usuario']->nivel_acesso ?? '') === 'admin';
 
+$totalUsers = 0;
+$totalEscolas = 0;
+$totalCmeis = 0;
+$totalOperadoras = 0;
+$totalProprios = 0;
+
 $cacheKey = 'admin_stats_' . ($isAdmin ? 'full' : 'user');
 if (function_exists('apcu_fetch')) {
     $cached = apcu_fetch($cacheKey);

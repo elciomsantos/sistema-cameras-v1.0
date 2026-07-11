@@ -57,7 +57,7 @@ try {
         $params[':pesquisa'] = $pesquisa;
     }
 
-    $whereSql = empty($whereParts) ? '' : ('WHERE ' . implode(' AND ', $whereParts));
+    $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
     $baseFrom = "
         FROM equipamentos e
         LEFT JOIN catalogo_modelos cm ON e.modelo_id = cm.id

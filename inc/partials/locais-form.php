@@ -1,4 +1,10 @@
 <?php
+$tiposLocais = $tiposLocais ?? [];
+$regioes = $regioes ?? [];
+$secretarias = $secretarias ?? [];
+$ufs = $ufs ?? [];
+$classificacoes = $classificacoes ?? [];
+
 $modo ??= 'cadastro';
 $isEdit = $modo === 'editar';
 $data ??= null;

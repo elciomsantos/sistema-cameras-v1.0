@@ -23,7 +23,6 @@ if (file_exists($interfacePath)) {
  * 4. O autoload PSR-4 (App\ → src/) é para classes em src/ e não conflita
  *
  * @see db()  Helper global para acesso à instância única
- * @implements \App\Database\DatabaseInterface
  */
 class database implements \App\Database\DatabaseInterface
 {
@@ -236,7 +235,7 @@ class database implements \App\Database\DatabaseInterface
      * Retorna um Generator que yielda rows uma a uma — útil para exports grandes
      * sem carregar tudo em memória. Usa PDO::FETCH_NUM para menor overhead.
      *
-     * @return \Generator<int, array>
+     * @return \Generator<int, object>
      */
     public function queryCursor(string $sql, array $params = []): \Generator
     {

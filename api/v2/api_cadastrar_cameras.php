@@ -85,7 +85,7 @@ try {
     }
 
     if (isset($equipId) && !$rolledBack) {
-        error_log('[api_cadastrar_cameras] CRITICAL: Estado inconsistente - equipId=' . ($equipId ?? 'null') . ' - rollback falhou');
+        error_log('[api_cadastrar_cameras] CRITICAL: Estado inconsistente - equipId=' . $equipId . ' - rollback falhou');
     }
 
     error_log('[api_cadastrar_cameras] ' . $e->getMessage());

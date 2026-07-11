@@ -77,7 +77,7 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             E_USER_ERROR,
             E_RECOVERABLE_ERROR
         ];
-        if (!in_array($error['type'] ?? 0, $fatalTypes, true)) {
+        if (!in_array($error['type'], $fatalTypes, true)) {
             return;
         }
 
@@ -86,11 +86,11 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             ob_end_clean();
         }
 
-        logError($error['message'] ?? 'erro fatal', [
+        logError($error['message'], [
             'context' => $context,
             'type' => 'FATAL',
-            'file' => $error['file'] ?? 'unknown',
-            'line' => $error['line'] ?? 0,
+            'file' => $error['file'],
+            'line' => $error['line'],
         ], $context);
 
         if (headers_sent()) {

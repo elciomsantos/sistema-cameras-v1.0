@@ -106,7 +106,7 @@ try {
         $params[':local_id'] = $localId;
     }
 
-    $whereSql = empty($whereParts) ? '' : ('WHERE ' . implode(' AND ', $whereParts));
+    $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
 
     $baseFrom = "
         FROM equipamentos e

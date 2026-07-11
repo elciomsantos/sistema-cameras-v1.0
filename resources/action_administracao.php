@@ -79,7 +79,7 @@ try {
                 $check = $db->query("SELECT id FROM {$tabela} WHERE UPPER(nome) = UPPER(?)", [$nome]);
                 if (!empty($check['data'])) {
                     $labels = ['regioes' => 'região', 'tipos_locais' => 'tipo de local', 'tipos_equipamento' => 'tipo de equipamento', 'tipos_secretaria' => 'tipo de secretaria', 'marcas' => 'marca', 'status' => 'status'];
-                    throw new RuntimeException('Já existe um(a) ' . ($labels[$tabela] ?? 'registro') . ' com este nome.');
+                    throw new RuntimeException('Já existe um(a) ' . $labels[$tabela] . ' com este nome.');
                 }
                 $db->query("INSERT INTO {$tabela} (nome) VALUES (?)", [$nome]);
             } else {

@@ -143,5 +143,3 @@ try {
 </div>
 
 <?php vite_page_js('relatorios-alarmes'); ?>
-
-

@@ -250,7 +250,6 @@ function executeApiRequest(?string $endpointOverride = null): void
 
     $publicEndpoints = ['auth/login', 'auth/register', 'ping', 'api_ping'];
     $noRotateEndpoints = ['renovar_sessao'];
-    $noCsrfEndpoints = [];
     $writeCloseEndpoints = [
         'alarmes', 'cameras', 'dashboard', 'cep_lookup', 'geocode',
         'locais', 'modelos_cameras', 'modelos_alarmes', 'notificacoes',
@@ -265,9 +264,7 @@ function executeApiRequest(?string $endpointOverride = null): void
         $db->setUserContext((int)$_SESSION['usuario']->id, 'api');
     }
     $shouldRotate = !in_array($endpoint, $noRotateEndpoints, true);
-    if (!in_array($endpoint, $noCsrfEndpoints, true)) {
-        requireApiCsrf($shouldRotate);
-    }
+    requireApiCsrf($shouldRotate);
 
     if (in_array($endpoint, $writeCloseEndpoints, true) && !headers_sent() && session_status() === PHP_SESSION_ACTIVE) {
         session_write_close();

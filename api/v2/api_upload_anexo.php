@@ -285,7 +285,7 @@ try {
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) { $db->rollback(); }
-        if ($salvarEmDisco && isset($caminhoAbsoluto) && is_file($caminhoAbsoluto)) { @unlink($caminhoAbsoluto); }
+        if ($salvarEmDisco && is_file($caminhoAbsoluto)) { @unlink($caminhoAbsoluto); }
         foreach ($thumbnailPaths as $thumbPath) {
             if (is_file($thumbPath)) { @unlink($thumbPath); }
         }

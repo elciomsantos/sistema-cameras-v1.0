@@ -163,7 +163,7 @@ class RateLimiter
         $cutoff = $now - $window;
         $result = false;
 
-        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $cutoff, $now, &$result): ?array {
+        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $cutoff, $now, &$result): array {
             $timestamps = $data['timestamps'] ?? [];
             $timestamps = array_values(array_filter($timestamps, fn($ts) => $ts > $cutoff));
 
@@ -211,7 +211,7 @@ class RateLimiter
         $now = time();
         $result = false;
 
-        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $window, $now, &$result): ?array {
+        $this->fileReadModifyWrite($key, function (?array $data) use ($limit, $window, $now, &$result): array {
             $data = $data ?? [];
             $tokens = $this->refillTokens($data, $limit, $window);
 
@@ -277,6 +277,7 @@ class RateLimiter
         }
 
         try {
+            /** @var mixed $pdo */
             $pdo = db()->getConnection();
             if ($pdo === null) {
                 $this->useDb = false;

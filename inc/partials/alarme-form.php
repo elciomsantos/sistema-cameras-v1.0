@@ -1,4 +1,8 @@
 <?php
+$statusList = $statusList ?? [];
+$regiaoList = $regiaoList ?? [];
+$lookup = $lookup ?? null;
+
 $modo ??= 'cadastro';
 $formId ??= 'formAlarme';
 $isEdit = $modo === 'editar';

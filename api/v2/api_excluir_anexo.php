@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
     }
 
-    requireApiAuth('supervisor');
-
     $jsonInput = json_decode(file_get_contents('php://input'), true);
     $input = is_array($jsonInput) ? $jsonInput : [];
     $anexoId = max(1, (int)($input['id'] ?? 0));

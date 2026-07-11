@@ -8,3 +8,7 @@ parameters:
         - api
         - src
         - inc
+        - resources
+        - auth
+        - accounts
+        - config

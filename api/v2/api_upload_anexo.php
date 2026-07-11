@@ -7,8 +7,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
     }
 
-    requireApiAuth('supervisor');
-
     $db = db();
 
     $equipamentoId = isset($_POST['equipamento_id']) ? (int)$_POST['equipamento_id'] : null;

@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user', true);
-
     $cep = preg_replace('/\D+/', '', (string)($_GET['cep'] ?? ''));
     if (strlen($cep) !== 8) {
         ApiResponse::error('VALIDATION_ERROR', 'CEP inválido.');

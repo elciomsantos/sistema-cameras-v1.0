@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('supervisor', true);
-
     $validator = new RequestValidator($_GET);
     $validator->validate([
         'page_num' => 'numeric|min:1',

@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');
     }
 
-    requireApiAuth('supervisor');
-
     $rawBody = file_get_contents('php://input');
     $body = json_decode($rawBody, true);
     if (!is_array($body)) {

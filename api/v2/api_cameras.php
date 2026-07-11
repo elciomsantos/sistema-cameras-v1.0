@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user', true);
-
     $validator = new RequestValidator($_GET);
     $validator->validate([
         'id' => 'numeric|min:0',

@@ -293,7 +293,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Método não permitido.');
     }
 
-    requireApiAuth('user');
 
     $db = db();
 

@@ -285,8 +285,8 @@ function exibirCameras(cameras: Array<Record<string, unknown>>): void {
     if ((window as any)._listarCamerasTooltips) {
         (window as any)._listarCamerasTooltips.forEach((t: any) => t.dispose());
     }
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    (window as any)._listarCamerasTooltips = tooltipTriggerList.map(function(tooltipTriggerEl: Element) {
+    const tooltipTriggerList = container.querySelectorAll('[data-bs-toggle="tooltip"]');
+    (window as any)._listarCamerasTooltips = Array.from(tooltipTriggerList).map(function(tooltipTriggerEl: Element) {
         return new bootstrap.Tooltip(tooltipTriggerEl as HTMLElement);
     });
 }
@@ -489,8 +489,9 @@ function initListarCameras(): void {
         if ((window as any)._listarCamerasTooltips) {
             (window as any)._listarCamerasTooltips.forEach((t: any) => t.dispose());
         }
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        (window as any)._listarCamerasTooltips = tooltipTriggerList.map(function(tooltipTriggerEl: Element) {
+        const cameraTableContainer = document.getElementById('listaCameras');
+        const tooltipTriggerList = cameraTableContainer ? cameraTableContainer.querySelectorAll('[data-bs-toggle="tooltip"]') : document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        (window as any)._listarCamerasTooltips = Array.from(tooltipTriggerList).map(function(tooltipTriggerEl: Element) {
             return new bootstrap.Tooltip(tooltipTriggerEl as HTMLElement);
         });
     }

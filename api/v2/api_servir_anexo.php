@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET e permitido', [], 405);
     }
 
-    requireApiAuth('user');
-
     $id = isset($_GET['id']) ? max(1, (int)$_GET['id']) : 0;
     if (!$id) {
         ApiResponse::error('VALIDATION_ERROR', 'ID do anexo nao informado.');

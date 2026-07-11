@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user');
-
     $db = db();
     $result = $db->query("SELECT id, nome FROM catalogo_modelos_alarmes ORDER BY nome ASC");
 

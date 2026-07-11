@@ -4,15 +4,27 @@ require_once __DIR__ . '/../config/database.php';
 
 function getSessionClientIp(): string
 {
-    return resolveClientIp();
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $cached = resolveClientIp();
+    return $cached;
 }
 
 function getSessionUserAgent(): string
 {
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
     $ua = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
     $ua = preg_replace('/[^\x20-\x7E\xC0-\xFF]/', '', $ua);
     $ua = trim(mb_substr($ua, 0, 255));
-    return $ua !== '' ? $ua : 'unknown';
+    $cached = $ua !== '' ? $ua : 'unknown';
+    return $cached;
 }
 
 function hashSessionToken(string $token): string

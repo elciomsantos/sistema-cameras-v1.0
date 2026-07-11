@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('supervisor');
-
     $db = db();
 
     $page = max(1, (int)($_GET['page_num'] ?? 1));

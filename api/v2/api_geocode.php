@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user', true);
-
     $query = trim((string)($_GET['q'] ?? ''));
     if ($query === '') {
         ApiResponse::error('BAD_REQUEST', 'Endereço não informado.');

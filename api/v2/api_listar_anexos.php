@@ -15,8 +15,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user');
-
     $equipamentoId = isset($_GET['equipamento_id']) ? (int)$_GET['equipamento_id'] : null;
     $alarmeId = isset($_GET['alarme_id']) ? (int)$_GET['alarme_id'] : null;
     $manutencaoCameraId = isset($_GET['manutencao_camera_id']) ? (int)$_GET['manutencao_camera_id'] : null;

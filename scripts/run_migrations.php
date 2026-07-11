@@ -9,8 +9,8 @@ require_once __DIR__ . '/../config/database.php';
 
 echo "=== Migration Runner ===\n\n";
 
-$migrationsDir = __DIR__ . '/../migrations/';
-$files = glob($migrationsDir . '*.sql');
+$migrationsDir = __DIR__ . '/../database/migrations/';
+$files = glob($migrationsDir . '*.php');
 sort($files);
 
 if (empty($files)) {
@@ -59,61 +59,15 @@ foreach ($files as $file) {
     
     echo "RUNNING: $filename\n";
     
-    $sql = file_get_contents($file);
-    if ($sql === false) {
-        echo "  ERROR: Could not read file\n";
-        continue;
-    }
-    
     try {
         $pdo->beginTransaction();
         
-        // Split by semicolon, but be careful with semicolons in triggers/procedures
-        // Simple approach: split by ; followed by newline and optional whitespace and not inside delimiter blocks
-        $statements = [];
-        $buffer = '';
-        $inDelimiter = false;
-        $delimiter = ';';
-        
-        $lines = explode("\n", $sql);
-        foreach ($lines as $line) {
-            $trimmed = trim($line);
-            
-            if (strpos($trimmed, 'DELIMITER') === 0) {
-                $parts = explode(' ', $trimmed, 2);
-                if (count($parts) === 2) {
-                    $delimiter = trim($parts[1]);
-                    $inDelimiter = true;
-                    continue;
-                }
-            }
-            
-            if ($inDelimiter && $trimmed === $delimiter) {
-                $inDelimiter = false;
-                $delimiter = ';';
-                $statements[] = trim($buffer);
-                $buffer = '';
-                continue;
-            }
-            
-            $buffer .= $line . "\n";
-            
-            if (!$inDelimiter && substr(rtrim($line), -1) === ';') {
-                $statements[] = trim($buffer);
-                $buffer = '';
-            }
+        $migration = require $file;
+        if (!is_array($migration) || !isset($migration['up']) || !is_callable($migration['up'])) {
+            throw new RuntimeException('Migration file must return array with callable "up" key.');
         }
         
-        if (!empty($buffer)) {
-            $statements[] = trim($buffer);
-        }
-        
-        foreach ($statements as $stmt) {
-            if (empty($stmt) || substr(ltrim($stmt), 0, 2) === '--') {
-                continue;
-            }
-            $pdo->exec($stmt);
-        }
+        ($migration['up'])($pdo);
         
         $insertStmt->execute([$filename]);
         $pdo->commit();

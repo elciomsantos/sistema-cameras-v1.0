@@ -5,8 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user');
-
     $db = db();
 
     $q = trim($_GET['q'] ?? '');

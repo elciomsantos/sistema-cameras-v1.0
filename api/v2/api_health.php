@@ -1,8 +1,6 @@
 <?php
 
 try {
-    requireApiAuth('admin');
-
     $health = [
         'status' => 'ok',
         'checks' => [

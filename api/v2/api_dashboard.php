@@ -5,7 +5,6 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    requireApiAuth('user', true);
     $currentUser = $_SESSION['usuario'];
 
     $secretariaId = (int)($currentUser->secretaria_id ?? 0);

@@ -35,6 +35,7 @@ $actions = $isCamera ? [
     ['icon' => 'fa-pen-to-square',  'color' => 'text-warning',   'title' => 'Edicao',     'desc' => 'Alterar dados dos alarmes cadastrados',  'page' => 'editar_alarmes',     'btn' => 'btn-warning text-dark', 'access' => 'supervisor'],
     ['icon' => 'fa-tools',          'color' => 'text-success',   'title' => 'Manutencao', 'desc' => 'Registrar manutencao e acompanhar historico', 'page' => 'manutencao_alarmes', 'btn' => 'btn-success',   'access' => 'user'],
     ['icon' => 'fa-chart-bar',      'color' => 'text-secondary', 'title' => 'Relat&oacute;rios',  'desc' => 'Relat&oacute;rios e exporta&ccedil;&atilde;o',   'page' => 'relatorios_alarmes', 'btn' => 'btn-secondary',  'access' => 'supervisor'],
+    ['icon' => 'fa-clipboard-check','color' => 'text-dark',      'title' => 'Auditoria',  'desc' => 'Acompanhar altera&ccedil;&otilde;es no cadastro',    'page' => 'auditoria_alarmes',  'btn' => 'btn-dark',       'access' => 'admin'],
 ];
 ?>
 

@@ -47,6 +47,7 @@ return [
     'manutencao_cameras',
     'manutencao_alarmes',
     'auditoria_cameras',
+    'auditoria_alarmes',
     'notificacoes',
 
     // ENDPOINTS AJAX (pasta /api)
@@ -64,6 +65,7 @@ return [
     'api/api_locais',
     'api/api_status',
     'api/api_auditoria_cameras',
+    'api/api_auditoria_alarmes',
     'api/api_manutencao_cameras',
     'api/api_manutencao_alarmes',
     'api/api_cep_lookup',

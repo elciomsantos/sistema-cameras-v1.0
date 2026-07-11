@@ -41,6 +41,7 @@ export default defineConfig({
         'relatorios-cameras': './assets/js/entries/relatorios-cameras.ts',
         'relatorios-alarmes': './assets/js/entries/relatorios-alarmes.ts',
         'auditoria-cameras': './assets/js/entries/auditoria-cameras.ts',
+        'auditoria-alarmes': './assets/js/entries/auditoria-alarmes.ts',
         'cadastro-alarmes': './assets/js/entries/cadastro-alarmes.ts',
         'editar-alarmes': './assets/js/entries/editar-alarmes.ts',
         'cadastro-locais': './assets/js/entries/cadastro-locais.ts',

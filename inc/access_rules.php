@@ -49,6 +49,7 @@ return [
     'administracao' => 'supervisor',
     'admin_tabelas' => 'supervisor',
     'auditoria_cameras' => 'admin',
+    'auditoria_alarmes' => 'admin',
 
     // =========================================================
     // admin — gerenciamento de contas de usuário

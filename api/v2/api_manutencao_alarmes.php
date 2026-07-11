@@ -330,6 +330,7 @@ try {
                 ApiResponse::forbidden('Alarme não pertence à sua secretaria.');
             }
 
+            enableAuditTriggers('api');
             $insert = $db->query(
                 "INSERT INTO alarmes_manutencoes
                     (alarme_id, numero_os, problemas, data_hora, descricao, created_by, os_status_id)
@@ -379,6 +380,7 @@ try {
                 ApiResponse::error('VALIDATION_ERROR', 'A ordem de serviço precisa estar cadastrada para iniciar execução.');
             }
 
+            enableAuditTriggers('api');
             $update = $db->query(
                 "UPDATE alarmes_manutencoes
                  SET os_status_id = 2, updated_at = CURRENT_TIMESTAMP
@@ -446,6 +448,7 @@ try {
                 ApiResponse::error('VALIDATION_ERROR', 'A ordem de serviço precisa estar em execução antes de finalizar.');
             }
 
+            enableAuditTriggers('api');
             $db->beginTransaction();
 
             $update = $db->query(

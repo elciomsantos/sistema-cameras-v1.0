@@ -1279,6 +1279,88 @@ BEGIN
 END$$
 
 -- =====================================================
+-- TRIGGERS: AUDITORIA DE MANUTENCOES DE ALARMES
+-- =====================================================
+
+DELIMITER $$
+
+CREATE TRIGGER trg_alarmes_manutencoes_ai
+AFTER INSERT ON alarmes_manutencoes
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_buffer (
+        entidade, entidade_id, operacao_id, dados_antes, dados_depois, changed_by, origem
+    ) VALUES (
+        'alarmes_manutencoes', NEW.id, 1, NULL,
+        JSON_OBJECT(
+            'id', NEW.id,
+            'alarme_id', NEW.alarme_id,
+            'tecnico', NEW.tecnico,
+            'tecnico_id', NEW.tecnico_id,
+            'descricao', NEW.descricao,
+            'numero_os', NEW.numero_os,
+            'problemas', NEW.problemas,
+            'procedimento_id', NEW.procedimento_id,
+            'status_id', NEW.status_id,
+            'os_status_id', NEW.os_status_id,
+            'data_hora', NEW.data_hora,
+            'data_execucao', NEW.data_execucao,
+            'created_by', NEW.created_by,
+            'executado_por', NEW.executado_por,
+            'local_servico', NEW.local_servico,
+            'endereco_servico', NEW.endereco_servico
+        ),
+        @app_user_id, @app_origem
+    );
+END$$
+
+CREATE TRIGGER trg_alarmes_manutencoes_au
+AFTER UPDATE ON alarmes_manutencoes
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_buffer (
+        entidade, entidade_id, operacao_id, dados_antes, dados_depois, changed_by, origem
+    ) VALUES (
+        'alarmes_manutencoes', NEW.id, 2,
+        JSON_OBJECT(
+            'alarme_id', OLD.alarme_id,
+            'tecnico', OLD.tecnico,
+            'tecnico_id', OLD.tecnico_id,
+            'descricao', OLD.descricao,
+            'numero_os', OLD.numero_os,
+            'problemas', OLD.problemas,
+            'procedimento_id', OLD.procedimento_id,
+            'status_id', OLD.status_id,
+            'os_status_id', OLD.os_status_id,
+            'data_hora', OLD.data_hora,
+            'data_execucao', OLD.data_execucao,
+            'created_by', OLD.created_by,
+            'executado_por', OLD.executado_por,
+            'local_servico', OLD.local_servico,
+            'endereco_servico', OLD.endereco_servico
+        ),
+        JSON_OBJECT(
+            'alarme_id', NEW.alarme_id,
+            'tecnico', NEW.tecnico,
+            'tecnico_id', NEW.tecnico_id,
+            'descricao', NEW.descricao,
+            'numero_os', NEW.numero_os,
+            'problemas', NEW.problemas,
+            'procedimento_id', NEW.procedimento_id,
+            'status_id', NEW.status_id,
+            'os_status_id', NEW.os_status_id,
+            'data_hora', NEW.data_hora,
+            'data_execucao', NEW.data_execucao,
+            'created_by', NEW.created_by,
+            'executado_por', NEW.executado_por,
+            'local_servico', NEW.local_servico,
+            'endereco_servico', NEW.endereco_servico
+        ),
+        @app_user_id, @app_origem
+    );
+END$$
+
+-- =====================================================
 -- PROCEDURE PARA LIMPEZA DE LOGS (por particionamento)
 -- =====================================================
 -- Para tabelas particionadas, DROP PARTITION é O(1) em vez de DELETE em loop.

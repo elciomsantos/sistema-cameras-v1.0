@@ -204,6 +204,7 @@ class AlarmeService
 
     public function excluir(int $id): void
     {
+        enableAuditTriggers('api');
         $this->db->beginTransaction();
 
         try {

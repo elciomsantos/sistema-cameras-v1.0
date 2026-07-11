@@ -103,7 +103,7 @@ function executeApiRequest(?string $endpointOverride = null): void
     $endpoint = $apiFile;
 
     $allowedEndpoints = [
-        'alarmes', 'auditoria_cameras', 'cadastrar_alarmes', 'cadastrar_cameras',
+        'alarmes', 'auditoria_alarmes', 'auditoria_cameras', 'cadastrar_alarmes', 'cadastrar_cameras',
         'cameras', 'cep_lookup', 'dashboard',         'editar_alarme', 'editar_camera',
         'excluir_alarme', 'excluir_anexo', 'excluir_camera', 'exportar_locais', 'geocode', 'health',
         'limpar_sessoes_orfas', 'listar_anexos', 'locais', 'manutencao_alarmes',

@@ -1,0 +1,199 @@
+<?php
+
+function parseDateFilter(?string $value, bool $endOfDay = false): ?string
+{
+    if (!$value || !is_string($value)) {
+        return null;
+    }
+
+    $value = trim($value);
+    if ($value === '') {
+        return null;
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1) {
+        return $value . ($endOfDay ? ' 23:59:59' : ' 00:00:00');
+    }
+
+    if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value) === 1) {
+        $parts = explode('/', $value);
+        $normalized = $parts[2] . '-' . $parts[1] . '-' . $parts[0];
+        return $normalized . ($endOfDay ? ' 23:59:59' : ' 00:00:00');
+    }
+
+    return null;
+}
+
+function normalizeText($value): string
+{
+    return trim((string)($value ?? ''));
+}
+
+function buildResumoMudancas(int $operacaoId, ?string $dadosAntes, ?string $dadosDepois): string
+{
+    if ($operacaoId === 1) {
+        return 'Cadastro de alarme realizado.';
+    }
+    if ($operacaoId === 3) {
+        return 'Exclusão de alarme realizada.';
+    }
+
+    if ($operacaoId !== 2) {
+        return 'Alteração registrada.';
+    }
+
+    $antes = json_decode((string)$dadosAntes, true);
+    $depois = json_decode((string)$dadosDepois, true);
+
+    if (!is_array($antes) || !is_array($depois)) {
+        return 'Atualização de alarme realizada.';
+    }
+
+    $camposAlterados = [];
+    foreach ($depois as $campo => $valorNovo) {
+        $valorAntigo = $antes[$campo] ?? null;
+        if ($valorAntigo !== $valorNovo) {
+            $camposAlterados[] = $campo;
+        }
+    }
+
+    if (empty($camposAlterados)) {
+        return 'Atualização sem mudanças detectadas.';
+    }
+
+    return 'Campos alterados: ' . implode(', ', array_slice($camposAlterados, 0, 8));
+}
+
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
+    }
+
+    $db = db();
+
+    $page = max(1, (int)($_GET['page_num'] ?? 1));
+    $perPage = (int)($_GET['per_page'] ?? 20);
+    if ($perPage < 1) $perPage = 20;
+    if ($perPage > 100) $perPage = 100;
+    $offset = ($page - 1) * $perPage;
+
+    $usuarioId = (int)($_GET['usuario_id'] ?? 0);
+    $alarmeId = (int)($_GET['alarme_id'] ?? 0);
+    $operacao = strtoupper(normalizeText($_GET['operacao'] ?? ''));
+    $busca = normalizeText($_GET['busca'] ?? '');
+    $dataInicial = parseDateFilter($_GET['data_inicial'] ?? null, false);
+    $dataFinal = parseDateFilter($_GET['data_final'] ?? null, true);
+    $entidade = normalizeText($_GET['entidade'] ?? 'central_alarmes');
+
+    $allowedEntities = ['central_alarmes', 'alarmes_manutencoes'];
+    if (!in_array($entidade, $allowedEntities, true)) {
+        $entidade = 'central_alarmes';
+    }
+
+    $where = ["a.entidade = :entidade"];
+    $params = [':entidade' => $entidade];
+
+    if ($usuarioId > 0) {
+        $where[] = 'a.changed_by = :usuario_id';
+        $params[':usuario_id'] = $usuarioId;
+    }
+
+    if ($alarmeId > 0) {
+        $where[] = 'a.entidade_id = :alarme_id';
+        $params[':alarme_id'] = $alarmeId;
+    }
+
+    if (in_array($operacao, ['INSERT', 'UPDATE', 'DELETE'], true)) {
+        $mapa = ['INSERT' => 1, 'UPDATE' => 2, 'DELETE' => 3];
+        $where[] = 'a.operacao_id = :operacao_id';
+        $params[':operacao_id'] = $mapa[$operacao];
+    }
+
+    if ($dataInicial !== null) {
+        $where[] = 'a.created_at >= :data_inicial';
+        $params[':data_inicial'] = $dataInicial;
+    }
+
+    if ($dataFinal !== null) {
+        $where[] = 'a.created_at <= :data_final';
+        $params[':data_final'] = $dataFinal;
+    }
+
+    if ($busca !== '') {
+        $where[] = '(c.conta LIKE :busca OR c.ip LIKE :busca OR c.mac LIKE :busca OR c.local LIKE :busca OR u.nome LIKE :busca OR u.usuario LIKE :busca)';
+        $likeSafe = str_replace(['%', '_'], ['\%', '\_'], $busca);
+        $params[':busca'] = '%' . $likeSafe . '%';
+    }
+
+    $whereSql = implode(' AND ', $where);
+
+    $joinEntidade = $entidade === 'alarmes_manutencoes'
+        ? 'LEFT JOIN alarmes_manutencoes am ON am.id = a.entidade_id AND a.entidade = \'alarmes_manutencoes\''
+        : '';
+    $joinAlarme = $entidade === 'alarmes_manutencoes'
+        ? 'LEFT JOIN central_alarmes c ON c.id = am.alarme_id'
+        : 'LEFT JOIN central_alarmes c ON c.id = a.entidade_id';
+
+    $countSql = "
+        SELECT COUNT(*) as total
+        FROM auditoria_eventos a
+        LEFT JOIN usuarios u ON u.id = a.changed_by
+        {$joinEntidade}
+        {$joinAlarme}
+        WHERE {$whereSql}
+    ";
+    $countResult = $db->query($countSql, $params);
+    $total = 0;
+    if ($countResult['status'] === 'success' && !empty($countResult['data'])) {
+        $total = (int)($countResult['data'][0]->total ?? 0);
+    }
+
+    $sql = "
+        SELECT
+            a.id,
+            a.entidade,
+            a.entidade_id,
+            a.operacao_id,
+            a.dados_antes,
+            a.dados_depois,
+            a.origem,
+            a.created_at,
+            a.changed_by as usuario_id,
+            u.nome as usuario_nome,
+            u.usuario as usuario_login,
+            c.conta,
+            c.ip,
+            c.local,
+            c.numero
+        FROM auditoria_eventos a
+        LEFT JOIN usuarios u ON u.id = a.changed_by
+        {$joinEntidade}
+        {$joinAlarme}
+        WHERE {$whereSql}
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT :limit_auditoria OFFSET :offset_auditoria
+    ";
+    $params[':limit_auditoria'] = $perPage;
+    $params[':offset_auditoria'] = $offset;
+    $result = $db->query($sql, $params);
+
+    $rows = [];
+    if ($result['status'] === 'success') {
+        foreach ($result['data'] as $item) {
+            $row = (array)$item;
+            $row['operacao'] = $item->operacao_id;
+            $row['resumo'] = buildResumoMudancas(
+                (int)$item->operacao_id,
+                $item->dados_antes ?? null,
+                $item->dados_depois ?? null
+            );
+            $rows[] = $row;
+        }
+    }
+
+    ApiResponse::paginated($rows, $page, $perPage, $total);
+
+} catch (Throwable $e) {
+    error_log('[api_auditoria_alarmes] ' . $e->getMessage());
+    ApiResponse::internalError('Erro ao carregar auditoria.');
+}

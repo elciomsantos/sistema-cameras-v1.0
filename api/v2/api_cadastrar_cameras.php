@@ -29,6 +29,8 @@ try {
 
     $svc->beginTransaction();
 
+    $svc->setAppUserContext($_SESSION['usuario']->id ?? null);
+
     $fields = $svc->extractCommonData($data);
     $fields['classif_endereco_id'] = $svc->resolveClassificacaoEndereco(
         $fields['classif_endereco_id'],
@@ -50,8 +52,6 @@ try {
     $modeloId = $svc->resolveModelo($fields['marca_id'], $fields['tipo_id'], $data);
     $svc->validateCoordenadas($fields['coordenadas']);
     $svc->validateTipoSpecific($fields['tipo_id'], $fields['dvr_modelo'], $fields['totem_quantidade_cameras']);
-
-    $svc->setAppUserContext($_SESSION['usuario']->id ?? null);
 
     try {
         $equipData = $svc->buildEquipData($fields, $localId, $modeloId);

@@ -1,4 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "lsp": true
+  "lsp": true,
+  "mcp": {
+    "openrouter": {
+      "type": "remote",
+      "url": "https://openrouter.ai/mcp",
+      "enabled": true
+    }
+  }
 }

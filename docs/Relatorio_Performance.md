@@ -188,29 +188,29 @@ Padrão `WHERE UPPER(nome) = UPPER(?)` aparecia em ~20 locais:
 | 8 | Configurar Apache para servir `.gz` precomprimidos | `public/.htaccess` | — | Baixo | Médio | ✅ **DONE** |
 | 9 | Remover `UPPER()` de queries com collation `utf8mb4_unicode_ci` | ~20 arquivos | — | Baixo | Médio | ✅ **DONE** |
 
-### Tier 2 — Esforço Médio, Impacto Alto
+### Tier 2 — Esforço Médio, Impacto Alto ✅ **CONCLUÍDO** (commit `d7cfb20`)
 
-| # | Ação | Arquivo | Esforço | Impacto |
-|---|------|---------|---------|---------|
-| 10 | Eliminar queries 8 e 9 do dashboard (duplicam 1 e 3) | `api/v2/api_dashboard.php` | Médio | Médio |
-| 11 | Trimmar JOINs do COUNT em `api_relatorios_cameras.php` | `api/v2/api_relatorios_cameras.php` | Baixo | **Alto** |
-| 12 | APCu cache em `api_cameras.php` (30s por hash filtros) | `api/v2/api_cameras.php` | Médio | **Alto** |
-| 13 | APCu cache em `api_alarmes.php` | `api/v2/api_alarmes.php` | Médio | **Alto** |
-| 14 | APCu cache em `api_manutencao_alarmes.php` (espelhar gêmeo) | `api/v2/api_manutencao_alarmes.php` | Baixo | Médio |
-| 15 | Isolar Chart.js em chunk `vendor-chart` via `manualChunks` | `vite.config.ts` | Trivial | Médio |
-| 16 | Adicionar ETag em `api_servir_anexo.php` | `api/v2/api_servir_anexo.php` | Baixo | Médio |
-| 17 | APCu em `api_relatorios_cameras.php` (60s por hash filtros) | `api/v2/api_relatorios_cameras.php` | Médio | Médio |
+| # | Ação | Arquivo | Esforço | Impacto | Status |
+|---|------|---------|---------|---------|--------|
+| 10 | Eliminar queries 8 e 9 do dashboard (duplicam 1 e 3) | `api/v2/api_dashboard.php` | Médio | Médio | ✅ DONE |
+| 11 | Trimmar JOINs do COUNT em `api_relatorios_cameras.php` | `api/v2/api_relatorios_cameras.php` | Baixo | **Alto** | ✅ DONE — `$countBaseFrom` sem 14 JOINs |
+| 12 | APCu cache em `api_cameras.php` (30s por hash filtros) | `api/v2/api_cameras.php` | Médio | **Alto** | ✅ DONE |
+| 13 | APCu cache em `api_alarmes.php` | `api/v2/api_alarmes.php` | Médio | **Alto** | ✅ DONE |
+| 14 | APCu cache em `api_manutencao_alarmes.php` (espelhar gêmeo) | `api/v2/api_manutencao_alarmes.php` | Baixo | Médio | ✅ DONE |
+| 15 | Isolar Chart.js em chunk `vendor-chart` via `manualChunks` | `vite.config.ts` | Trivial | Médio | ✅ DONE |
+| 16 | Adicionar ETag em `api_servir_anexo.php` | `api/v2/api_servir_anexo.php` | Baixo | Médio | ✅ DONE — cobre 304 + ETag |
+| 17 | APCu em `api_relatorios_cameras.php` (60s por hash filtros) | `api/v2/api_relatorios_cameras.php` | Médio | Médio | ✅ DONE |
 
-### Tier 3 — Migração SQL / Infra
+### Tier 3 — Migração SQL / Infra ✅ **CONCLUÍDO** (commits `d049535` + `tier3-final`)
 
-| # | Ação | Esforço | Impacto |
-|---|------|---------|---------|
-| 18 | Índices: `central_alarmes(ip, mac, numero_sei)`, `alarmes_manutencoes(os_status_id, updated_at)`, `equipamentos_anexos(created_at)`, `equipamentos_anexos(created_by)` | Baixo (migration) | **Alto** |
-| 19 | `api_status.php` / `api_modelos_*.php` → usar `LookupService` | Trivial | Baixo |
-| 20 | `<link rel="modulepreload">` para entry chunks críticos | `inc/header.php` | Baixo | Médio |
-| 21 | Brotli precompressão no Vite | `vite.config.ts` | Trivial | Médio |
-| 22 | Self-host Font Awesome + Bootstrap (eliminar CDN render-blocking) | `inc/header.php` + Vite | Médio | Médio |
-| 23 | Verificar/ativar OPcache em produção (script smoke test) | `scripts/check-opcache.php` | Baixo | **Alto** se OFF |
+| # | Ação | Esforço | Impacto | Status |
+|---|------|---------|---------|--------|
+| 18 | Índices: `central_alarmes(ip, mac, numero_sei)`, `equipamentos_anexos(created_at, created_by)` | Baixo (migration) | **Alto** | ✅ DONE — migration `2026_07_12_100000` + schema `cftv_gml.sql` |
+| 19 | `api_status.php` / `api_modelos_*.php` → usar `LookupService` | Trivial | Baixo | ✅ DONE — 3 endpoints refatorados + APCu 300s em `getStatusList`, `getModelosAlarmes`, `getModelosCameras` |
+| 20 | `<link rel="modulepreload">` para entry chunks críticos | `inc/header.php` + `inc/assets.php` | Baixo | ✅ DONE |
+| 21 | Brotli precompressão no Vite | `vite.config.ts` + `public/.htaccess` | Trivial | ✅ DONE — `.br` com prioridade sobre `.gz`; vendor-chart: 59KB brotli vs 72KB gzip |
+| 22 | Self-host Font Awesome (eliminar CDN render-blocking) | `inc/header.php` + Vite | Médio | ✅ DONE — `@fortawesome/fontawesome-free` npm + SCSS entry + webfonts no postbuild + SW precache |
+| 23 | Verificar/ativar OPcache em produção (script smoke test) | `scripts/check-opcache.php` | Baixo | **Alto** se OFF | ✅ DONE — smoke test com exit code 1 se OPcache OFF |
 
 ---
 
@@ -234,8 +234,10 @@ Padrão `WHERE UPPER(nome) = UPPER(?)` aparecia em ~20 locais:
 ## Próximos Passos Recomendados
 
 1. ✅ **Tier 1 COMPLETO** (commit `e2bf436`) — 9 itens aplicados, resolve ~80% do ganho percebível
-2. **Criar migration para índices Tier 3 #18** — elimina full scans críticos (`central_alarmes.ip`, `mac`, `numero_sei`, `alarmes_manutencoes.os_status_id+updated_at`, `equipamentos_anexos.created_at`, `created_by`)
-3. **Implementar Tier 2** progressivamente — foco em `api_cameras.php` e `api_alarmes.php` (endpoints mais chamados); APCu 30s por hash de filtros
-4. **Adicionar script `check-opcache.php` no CI/deploy** — garante que OPcache está ON em produção
-5. **Monitorar `slow_query_log` MySQL** por 1 semana pós-deploy para validar ganhos
-6. **Tier 2 extras**: eliminar queries 8+9 do dashboard, ETag em `api_servir_anexo.php`, Chart.js isolado em `vendor-chart`, Brotli no Vite, self-host Font Awesome/Bootstrap
+2. ✅ **Tier 2 COMPLETO** (commit `d7cfb20`) — 8 itens: APCu nos endpoints críticos, ETag, dedup queries dashboard, Chart.js chunk
+3. ✅ **Tier 3 COMPLETO** (commits `d049535` + `tier3-final`) — 6 itens: índices DB, modulepreload, Brotli, Font Awesome self-host, OPcache smoke test, endpoints LookupService com APCu
+4. **Aplicar migration em produção** — `php database/migrate.php` (índices Tier 3 #18)
+5. **Adicionar `scripts/check-opcache.php` no CI/deploy** — garante que OPcache está ON em produção (exit 1 se OFF)
+6. **Monitorar `slow_query_log` MySQL** por 1 semana pós-deploy para validar ganhos
+7. **Verificar suporte a Brotli no Apache 2.4+** — confirmar que `mod_brotli` está ativo (ou que `.htaccess` RewriteCond sirva `.br` corretamente)
+8. **Validar cache hits do Font Awesome self-hosted** — após deploy, conferir no DevTools que não há mais requests para `cdnjs.cloudflare.com`

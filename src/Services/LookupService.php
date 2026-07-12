@@ -131,6 +131,40 @@ class LookupService
         return $data;
     }
 
+    /**
+     * Modelos de camera por marca (e opcionalmente por tipo_equipamento).
+     * Cache APCu 300s por combinacao marca+tipo — lookup frequente em forms de cadastro.
+     *
+     * @return array<int, object{id:int, nome:string}>
+     */
+    public function getModelosCameras(int $marcaId, int $tipoId = 0): array
+    {
+        $cacheKey = "lookup_modelos_cameras:{$marcaId}:{$tipoId}";
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $sql = "SELECT id, nome FROM catalogo_modelos WHERE marca_id = :marca_id";
+        $params = [':marca_id' => $marcaId];
+        if ($tipoId > 0) {
+            $sql .= " AND tipo_equipamento_id = :tipo_id";
+            $params[':tipo_id'] = $tipoId;
+        }
+        $sql .= " ORDER BY nome";
+
+        $result = $this->db->query($sql, $params);
+        $data = $result['status'] === 'success' ? $result['data'] : [];
+
+        if (function_exists('apcu_store') && !empty($data)) {
+            apcu_store($cacheKey, $data, 300);
+        }
+
+        return $data;
+    }
+
     public function getContasAlarmes(): array
     {
         $result = $this->db->query("SELECT conta, local FROM central_alarmes WHERE deleted_at IS NULL ORDER BY conta");

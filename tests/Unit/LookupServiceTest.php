@@ -13,6 +13,11 @@ class LookupServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->dbMock = $this->createMock(\database::class);
+        // Limpa cache APCu entre testes para evitar vazamento de estado entre casos
+        // quando APCu esta habilitado no ambiente de testes.
+        if (function_exists('\\apcu_clear_cache')) {
+            \apcu_clear_cache();
+        }
     }
 
     public function testServiceCanBeInstantiated(): void
@@ -134,5 +139,37 @@ class LookupServiceTest extends TestCase
 
         $this->assertCount(1, $result);
         $this->assertEquals(123, $result[0]->conta);
+    }
+
+    public function testGetModelosCamerasReturnsDataForMarca(): void
+    {
+        $expected = [(object)['id' => 1, 'nome' => 'Intelbras D1M']];
+        $this->dbMock->method('query')
+            ->willReturn(['status' => 'success', 'data' => $expected]);
+
+        $svc = new \LookupService($this->dbMock);
+        $result = $svc->getModelosCameras(5);
+
+        $this->assertCount(1, $result);
+        $this->assertEquals('Intelbras D1M', $result[0]->nome);
+    }
+
+    public function testGetModelosCamerasWithTipoFiltersQuery(): void
+    {
+        $expected = [(object)['id' => 1, 'nome' => 'DVR 16CH']];
+
+        $this->dbMock->method('query')
+            ->willReturnCallback(function ($sql, $params = []) use ($expected) {
+                // Confirma que tipo_id aplica filtro AND tipo_equipamento_id
+                if (str_contains($sql, 'tipo_equipamento_id') && isset($params[':tipo_id'])) {
+                    return ['status' => 'success', 'data' => $expected];
+                }
+                return ['status' => 'success', 'data' => []];
+            });
+
+        $svc = new \LookupService($this->dbMock);
+        $result = $svc->getModelosCameras(5, 2);
+
+        $this->assertCount(1, $result);
     }
 }

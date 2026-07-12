@@ -5,14 +5,10 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    $db = db();
-    $result = $db->query("SELECT id, nome FROM catalogo_modelos_alarmes ORDER BY nome ASC");
+    $lookup = new LookupService();
+    $modelos = $lookup->getModelosAlarmes();
 
-    if ($result['status'] === 'success') {
-        ApiResponse::success(['modelos' => $result['data'] ?? []]);
-    }
-
-    ApiResponse::internalError('Erro ao buscar modelos de alarmes.');
+    ApiResponse::success(['modelos' => $modelos]);
 
 } catch (Throwable $e) {
     error_log('[api_modelos_alarmes] ' . $e->getMessage());

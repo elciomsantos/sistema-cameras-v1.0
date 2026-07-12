@@ -19,24 +19,10 @@ try {
     $marcaId = (int)($_GET['marca_id'] ?? 0);
     $tipoId = (int)($_GET['tipo_id'] ?? $_GET['tipo_equipamento_id'] ?? 0);
 
-    $db = db();
-    $sql = "SELECT id, nome FROM catalogo_modelos WHERE marca_id = :marca_id";
-    $params = [':marca_id' => $marcaId];
+    $lookup = new LookupService();
+    $modelos = $lookup->getModelosCameras($marcaId, $tipoId);
 
-    if ($tipoId > 0) {
-        $sql .= " AND tipo_equipamento_id = :tipo_id";
-        $params[':tipo_id'] = $tipoId;
-    }
-
-    $sql .= " ORDER BY nome";
-
-    $result = $db->query($sql, $params);
-
-    if ($result['status'] === 'success') {
-        ApiResponse::success(['modelos' => $result['data'] ?? []]);
-    }
-
-    ApiResponse::internalError('Erro ao buscar modelos.');
+    ApiResponse::success(['modelos' => $modelos]);
 
 } catch (Throwable $e) {
     error_log('[api_modelos_cameras] ' . $e->getMessage());

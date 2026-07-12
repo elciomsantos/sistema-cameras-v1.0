@@ -5,17 +5,13 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');
     }
 
-    $db = db();
-    $result = $db->query("SELECT id, nome FROM status ORDER BY nome");
+    $lookup = new LookupService();
+    $status = $lookup->getStatusList();
 
-    if ($result['status'] === 'success') {
-        ApiResponse::success([
-            'data' => $result['data'] ?? [],
-            'count' => count($result['data'] ?? []),
-        ]);
-    }
-
-    ApiResponse::internalError('Erro ao buscar status.');
+    ApiResponse::success([
+        'data' => $status,
+        'count' => count($status),
+    ]);
 
 } catch (Throwable $e) {
     error_log('[api_status] ' . $e->getMessage());

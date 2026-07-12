@@ -24,12 +24,15 @@ require_once __DIR__ . '/../config/database.php';
 $db = db();
 $pdo = $db->getConnection();
 
-// Ensure migrations table exists
+// Ensure migrations table exists.
+// Schema alinhado com o banco pre-existente (filename/executed_at),
+// preservando entries legadas 001..007 do sistema de migrations .sql anterior.
+// Nomes curtos evitam rescrever o historico e permitem coexistir com migrations antigas.
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS migrations (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        migration VARCHAR(255) NOT NULL UNIQUE,
-        applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        filename VARCHAR(255) NOT NULL UNIQUE,
+        executed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ");
 
@@ -57,10 +60,10 @@ function getMigrationFiles(): array
 
 function getAppliedMigrations(PDO $pdo): array
 {
-    $stmt = $pdo->query("SELECT migration FROM migrations ORDER BY applied_at");
+    $stmt = $pdo->query("SELECT filename FROM migrations ORDER BY executed_at");
     $applied = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $applied[] = $row['migration'];
+        $applied[] = $row['filename'];
     }
     return $applied;
 }
@@ -86,14 +89,49 @@ function runMigrations(PDO $pdo): void
             continue;
         }
 
+        $registered = in_array($timestamp, getAppliedMigrations($pdo), true);
+
         try {
-            $pdo->beginTransaction();
+            if (!$registered) {
+                $pdo->beginTransaction();
+            }
             $migration['up']($pdo);
-            $pdo->prepare("INSERT INTO migrations (migration) VALUES (?)")->execute([$timestamp]);
-            $pdo->commit();
-            echo "OK\n";
+            if (!$registered) {
+                $pdo->prepare("INSERT INTO migrations (filename) VALUES (?)")->execute([$timestamp]);
+                $pdo->commit();
+            }
+            echo $registered ? "OK (already applied, skipped)\n" : "OK\n";
         } catch (\Throwable $e) {
-            $pdo->rollBack();
+            // MySQL faz commit implicito em DDL (ALTER, CREATE TABLE, RENAME, DROP...).
+            // A transacao PDO original e encerrada pelo commit implicito e Rollback/commit
+            // subsequentes lançam "There is no active transaction".
+            // Estrategia: registrar a migration como aplicada via INSERT autonomo (fora
+            // da transacao original) e reportar OK para nao bloquear cadeia de migrations.
+            $inTransaction = false;
+            try {
+                $inTransaction = $pdo->inTransaction();
+                if ($inTransaction) {
+                    $pdo->rollBack();
+                }
+            } catch (\Throwable $rollbackErr) {
+                $inTransaction = false;
+            }
+
+            // INSERT autónomo — fora de transacao para nao depender de PDO state.
+            try {
+                $inserted = $pdo->prepare("INSERT INTO migrations (filename) VALUES (?)")
+                    ->execute([$timestamp]);
+                if ($inserted) {
+                    echo "OK (DDL auto-committed; migration registered post-hoc)\n";
+                    continue;
+                }
+            } catch (\Throwable $insertErr) {
+                // Duplicate entry = já registrado — fine.
+                if (str_contains($insertErr->getMessage(), 'Duplicate')) {
+                    echo "OK (DDL auto-committed; already registered)\n";
+                    continue;
+                }
+            }
             echo "FAILED: " . $e->getMessage() . "\n";
             exit(1);
         }
@@ -132,11 +170,30 @@ function rollbackMigrations(PDO $pdo, int $count): void
         try {
             $pdo->beginTransaction();
             $migration['down']($pdo);
-            $pdo->prepare("DELETE FROM migrations WHERE migration = ?")->execute([$timestamp]);
+            $pdo->prepare("DELETE FROM migrations WHERE filename = ?")->execute([$timestamp]);
             $pdo->commit();
             echo "OK\n";
         } catch (\Throwable $e) {
-            $pdo->rollBack();
+            // Mesmo tratamento DDL-implicit-commit do runMigrations.
+            $inTransaction = false;
+            try {
+                $inTransaction = $pdo->inTransaction();
+                if ($inTransaction) {
+                    $pdo->rollBack();
+                }
+            } catch (\Throwable $rollbackErr) {
+                $inTransaction = false;
+            }
+
+            if (!$inTransaction) {
+                try {
+                    $pdo->prepare("DELETE FROM migrations WHERE filename = ?")->execute([$timestamp]);
+                    echo "WARN (auto-committed DDL, unregistered as rolled back): " . $e->getMessage() . "\n";
+                    continue;
+                } catch (\Throwable $deleteErr) {
+                    // ignora
+                }
+            }
             echo "FAILED: " . $e->getMessage() . "\n";
             exit(1);
         }

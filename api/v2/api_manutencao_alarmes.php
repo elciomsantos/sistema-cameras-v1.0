@@ -305,7 +305,27 @@ try {
         $dataInicial = trim((string)($_GET['data_inicial'] ?? ''));
         $dataFinal = trim((string)($_GET['data_final'] ?? ''));
 
+        $cacheKeyParts = [
+            'manut_alarmes',
+            $alarmeId, $page, $perPage, $busca, $sortBy, $sortDir,
+            $includeLists ? '1' : '0',
+            $dataInicial, $dataFinal,
+        ];
+        $manutAlarmesCacheKey = 'manut_alarmes:' . md5(implode('|', $cacheKeyParts));
+
+        if (function_exists('apcu_fetch') && empty($_GET['nocache'])) {
+            $cached = apcu_fetch($manutAlarmesCacheKey);
+            if (is_array($cached) && isset($cached['pagination'])) {
+                ApiResponse::success($cached);
+            }
+        }
+
         $payload = loadManutencaoPayload($db, $alarmeId, $page, $perPage, $busca, $sortBy, $sortDir, $includeLists, $dataInicial, $dataFinal);
+
+        if (function_exists('apcu_store') && empty($_GET['nocache'])) {
+            apcu_store($manutAlarmesCacheKey, $payload, 30);
+        }
+
         ApiResponse::success($payload);
     }
 

@@ -127,6 +127,22 @@ try {
 
     $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where) . $extraJoinWhere);
 
+    $cacheKeyParts = [
+        'alarmes',
+        (string)($usuarioSecretariaId ?? 0),
+        resolveUserAccessLevel($_SESSION['usuario'] ?? null),
+        $id, $status, $regiao, $conta, $nome, $busca,
+        $page, $perPage,
+    ];
+    $alarmesCacheKey = 'alarmes:' . md5(implode('|', $cacheKeyParts));
+
+    if (function_exists('apcu_fetch') && empty($_GET['nocache'])) {
+        $cached = apcu_fetch($alarmesCacheKey);
+        if (is_array($cached) && isset($cached['data'])) {
+            ApiResponse::paginated($cached['data'], $cached['page'], $cached['per_page'], $cached['total']);
+        }
+    }
+
     $countSql = "SELECT COUNT(*) AS total FROM central_alarmes a {$extraJoins} {$whereSql}";
     $countResult = $db->query($countSql, $params);
 
@@ -198,6 +214,16 @@ try {
     }
 
     $rows = $result['data'] ?? [];
+
+    if (function_exists('apcu_store') && empty($_GET['nocache'])) {
+        apcu_store($alarmesCacheKey, [
+            'data' => $rows,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ], 30);
+    }
+
     ApiResponse::paginated($rows, $page, $perPage, $total);
 
 } catch (Throwable $e) {

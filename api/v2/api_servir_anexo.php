@@ -60,6 +60,15 @@ try {
         // tamanho armazenado = bytes do arquivo ORIGINAL (nao do comprimido)
         $tamanho = $anexo->tamanho ?? strlen($conteudo);
 
+        $etag = sprintf('"%x-%x"', $anexoId, (int)$tamanho);
+        $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+        if ($inm !== '' && $inm === $etag) {
+            http_response_code(304);
+            header('ETag: ' . $etag);
+            header('Cache-Control: private, max-age=3600');
+            exit;
+        }
+
         header_remove('Content-Type');
         header('Content-Type: ' . $mimeType);
         $filenameSanitized = preg_replace('/[\x00-\x1F\x7F<>"\/\\\\|:?*]/', '', $nomeOriginal);
@@ -67,6 +76,7 @@ try {
         header('Content-Length: ' . $tamanho);
         header('Cache-Control: private, max-age=3600');
         header('X-Content-Type-Options: nosniff');
+        header('ETag: ' . $etag);
 
         echo $conteudo;
         exit;
@@ -122,6 +132,16 @@ try {
     }
     $nomeOriginal = $anexo->nome_original ?? basename($caminhoAbsoluto);
     $tamanho = filesize($caminhoAbsoluto);
+    $mtime = filemtime($caminhoAbsoluto) ?: 0;
+
+    $etag = sprintf('"%x-%x-%x"', $anexoId, (int)$tamanho, (int)$mtime);
+    $inm = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+    if ($inm !== '' && $inm === $etag) {
+        http_response_code(304);
+        header('ETag: ' . $etag);
+        header('Cache-Control: private, max-age=3600');
+        exit;
+    }
 
     header_remove('Content-Type');
     header('Content-Type: ' . $mimeType);
@@ -130,6 +150,7 @@ try {
     header('Content-Length: ' . $tamanho);
     header('Cache-Control: private, max-age=3600');
     header('X-Content-Type-Options: nosniff');
+    header('ETag: ' . $etag);
 
     readfile($caminhoAbsoluto);
     exit;

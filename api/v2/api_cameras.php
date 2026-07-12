@@ -106,6 +106,23 @@ try {
         $params[':local_id'] = $localId;
     }
 
+    $cacheKeyParts = [
+        'cameras',
+        (string)($usuarioSecretariaId ?? 0),
+        resolveUserAccessLevel($_SESSION['usuario'] ?? null),
+        $id, $busca, $status, $modeloId, $localId,
+        $excluirManutencao ? '1' : '0',
+        $page, $perPage,
+    ];
+    $camerasCacheKey = 'cameras:' . md5(implode('|', $cacheKeyParts));
+
+    if (function_exists('apcu_fetch') && empty($_GET['nocache'])) {
+        $cached = apcu_fetch($camerasCacheKey);
+        if (is_array($cached) && isset($cached['data'])) {
+            ApiResponse::paginated($cached['data'], $cached['page'], $cached['per_page'], $cached['total']);
+        }
+    }
+
     $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
 
     $baseFrom = "
@@ -210,6 +227,16 @@ try {
     }
 
     $data = $result['data'] ?? [];
+
+    if (function_exists('apcu_store') && empty($_GET['nocache'])) {
+        apcu_store($camerasCacheKey, [
+            'data' => $data,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ], 30);
+    }
+
     ApiResponse::paginated($data, $page, $perPage, $total);
 
 } catch (Throwable $e) {

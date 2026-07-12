@@ -58,6 +58,26 @@ try {
     }
 
     $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
+
+    $relatorioCacheKeyParts = [
+        'rel_cameras',
+        $page, $perPage,
+        $_GET['data_inicial'] ?? '',
+        $_GET['data_final'] ?? '',
+        $_GET['status'] ?? '',
+        $_GET['local'] ?? '',
+        $_GET['regiao'] ?? '',
+        $_GET['pesquisa'] ?? '',
+    ];
+    $relatorioCacheKey = 'rel_cameras:' . md5(implode('|', $relatorioCacheKeyParts));
+
+    if (function_exists('apcu_fetch') && empty($_GET['nocache'])) {
+        $cached = apcu_fetch($relatorioCacheKey);
+        if (is_array($cached) && isset($cached['data'])) {
+            ApiResponse::paginated($cached['data'], $cached['page'], $cached['per_page'], $cached['total']);
+        }
+    }
+
     $baseFrom = "
         FROM equipamentos e
         LEFT JOIN catalogo_modelos cm ON e.modelo_id = cm.id
@@ -77,7 +97,12 @@ try {
         {$whereSql}
     ";
 
-    $countSql = "SELECT COUNT(*) AS total {$baseFrom}";
+    $countBaseFrom = "
+        FROM equipamentos e
+        {$whereSql}
+    ";
+
+    $countSql = "SELECT COUNT(*) AS total {$countBaseFrom}";
     $countResult = $db->query($countSql, $params);
     if (!$countResult || $countResult['status'] !== 'success') {
         ApiResponse::internalError('Erro ao contar registros.');
@@ -143,6 +168,16 @@ try {
     }
 
     $dados = $result['data'] ?? [];
+
+    if (function_exists('apcu_store') && empty($_GET['nocache'])) {
+        apcu_store($relatorioCacheKey, [
+            'data' => $dados,
+            'page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+        ], 60);
+    }
+
     ApiResponse::paginated($dados, $page, $perPage, $total);
 
 } catch (Throwable $e) {

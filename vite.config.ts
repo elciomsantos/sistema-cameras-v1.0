@@ -57,6 +57,7 @@ export default defineConfig({
           if (id.includes('ui-utils') || id.includes('ErrorHandler') || id.includes('LoadingManager') || id.includes('html.ts')) return 'vendor-ui';
           if (id.includes('file-upload')) return 'vendor-upload';
           if (id.includes('fetchWithTimeout')) return 'vendor-fetch';
+          if (id.includes('chart.js') || id.includes('chart.umd') || id.includes('/chart.js/')) return 'vendor-chart';
         },
       },
     },

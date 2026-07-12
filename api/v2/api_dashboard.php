@@ -33,20 +33,22 @@ try {
 
     $result = $db->query("
         SELECT
-            COUNT(*) as total,
-            SUM(CASE WHEN s.nome = 'FUNCIONANDO' THEN 1 ELSE 0 END) as ativas,
-            SUM(CASE WHEN s.nome = 'MANUTENCAO' THEN 1 ELSE 0 END) as manutencao,
-            SUM(CASE WHEN s.nome = 'DESATIVADA' THEN 1 ELSE 0 END) as desativadas
+            COALESCE(s.nome, 'SEM STATUS') as status,
+            COUNT(*) as quantidade
         FROM equipamentos e
         LEFT JOIN status s ON e.status_id = s.id
         WHERE e.deleted_at IS NULL
+        GROUP BY s.id, s.nome
+        ORDER BY quantidade DESC
     ");
-    if ($result['status'] === 'success' && !empty($result['data'])) {
-        $row = $result['data'][0];
-        $stats['total'] = (int)($row->total ?? 0);
-        $stats['ativas'] = (int)($row->ativas ?? 0);
-        $stats['manutencao'] = (int)($row->manutencao ?? 0);
-        $stats['desativadas'] = (int)($row->desativadas ?? 0);
+    $statusData = $result['status'] === 'success' ? $result['data'] : [];
+    foreach ($statusData as $row) {
+        $nome = $row->status ?? '';
+        $qtd = (int)($row->quantidade ?? 0);
+        $stats['total'] += $qtd;
+        if ($nome === 'FUNCIONANDO') $stats['ativas'] = $qtd;
+        if ($nome === 'MANUTENCAO') $stats['manutencao'] = $qtd;
+        if ($nome === 'DESATIVADA') $stats['desativadas'] = $qtd;
     }
 
     $result = $db->query("
@@ -62,16 +64,24 @@ try {
     $stats['uptime'] = $stats['total'] > 0 ? (int)round(($stats['ativas'] / $stats['total']) * 100) : 0;
 
     $result = $db->query("
-        SELECT COUNT(*) as total,
-               SUM(CASE WHEN COALESCE(s.nome, 'ATIVO') = 'ATIVO' THEN 1 ELSE 0 END) as manutencao
+        SELECT
+            COALESCE(s.nome, 'SEM STATUS') as status,
+            COUNT(*) as quantidade
         FROM central_alarmes ca
         LEFT JOIN status s ON ca.status_id = s.id
         WHERE ca.deleted_at IS NULL
+        GROUP BY ca.status_id, s.nome
+        ORDER BY quantidade DESC
     ");
-    if ($result['status'] === 'success' && !empty($result['data'])) {
-        $row = $result['data'][0];
-        $stats['alarmes_total'] = (int)($row->total ?? 0);
-        $stats['alarmes_manutencao'] = (int)($row->manutencao ?? 0);
+    $alarmStatusData = $result['status'] === 'success' ? $result['data'] : [];
+    foreach ($alarmStatusData as $row) {
+        $nome = $row->status ?? '';
+        $qtd = (int)($row->quantidade ?? 0);
+        $stats['alarmes_total'] += $qtd;
+        $resolvedNome = ($nome === 'SEM STATUS') ? 'ATIVO' : $nome;
+        if ($resolvedNome === 'ATIVO') {
+            $stats['alarmes_manutencao'] += $qtd;
+        }
     }
 
     $result = $db->query("
@@ -138,30 +148,6 @@ try {
         LIMIT 5
     ");
     $problemas = $result['status'] === 'success' ? $result['data'] : [];
-
-    $result = $db->query("
-        SELECT
-            COALESCE(s.nome, 'SEM STATUS') as status,
-            COUNT(*) as quantidade
-        FROM equipamentos e
-        LEFT JOIN status s ON e.status_id = s.id
-        WHERE e.deleted_at IS NULL
-        GROUP BY s.id, s.nome
-        ORDER BY quantidade DESC
-    ");
-    $statusData = $result['status'] === 'success' ? $result['data'] : [];
-
-    $result = $db->query("
-        SELECT
-            COALESCE(s.nome, 'SEM STATUS') as status,
-            COUNT(*) as quantidade
-        FROM central_alarmes ca
-        LEFT JOIN status s ON ca.status_id = s.id
-        WHERE ca.deleted_at IS NULL
-        GROUP BY ca.status_id, s.nome
-        ORDER BY quantidade DESC
-    ");
-    $alarmStatusData = $result['status'] === 'success' ? $result['data'] : [];
 
     $result = $db->query("
         SELECT COALESCE(tc.nome, 'SEM TIPO') as tipo, COUNT(*) as quantidade

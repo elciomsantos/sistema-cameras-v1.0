@@ -669,6 +669,9 @@ CREATE TABLE central_alarmes (
 
 CREATE INDEX idx_alarmes_status_regiao ON central_alarmes(status, regiao);
 CREATE INDEX idx_alarmes_data_status ON central_alarmes(data_atualizacao, status);
+CREATE INDEX idx_alarmes_ip ON central_alarmes(ip);
+CREATE INDEX idx_alarmes_mac ON central_alarmes(mac);
+CREATE INDEX idx_alarmes_numero_sei ON central_alarmes(numero_sei);
 CREATE FULLTEXT INDEX ftx_alarmes_texto ON central_alarmes(local, endereco, observacao);
 
 -- Relacionar locais com central_alarmes via conta
@@ -1570,7 +1573,9 @@ CREATE TABLE IF NOT EXISTS equipamentos_anexos (
     INDEX idx_anexos_equipamento (equipamento_id),
     INDEX idx_anexos_alarme (alarme_id),
     INDEX idx_anexos_manut_camera (manutencao_camera_id),
-    INDEX idx_anexos_manut_alarme (manutencao_alarme_id)
+    INDEX idx_anexos_manut_alarme (manutencao_alarme_id),
+    INDEX idx_anexos_created_at (created_at),
+    INDEX idx_anexos_created_by (created_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Anexos de equipamentos (fotos, documentos)';
 
 -- =====================================================

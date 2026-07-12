@@ -3,9 +3,9 @@
  * v5 - Lê sw-assets.json pós-build para pré-cachear assets Vite com hash
  */
 
-const CACHE_NAME = 'cameras-app-v6';
-const API_CACHE = 'cameras-api-v6';
-const ASSETS_CACHE = 'cameras-assets-v6';
+const CACHE_NAME = 'cameras-app-v7';
+const API_CACHE = 'cameras-api-v7';
+const ASSETS_CACHE = 'cameras-assets-v7';
 
 let BASE_URL = '';
 
@@ -37,11 +37,8 @@ self.addEventListener('install', event => {
         }
       }),
       caches.open(ASSETS_CACHE).then(cache => {
-        return cache.addAll([
-          'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
-        ]).catch(err => {
-          console.error('[SW] Failed to cache CDN assets:', err);
-        });
+        // Font Awesome agora self-host via Vite; webfonts entao via sw-assets.json.
+        return Promise.resolve();
       })
     ]).catch(err => {
       console.error('[SW] Install failed:', err);

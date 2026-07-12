@@ -19,7 +19,13 @@
 <?php else: ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <?php endif; ?>
+<?php
+    $fontAwesomeCss = vite_fontawesome_css();
+    if ($fontAwesomeCss): ?>
+    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $fontAwesomeCss ?>">
+<?php else: ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
+<?php endif; ?>
 <?php
     $viteCss = vite_css();
     if ($viteCss): ?>
@@ -61,7 +67,7 @@
     $viteMainImports = vite_entry_imports('main');
     if ($viteMainJs):
         foreach ($viteMainImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<link rel="modulepreload" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>">
 <?php endforeach; ?>
 <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $viteMainJs ?>"></script>
 <?php endif; ?>

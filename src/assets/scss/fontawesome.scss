@@ -1,0 +1,18 @@
+// Font Awesome self-host via npm package.
+// Vite resolve os URLs das webfonts (woff2) para `assets/` com hash automaticamente.
+
+// Importar functions ANTES de variables — senao `fa-divide` é indefinido.
+@import "@fortawesome/fontawesome-free/scss/functions";
+@import "@fortawesome/fontawesome-free/scss/variables";
+@import "@fortawesome/fontawesome-free/scss/mixins";
+
+// Core + estilos base (fontawesome.scss encadeia _core, _icons, _list, etc)
+@import "@fortawesome/fontawesome-free/scss/fontawesome";
+
+// Estilos por familia
+@import "@fortawesome/fontawesome-free/scss/solid";
+@import "@fortawesome/fontawesome-free/scss/regular";
+@import "@fortawesome/fontawesome-free/scss/brands";
+
+// Compat com sintaxe legacy `fa`
+@import "@fortawesome/fontawesome-free/scss/v4-shims";

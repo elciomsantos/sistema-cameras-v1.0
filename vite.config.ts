@@ -30,6 +30,7 @@ export default defineConfig({
       input: {
         main: './index.html',
         bootstrap: './assets/scss/bootstrap.scss',
+        fontawesome: './assets/scss/fontawesome.scss',
         'bootstrap-js': './assets/js/bootstrap.ts',
         'manutencao-cameras': './assets/js/entries/manutencao-cameras.ts',
         'manutencao-alarmes': './assets/js/entries/manutencao-alarmes.ts',
@@ -76,6 +77,15 @@ export default defineConfig({
     },
   },
   plugins: [
+    // Brotli precompressao (~15-20% menor que gzip). Prioridade sobre .gz no .htaccess.
+    compression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+      compressionOptions: {
+        level: 11,
+      },
+    }),
     compression({
       algorithm: 'gzip',
       ext: '.gz',

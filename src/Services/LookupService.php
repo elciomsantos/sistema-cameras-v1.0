@@ -93,8 +93,19 @@ class LookupService
 
     public function getStatusList(): array
     {
+        $cacheKey = 'lookup_status_list';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
         $result = $this->db->query("SELECT id, nome FROM status ORDER BY nome");
-        return $result['status'] === 'success' ? $result['data'] : [];
+        $data = $result['status'] === 'success' ? $result['data'] : [];
+        if (function_exists('apcu_store') && !empty($data)) {
+            apcu_store($cacheKey, $data, 300);
+        }
+        return $data;
     }
 
     public function getRegioesList(): array
@@ -105,8 +116,19 @@ class LookupService
 
     public function getModelosAlarmes(): array
     {
+        $cacheKey = 'lookup_modelos_alarmes';
+        if (function_exists('apcu_fetch')) {
+            $cached = apcu_fetch($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
         $result = $this->db->query("SELECT id, nome FROM catalogo_modelos_alarmes ORDER BY nome ASC");
-        return $result['status'] === 'success' ? $result['data'] : [];
+        $data = $result['status'] === 'success' ? $result['data'] : [];
+        if (function_exists('apcu_store') && !empty($data)) {
+            apcu_store($cacheKey, $data, 300);
+        }
+        return $data;
     }
 
     public function getContasAlarmes(): array

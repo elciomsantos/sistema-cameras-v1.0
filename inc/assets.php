@@ -94,7 +94,7 @@ function vite_page_js(string $entryName): void
     $viteImports = vite_entry_imports($entryName);
     if ($vitePageJs):
         foreach ($viteImports as $imp): ?>
-<script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>"></script>
+<link rel="modulepreload" href="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $imp ?>">
         <?php endforeach; ?>
 <script type="module" src="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>/<?= $vitePageJs ?>"></script>
     <?php endif;
@@ -105,6 +105,17 @@ function vite_bootstrap_css(): ?string
     $manifest = vite_manifest();
     foreach ($manifest as $entry) {
         if (!empty($entry['isEntry']) && ($entry['name'] ?? '') === 'bootstrap' && !empty($entry['css'])) {
+            return $entry['css'][0];
+        }
+    }
+    return null;
+}
+
+function vite_fontawesome_css(): ?string
+{
+    $manifest = vite_manifest();
+    foreach ($manifest as $entry) {
+        if (!empty($entry['isEntry']) && ($entry['name'] ?? '') === 'fontawesome' && !empty($entry['css'])) {
             return $entry['css'][0];
         }
     }

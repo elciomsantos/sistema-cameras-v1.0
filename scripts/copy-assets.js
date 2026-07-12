@@ -114,6 +114,27 @@ compressBrotli(JS_DIR);
 compressBrotli(PUBLIC_ASSETS);
 console.log(`[postbuild] Brotli: ${brotliCount} arquivos comprimidos.`);
 
+// Self-host Font Awesome webfonts — copia woff2/ttf do pacote npm para public/assets/webfonts/
+// Mantem o caminho relativo esperado pelo CSS gerado pelo Vite (url(../webfonts/...)).
+console.log('[postbuild] Copiando webfonts do Font Awesome...');
+const FA_PKG_WEBFONTS = resolve(__dirname, '../node_modules/@fortawesome/fontawesome-free/webfonts');
+const PUBLIC_WEBFONTS = resolve(__dirname, '../public/assets/webfonts');
+
+if (existsSync(FA_PKG_WEBFONTS)) {
+    ensureDir(PUBLIC_WEBFONTS);
+    let webfontCount = 0;
+    for (const entry of readdirSync(FA_PKG_WEBFONTS, { withFileTypes: true })) {
+        if (entry.isDirectory()) continue;
+        // Apenas woff2 (essencial) e ttf (fallback legacy). Ignora svg, eot.
+        if (!entry.name.endsWith('.woff2') && !entry.name.endsWith('.ttf')) continue;
+        copyFileSync(join(FA_PKG_WEBFONTS, entry.name), join(PUBLIC_WEBFONTS, entry.name));
+        webfontCount++;
+    }
+    console.log(`[postbuild] OK — ${webfontCount} webfonts copiadas.`);
+} else {
+    console.warn('[postbuild] AVISO: @fortawesome/fontawesome-free/webfonts nao encontrado. Execute "npm install".');
+}
+
 console.log('[postbuild] Gerando sw-assets.json...');
 const MANIFEST_PATH = resolve(__dirname, '../dist/.vite/manifest.json');
 const SW_ASSETS_PATH = resolve(__dirname, '../public/sw-assets.json');
@@ -126,6 +147,16 @@ if (existsSync(MANIFEST_PATH)) {
     precacheUrls.push('./images/favicon-32x32.png');
     precacheUrls.push('./images/favicon-16x16.png');
     precacheUrls.push('./images/apple-touch-icon.png');
+
+    // Webfonts do Font Awesome (self-host) — essencial para offline-first.
+    const PUBLIC_WEBFONTS_DIR = resolve(__dirname, '../public/assets/webfonts');
+    if (existsSync(PUBLIC_WEBFONTS_DIR)) {
+        for (const wf of readdirSync(PUBLIC_WEBFONTS_DIR)) {
+            if (wf.endsWith('.woff2')) {
+                precacheUrls.push('./assets/webfonts/' + wf);
+            }
+        }
+    }
 
     for (const key of Object.keys(manifest)) {
         const entry = manifest[key];

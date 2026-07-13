@@ -9,7 +9,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git zip unzip curl libpng-dev libzip-dev libonig-dev \
         libxml2-dev libcurl4-openssl-dev pkg-config libssl-dev \
+        locales \
+    && sed -i 's/# pt_BR.UTF-8/pt_BR.UTF-8/' /etc/locale.gen \
+    && locale-gen pt_BR.UTF-8 \
     && docker-php-ext-install pdo_mysql mbstring zip gd xml curl \
+    && pecl install apcu && docker-php-ext-enable apcu \
     && pecl install mongodb-stable 2>/dev/null || true \
     && a2enmod rewrite \
     && apt-get clean \
@@ -39,7 +43,15 @@ RUN mkdir -p storage/ratelimit storage/cep_cache public/uploads \
 RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/memory.ini \
     && echo "upload_max_filesize = 20M" > /usr/local/etc/php/conf.d/upload.ini \
     && echo "post_max_size = 20M" >> /usr/local/etc/php/conf.d/upload.ini \
-    && echo "max_execution_time = 120" > /usr/local/etc/php/conf.d/timeout.ini
+    && echo "max_execution_time = 120" > /usr/local/etc/php/conf.d/timeout.ini \
+    && echo "opcache.enable=1" > /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=128" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.interned_strings_buffer=8" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=10000" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.revalidate_freq=2" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.save_comments=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "apc.enabled=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "apc.shm_size=32M" >> /usr/local/etc/php/conf.d/opcache.ini
 
 ENV CAMERAS_ENV=production
 

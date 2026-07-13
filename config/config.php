@@ -71,12 +71,14 @@ function isProduction(): bool
 
 function loadConfiguration(): void
 {
+    if (getenv('DB_HOST') !== false && getenv('DB_NAME') !== false
+        && getenv('DB_USER') !== false && getenv('DB_PASS') !== false) {
+        return;
+    }
+
     $envPath = getEnvPath();
     if (!loadEnvFile($envPath)) {
         error_log('[CONFIG] Arquivo de configuração não encontrado: ' . $envPath);
-        if (isProduction()) {
-            throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
-        }
         throw new RuntimeException('Erro de configuração do sistema. Contate o administrador.');
     }
 }

@@ -362,22 +362,123 @@ vendor/bin/phpunit tests/Unit/
 
 # Apenas API tests (requer servidor http rodando)
 vendor/bin/phpunit tests/Api/
+
+# Análise estática (PHPStan nível 5)
+vendor/bin/phpstan analyse
 ```
 
-**170 testes, 0 falhas, 20 skipped, 1 incomplete.**
+**170+ testes, 0 erros PHPStan, 20 skipped, 1 incomplete.**
+
+> Nota: 28 erros pré-existentes da `Trait ParsesInput not found` em `EquipamentoServiceTest`/`AlarmeServiceTest` são de autoload legado — não relacionados às mudanças de performance.
 
 | Suite | Testes | Cobertura |
 |-------|--------|-----------|
-| Unit | SecurityTest, LocaisServiceTest, AlarmeServiceTest, FileUploadValidationTest | Classes core, validação, segurança |
+| Unit | SecurityTest, LocaisServiceTest, AlarmeServiceTest, FileUploadValidationTest, LookupServiceTest | Classes core, validação, segurança, lookups |
 | Integration | EquipamentoServiceTest | CRUD com banco |
 | Api | AlarmeApiTest, CameraApiTest, HealthTest | Endpoints (requer servidor) |
+
+## Migrations
+
+O sistema possui um runner de migrations em `database/migrate.php` (formato `YYYY_MM_DD_HHMMSS_description.php`).
+
+```bash
+# Status: lista migrations aplicadas e pendentes
+php database/migrate.php --status
+
+# Aplicar migrations pendentes
+php database/migrate.php
+
+# Rollback das últimas N migrations
+php database/migrate.php --down 1
+```
+
+### Migrations disponíveis
+
+| Migration | Descrição |
+|-----------|-----------|
+| `2026_07_10_100000_add_thumbnails_to_anexos` | Coluna `thumbnails` JSON em `equipamentos_anexos` |
+| `2026_07_10_110000_partition_auditoria_eventos` | Particionamento mensal de `auditoria_eventos` (RANGE por `created_at`) |
+| `2026_07_10_120000_auditoria_buffer_flush` | Buffer de auditoria + procedure + EVENT 10s + reescrita de 15 triggers |
+| `2026_07_11_100000_add_manutencoes_os_status_index` | Índice composto `(os_status_id, updated_at)` em `equipamentos_manutencoes` |
+| `2026_07_12_100000_add_performance_indexes` | Índices de performance (Tier 3 #18) |
+
+> **Nota sobre DDL MySQL**: O MySQL faz commit implícito em operações DDL (`ALTER`, `CREATE TABLE`, `RENAME`, `DROP`, `TRIGGERS`, `EVENTS`). O runner detecta esse caso e registra a migration post-hoc via INSERT autônomo para evitar reprocesamento. Mensagem `OK (DDL auto-committed; migration registered post-hoc)` é esperada em migrations DDL-heavy.
+
+### Aplicar em produção
+
+```bash
+# 1. Aplicar todas as migrations pendentes
+php database/migrate.php
+
+# 2. Verificar status final
+php database/migrate.php --status
+# Deve mostrar: Total: N | Applied: N | Pending: 0
+```
+
+## Performance
+
+O sistema passou por uma análise e otimização de performance em 3 tiers (commits `e2bf436`, `d7cfb20`, `d049535`, `e2de9d6`). Diagnóstico completo em `docs/Relatorio_Performance.md`.
+
+### Resumo das otimizações aplicadas
+
+| Tier | Item | Impacto |
+|------|------|---------|
+| **1** | Fix `Cache-Control` API (14 endpoints GET) | **Alto** — ativa cache browser 60s |
+| **1** | Dashboard APCu TTL 10s→60s | **Alto** — 6x menos cache misses |
+| **1** | Dashboard: `WHERE deleted_at IS NULL` em alarmes | Bug fix + perf |
+| **1** | Dashboard query 7: filtro `os_status_id IN (1,2)` | **Alto** — evita full scan |
+| **1** | Cache APCu 300s em lookups (status, procedimento, getDefaultIds) | Médio |
+| **1** | `.htaccess`: `Vary: Accept-Encoding` + `immutable` + servir `.gz` precomprimidos | Médio |
+| **1** | Remover `UPPER()` de queries (collation é `utf8mb4_unicode_ci`) | Médio — usa índices UNIQUE |
+| **2** | Eliminar queries 8+9 do dashboard (duplicam 1+3) | Médio |
+| **2** | COUNT trimado em `api_relatorios_cameras.php` (sem 14 JOINs) | **Alto** |
+| **2** | APCu 30s em `api_cameras.php` + `api_alarmes.php` (hash de filtros) | **Alto** |
+| **2** | APCu em `api_manutencao_alarmes.php` (espelhar gêmeo) | Médio |
+| **2** | Chart.js isolado em chunk `vendor-chart` (`manualChunks`) | Médio |
+| **2** | ETag + 304 Not Modified em `api_servir_anexo.php` | Médio |
+| **2** | APCu 60s em `api_relatorios_cameras.php` (hash de filtros) | Médio |
+| **3** | Índices DB: `central_alarmes(ip, mac, numero_sei)`, `equipamentos_anexos(created_at, created_by)` | **Alto** |
+| **3** | Endpoints `api_status`/`api_modelos_*` usando `LookupService` com APCu 300s | Baixo |
+| **3** | `<link rel="modulepreload">` para entry chunks (fetch+parse em paralelo) | Médio |
+| **3** | **Brotli precompressão** no Vite (level 11) + `.htaccess` serve `.br` com prioridade sobre `.gz` | Médio — ~17% extra menor que gzip |
+| **3** | **Self-host Font Awesome** via `@fortawesome/fontawesome-free` npm + SCSS import + webfonts no build | Médio — elimina CDN render-blocking |
+| **3** | Script `scripts/check-opcache.php` — smoke test OPcache para CI/deploy | **Alto** se OPcache OFF |
+
+### Estrutura de cache
+
+- **APCu** (opcache de usuário): 9 pontos de cache — dashboard, lookups, endpoints críticos
+- **HTTP `Cache-Control`**: 14 endpoints GET idempotentes com cache browser
+- **ETag/304**: `api_servir_anexo.php` (anexos imutáveis)
+- **Service Worker**: 3 caches (app/api/assets), cache-first para assets com hash, network-only para API
+- **Brotli + gzip precomprimidos**: `.htaccess` serve `.br` com prioridade, fallback `.gz`
+
+### Deploy de performance em produção
+
+```bash
+# 1. Aplicar migrations de índices (Tier 3 #18)
+php database/migrate.php
+
+# 2. Verificar OPcache ativo (exit 1 se OFF — bloquear deploy)
+php scripts/check-opcache.php
+
+# 3. Build frontend com Brotli + Font Awesome self-host
+npm install && npm run build
+
+# 4. Verificar suporte a Brotli no Apache 2.4+
+#    (mod_brotli ativo OU RewriteCond servindo .br — já configurado no .htaccess)
+
+# 5. Validar cache hits do Font Awesome self-hosted no DevTools
+#    (não deve haver mais requests para cdnjs.cloudflare.com/font-awesome)
+
+# 6. Monitorar slow_query_log MySQL por 1 semana pós-deploy
+```
 
 ## Tecnologias
 
 - **Backend**: PHP 8.2+, PDO, Monolog
 - **Frontend**: TypeScript, Vite 8, Bootstrap 5.3, Chart.js, PostCSS, esbuild
 - **Banco**: MySQL 8.0+ / MariaDB 10.5+
-- **Ícones**: Font Awesome 6
+- **Ícones**: Font Awesome 6 (self-host via npm `@fortawesome/fontawesome-free`)
 - **Mapa**: Leaflet
 - **Testes**: PHPUnit 10, Vitest
 - **Análise**: PHPStan (nível 5), PHP_CodeSniffer, roave/security-advisories
@@ -386,11 +487,19 @@ vendor/bin/phpunit tests/Api/
 ---
 
 **Versão**: 1.0.0
-**Última atualização**: 2026-06-30
+**Última atualização**: 2026-07-12 (Performance Tier 1+2+3 aplicados)
 
 Passos para nova implantação:
-1. mysql -u root < config/DB/cftv_gml.sql
-2. Copiar .env.example → configurar credenciais em C:\env\sistema-cameras\.env (Windows) ou /etc/sistema-cameras/.env (Linux)
-3. composer install
-4. npm install && npm run build
-5. Configurar Apache/Nginx apontando para public/
+1. `mysql -u root -p < config/DB/cftv_gml.sql` — importa schema completo (com todos os índices)
+2. Copiar `.env.example` → configurar credenciais em `C:\env\sistema-cameras\.env` (Windows) ou `/etc/sistema-cameras/.env` (Linux)
+3. `composer install` — dependências PHP
+4. `npm install && npm run build` — build frontend (Vite + Brotli + Font Awesome self-host + webfonts)
+5. `php database/migrate.php --status` — verificar migrations pendentes (em instalação nova, todas já aplicadas via schema)
+6. `php scripts/check-opcache.php` — validar OPcache ativo (recomendado)
+7. Configurar Apache/Nginx apontando para `public/`
+
+Atualizações em instâncias existentes:
+1. `git pull` — obter código novo
+2. `composer install && npm install && npm run build` — atualizar dependências e rebuild frontend
+3. `php database/migrate.php` — aplicar migrations pendentes (índices, auditoria buffer, etc.)
+4. `php scripts/check-opcache.php` — validar OPcache (em especial se mudou PHP.ini)

@@ -16,6 +16,17 @@ class RateLimiterTest extends TestCase
         mkdir($this->tempDir, 0755, true);
     }
 
+    /**
+     * Cria um RateLimiter isolado em filesystem (sem DB) — cada teste fica confinado
+     * ao seu tempDir unico, evitando contaminacao entre casos via tabela rate_limits.
+     */
+    private function createLimiter(string $strategy = 'sliding_window', array $configs = []): \RateLimiter
+    {
+        $limiter = new \RateLimiter($this->tempDir, $strategy, $configs);
+        $limiter->useDatabase(false);
+        return $limiter;
+    }
+
     protected function tearDown(): void
     {
         $this->rmdirRecursive($this->tempDir);
@@ -40,13 +51,13 @@ class RateLimiterTest extends TestCase
 
     public function testCanBeInstantiated(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         $this->assertInstanceOf(\RateLimiter::class, $limiter);
     }
 
     public function testConsumeReturnsTrueWithinLimit(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         for ($i = 0; $i < 5; $i++) {
             $this->assertTrue($limiter->consume('test_key', 10, 60));
         }
@@ -54,7 +65,7 @@ class RateLimiterTest extends TestCase
 
     public function testConsumeReturnsFalseAfterLimit(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         for ($i = 0; $i < 5; $i++) {
             $limiter->consume('test_limit', 5, 60);
         }
@@ -63,7 +74,7 @@ class RateLimiterTest extends TestCase
 
     public function testConsumeTokenBucket(): void
     {
-        $limiter = new \RateLimiter($this->tempDir, 'token_bucket');
+        $limiter = $this->createLimiter('token_bucket');
         for ($i = 0; $i < 3; $i++) {
             $this->assertTrue($limiter->consume('token_test', 3, 60));
         }
@@ -72,7 +83,7 @@ class RateLimiterTest extends TestCase
 
     public function testGetRemainingReturnsCorrectCount(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         $this->assertEquals(10, $limiter->getRemaining('remaining_test', 10, 60));
         $limiter->consume('remaining_test', 10, 60);
         $this->assertEquals(9, $limiter->getRemaining('remaining_test', 10, 60));
@@ -80,13 +91,13 @@ class RateLimiterTest extends TestCase
 
     public function testGetRetryAfterReturnsZeroWhenNotRateLimited(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         $this->assertEquals(0, $limiter->getRetryAfter('retry_test', 10, 60));
     }
 
     public function testDifferentKeysAreIndependent(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         for ($i = 0; $i < 10; $i++) {
             $limiter->consume('key_a', 10, 60);
         }
@@ -96,7 +107,7 @@ class RateLimiterTest extends TestCase
 
     public function testCleanupRemovesOldEntries(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         $limiter->consume('cleanup_test', 10, 60);
         $removed = $limiter->cleanup(0);
         $this->assertGreaterThanOrEqual(0, $removed);
@@ -104,14 +115,13 @@ class RateLimiterTest extends TestCase
 
     public function testUseDatabaseDoesNotThrow(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
-        $limiter->useDatabase(false);
+        $limiter = $this->createLimiter();
         $this->assertTrue($limiter->consume('no_db_test', 10, 60));
     }
 
     public function testResolveConfigWithRegexPattern(): void
     {
-        $limiter = new \RateLimiter($this->tempDir, 'sliding_window', [
+        $limiter = $this->createLimiter('sliding_window', [
             '/^auth:/' => [10, 60],
             '/^GET:/' => [120, 60],
         ]);
@@ -121,7 +131,7 @@ class RateLimiterTest extends TestCase
 
     public function testGetHeadersReturnsArray(): void
     {
-        $limiter = new \RateLimiter($this->tempDir);
+        $limiter = $this->createLimiter();
         $headers = $limiter->getHeaders('header_test', 10, 60);
         $this->assertArrayHasKey('X-RateLimit-Limit', $headers);
         $this->assertArrayHasKey('X-RateLimit-Remaining', $headers);

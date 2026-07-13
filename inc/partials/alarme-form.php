@@ -51,7 +51,7 @@ $isEdit = $modo === 'editar';
                     <div class="invalid-feedback">Informe a data de atualizacao.</div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <label class="form-label">Nome/Local <span class="text-danger">*</span></label>
                     <div class="position-relative">
                         <input type="text" name="local" id="nome_local" class="form-control" maxlength="255" required
@@ -61,7 +61,7 @@ $isEdit = $modo === 'editar';
                     <div class="form-text">Busque o local ja cadastrado para preencher o endereco automaticamente.</div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-5">
                     <label class="form-label">Endereco</label>
                     <input type="text" name="endereco" id="endereco" class="form-control" maxlength="255"
                         placeholder="Logradouro">
@@ -72,11 +72,11 @@ $isEdit = $modo === 'editar';
                     <label class="form-label">Numero</label>
                     <input type="text" name="numero" id="numero" class="form-control" maxlength="20">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Bairro</label>
                     <input type="text" name="bairro" id="bairro" class="form-control" maxlength="100">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
                     <label class="form-label">Cidade</label>
                     <input type="text" name="cidade" id="cidade" class="form-control" maxlength="100">
                 </div>
@@ -93,49 +93,51 @@ $isEdit = $modo === 'editar';
     </div>
 
     <div class="card alarme-section-card mb-3">
-        <div class="card-header alarme-section-header d-flex align-items-center gap-2">
-            <i class="fas fa-wifi"></i> Conex&atilde;o e Integra&ccedil;&atilde;o
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">PGM1</label>
-                    <input type="text" name="pgm1" class="form-control" maxlength="100">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">PGM2</label>
-                    <input type="text" name="pgm2" class="form-control" maxlength="100">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">MAC</label>
-                    <input type="text" name="mac" class="form-control" maxlength="50">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">IP</label>
-                    <input type="text" name="ip" class="form-control" maxlength="50">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Integracao</label>
-                    <input type="date" name="integracao" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">IP DVR</label>
-                    <input type="text" name="ip_dvr" class="form-control" maxlength="50">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Cameras DVR</label>
-                    <input type="number" name="cameras_dvr" class="form-control" min="0">
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check mt-4">
-                        <input type="checkbox" name="camera_gm" class="form-check-input" value="1" id="cameraGm">
-                        <label class="form-check-label" for="cameraGm">Camera GM</label>
-                    </div>
-                    <input type="number" name="quant_camera_gm" class="form-control mt-2" min="0" placeholder="Qtd. cameras GM">
+    <div class="card-header alarme-section-header d-flex align-items-center gap-2">
+        <i class="fas fa-wifi"></i> Conexão e Integração
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">IP</label>
+                <input type="text" name="ip" class="form-control" maxlength="50">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">MAC</label>
+                <input type="text" name="mac" class="form-control" maxlength="50">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">PGM1</label>
+                <input type="text" name="pgm1" class="form-control" maxlength="100">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">PGM2</label>
+                <input type="text" name="pgm2" class="form-control" maxlength="100">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Integracao</label>
+                <input type="date" name="integracao" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">IP DVR</label>
+                <input type="text" name="ip_dvr" class="form-control" maxlength="50">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Cameras DVR</label>
+                <input type="number" name="cameras_dvr" class="form-control" min="0">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="d-flex align-items-center gap-4 mb-2">
+                    <input class="form-check-input" type="checkbox" id="camera_gm" name="camera_gm" value="1">
+                    <label class="form-check-label mb-0" for="camera_gm" style="white-space: nowrap;">Camera GM</label>
+                    <input type="number" name="quant_camera_gm" class="form-control form-control-sm ms-2" min="0" placeholder="Qtd." style="width: 70px;">
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <div class="card alarme-section-card mb-3">
         <div class="card-header alarme-section-header d-flex align-items-center gap-2">
@@ -156,11 +158,11 @@ $isEdit = $modo === 'editar';
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Qtd. Repetidor</label>
+                    <label class="form-label">Quantidade Repetidor</label>
                     <input type="number" name="quant_repetidor" class="form-control" min="0">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Qtd. Sensores</label>
+                    <label class="form-label">Quantidade Sensores</label>
                     <input type="number" name="qtde_sensores" class="form-control" min="0">
                 </div>
                 <div class="col-md-4">

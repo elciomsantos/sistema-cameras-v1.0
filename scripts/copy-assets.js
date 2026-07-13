@@ -161,20 +161,21 @@ if (existsSync(MANIFEST_PATH)) {
     for (const key of Object.keys(manifest)) {
         const entry = manifest[key];
         const file = entry.file;
-        if (file && !file.endsWith('.gz')) {
+        if (file && !file.endsWith('.gz') && !file.endsWith('.br')) {
             precacheUrls.push('./' + file);
         }
         if (entry.css) {
             for (const cssFile of entry.css) {
-                if (!cssFile.endsWith('.gz')) {
+                if (!cssFile.endsWith('.gz') && !cssFile.endsWith('.br')) {
                     precacheUrls.push('./' + cssFile);
                 }
             }
         }
     }
 
-    writeFileSync(SW_ASSETS_PATH, JSON.stringify(precacheUrls, null, 2));
-    console.log(`[postbuild] sw-assets.json gerado com ${precacheUrls.length} URLs para pré-cache.`);
+    const uniqueUrls = [...new Set(precacheUrls)];
+    writeFileSync(SW_ASSETS_PATH, JSON.stringify(uniqueUrls, null, 2));
+    console.log(`[postbuild] sw-assets.json gerado com ${uniqueUrls.length} URLs para pré-cache (dedup de ${precacheUrls.length}).`);
 } else {
     console.warn('[postbuild] AVISO: manifest.json não encontrado. SW pode não cachear corretamente.');
 }

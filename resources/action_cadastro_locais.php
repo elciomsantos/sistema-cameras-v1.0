@@ -85,7 +85,20 @@ if ($v->fails()) {
             'longitude' => $longitude !== '' ? (float)$longitude : null,
         ];
         enableAuditTriggers($db, 'web');
-        $newId = $locaisService->create($insertData);
+        try {
+            $newId = $locaisService->create($insertData);
+        } catch (InvalidArgumentException $e) {
+            $_SESSION['mensagem_erro_cadastro_local'] = $e->getMessage();
+            $_SESSION['form_data_cadastro_local'] = array_intersect_key($_POST, array_flip([
+                'tipo_local_id', 'nome', 'regiao_id', 'secretaria_id',
+                'horario_funcionamento', 'telefone', 'ramal', 'tem_alarme', 'alarme_conta', 'tem_camera', 'cep', 'uf',
+                'cidade', 'bairro', 'classificacao_endereco_id',
+                'logradouro', 'numero', 'descricao_posicao',
+                'latitude', 'longitude',
+            ]));
+            header('Location: index.php?page=cadastro_locais');
+            exit;
+        }
         if ($newId > 0) {
             $_SESSION['mensagem_sucesso_cadastro_local'] = 'Local cadastrado com sucesso.';
             unset($_SESSION['form_data_cadastro_local']);

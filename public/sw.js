@@ -3,9 +3,9 @@
  * v5 - Lê sw-assets.json pós-build para pré-cachear assets Vite com hash
  */
 
-const CACHE_NAME = 'cameras-app-v7';
-const API_CACHE = 'cameras-api-v7';
-const ASSETS_CACHE = 'cameras-assets-v7';
+const CACHE_NAME = 'cameras-app-v8';
+const API_CACHE = 'cameras-api-v8';
+const ASSETS_CACHE = 'cameras-assets-v8';
 
 let BASE_URL = '';
 
@@ -22,8 +22,9 @@ self.addEventListener('install', event => {
         try {
           const resp = await fetch('./sw-assets.json');
           const urls = await resp.json();
-          await cache.addAll(urls);
-          console.log('[SW] Pré-cache de', urls.length, 'assets via sw-assets.json');
+          const uniqueUrls = [...new Set(urls)];
+          await cache.addAll(uniqueUrls);
+          console.log('[SW] Pré-cache de', uniqueUrls.length, 'assets via sw-assets.json');
         } catch (err) {
           console.error('[SW] Falha ao pré-carregar sw-assets.json:', err);
           await cache.addAll([

@@ -215,6 +215,17 @@ class LocaisService
             throw new InvalidArgumentException('O campo nome é obrigatório.');
         }
 
+        $nome = is_string($data['nome']) ? mb_strtoupper(trim($data['nome'])) : $data['nome'];
+        $secretariaId = array_key_exists('secretaria_id', $data)
+            ? ($data['secretaria_id'] !== null ? (int)$data['secretaria_id'] : null)
+            : null;
+
+        if ($this->checkDuplicado($nome, $secretariaId)) {
+            throw new InvalidArgumentException('Já existe um local com este nome nesta secretaria.');
+        }
+
+        $data['nome'] = $nome;
+
         $fields = [];
         $placeholders = [];
         $params = [];

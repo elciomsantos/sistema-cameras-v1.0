@@ -200,9 +200,10 @@ class EquipamentoService
             return $localId;
         }
 
+        $nomeUpper = strtoupper(trim($nomeLocal));
         $localResult = $this->db->query(
-            "SELECT id FROM locais WHERE nome = ? AND secretaria_id = ? LIMIT 1",
-            [$nomeLocal, $secretariaId]
+            "SELECT id FROM locais WHERE nome = ? AND secretaria_id <=> ? AND deleted_at IS NULL LIMIT 1",
+            [$nomeUpper, $secretariaId ?: null]
         );
 
         if ($localResult['status'] === 'success' && !empty($localResult['data'])) {
@@ -224,10 +225,18 @@ class EquipamentoService
     private function createLocation(array $data, int $secretariaId, string $nomeLocal): int
     {
         $fields = $this->extractCommonData($data);
-        $nomeUpper = strtoupper($nomeLocal);
+        $nomeUpper = strtoupper(trim($nomeLocal));
+
+        $dupCheck = $this->db->query(
+            "SELECT id FROM locais WHERE nome = ? AND secretaria_id <=> ? AND deleted_at IS NULL LIMIT 1",
+            [$nomeUpper, $secretariaId ?: null]
+        );
+        if ($dupCheck['status'] === 'success' && !empty($dupCheck['data'])) {
+            return (int)$dupCheck['data'][0]->id;
+        }
+
         $insertLocal = $this->db->query(
-            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id, regiao_id, horario_funcionamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)",
+            "INSERT INTO locais (nome, logradouro, bairro, cidade, uf, cep, numero, secretaria_id, descricao_posicao, tipo_local_id, classificacao_endereco_id, regiao_id, horario_funcionamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [$nomeUpper, $fields['logradouro'], $fields['bairro'], $fields['cidade'], $fields['uf'], $fields['cep'], $fields['numero'], $secretariaId, $fields['descricao_posicao'], max(1, (int)($data['tipo_local_id'] ?? 0)), $fields['classif_endereco_id'], $fields['regiao_id'], $fields['horario_funcionamento']]
         );
         if ($insertLocal['status'] !== 'success') {

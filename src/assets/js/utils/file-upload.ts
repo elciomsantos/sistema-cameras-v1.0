@@ -11,13 +11,13 @@ function getCsrf(): string {
     return meta ? meta.getAttribute('content') ?? '' : ''
 }
 
-function formatSize(bytes: number): string {
+export function formatSize(bytes: number): string {
     if (bytes >= 1048576) return (bytes / 1048576).toFixed(2).replace('.', ',') + ' MB'
     if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB'
     return bytes + ' B'
 }
 
-function getFileIcon(mimeType: string | null): string {
+export function getFileIcon(mimeType: string | null): string {
     if (!mimeType) return 'fa-file'
     if (mimeType.indexOf('image/') === 0) return 'fa-file-image'
     if (mimeType === 'application/pdf') return 'fa-file-pdf'

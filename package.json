@@ -9,8 +9,8 @@
     "copy-assets": "node scripts/copy-assets.js",
     "preview": "vite preview",
     "clean": "rimraf dist",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --config tests/Js/vitest.config.ts",
+    "test:watch": "vitest --config tests/Js/vitest.config.ts"
   },
   "browserslist": [
     "> 0.5%",

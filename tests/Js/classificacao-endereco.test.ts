@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CLASSIFICACAO_MAP, CLASSIFICACOES } from '../../src/assets/js/utils/classificacao-endereco'
+import { CLASSIFICACAO_MAP } from '../../src/assets/js/utils/classificacao-endereco'
 
 describe('CLASSIFICACAO_MAP', () => {
   it('maps RUA to 1', () => {
@@ -17,30 +17,26 @@ describe('CLASSIFICACAO_MAP', () => {
   it('has exactly 10 entries', () => {
     expect(Object.keys(CLASSIFICACAO_MAP).length).toBe(10)
   })
-})
 
-describe('CLASSIFICACOES', () => {
-  it('has 10 items', () => {
-    expect(CLASSIFICACOES.length).toBe(10)
+  it('all values are numeric ids from 1 to 10', () => {
+    const values = Object.values(CLASSIFICACAO_MAP)
+    expect(values.sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   })
 
-  it('each item has id and descricao', () => {
-    for (const item of CLASSIFICACOES) {
-      expect(item).toHaveProperty('id')
-      expect(item).toHaveProperty('descricao')
-      expect(typeof item.id).toBe('number')
-      expect(typeof item.descricao).toBe('string')
+  it('all keys are uppercase strings', () => {
+    for (const key of Object.keys(CLASSIFICACAO_MAP)) {
+      expect(key).toBe(key.toUpperCase())
     }
   })
 
-  it('maps id 1 to RUA', () => {
-    const rua = CLASSIFICACOES.find(c => c.id === 1)
-    expect(rua?.descricao).toBe('RUA')
+  it('maps id 1 to RUA via reverse lookup', () => {
+    const entries = Object.entries(CLASSIFICACAO_MAP)
+    const rua = entries.find(([, id]) => id === 1)
+    expect(rua?.[0]).toBe('RUA')
   })
 
-  it('is consistent with CLASSIFICACAO_MAP', () => {
-    for (const item of CLASSIFICACOES) {
-      expect(CLASSIFICACAO_MAP[item.descricao]).toBe(item.id)
-    }
+  it('has no duplicate values', () => {
+    const values = Object.values(CLASSIFICACAO_MAP)
+    expect(new Set(values).size).toBe(values.length)
   })
 })

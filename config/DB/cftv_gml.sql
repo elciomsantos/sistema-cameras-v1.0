@@ -1098,6 +1098,49 @@ BEGIN
 END$$
 
 -- =====================================================
+-- TRIGGERS DE ANTI-DUPLICIDADE PARA LOCAIS (BEFORE INSERT/UPDATE)
+-- =====================================================
+-- O indice UNIQUE (nome, secretaria_id) NAO cobre o caso secretaria_id NULL,
+-- pois o MySQL trata cada NULL como distinto em indices UNIQUE. Estes triggers
+-- fecham essa brecha validando duplicidade incluindo NULL <=> NULL, e tambem
+-- protegem contra race condition (duplo submit) e bypass da aplicacao.
+-- Ignoram linhas soft-deletadas (deleted_at IS NULL).
+CREATE TRIGGER trg_locais_bi
+BEFORE INSERT ON locais
+FOR EACH ROW
+BEGIN
+    DECLARE dup_count INT DEFAULT 0;
+    SELECT COUNT(*) INTO dup_count
+    FROM locais
+    WHERE nome = NEW.nome
+      AND (secretaria_id <=> NEW.secretaria_id)
+      AND deleted_at IS NULL;
+    IF dup_count > 0 THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Ja existe um local ativo com este nome nesta secretaria.';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_locais_bu
+BEFORE UPDATE ON locais
+FOR EACH ROW
+BEGIN
+    DECLARE dup_count INT DEFAULT 0;
+    IF NEW.nome <> OLD.nome OR NOT (NEW.secretaria_id <=> OLD.secretaria_id) THEN
+        SELECT COUNT(*) INTO dup_count
+        FROM locais
+        WHERE nome = NEW.nome
+          AND (secretaria_id <=> NEW.secretaria_id)
+          AND deleted_at IS NULL
+          AND id <> OLD.id;
+        IF dup_count > 0 THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Ja existe um local ativo com este nome nesta secretaria.';
+        END IF;
+    END IF;
+END$$
+
+-- =====================================================
 -- TRIGGERS DE AUDITORIA PARA LOCAIS
 -- =====================================================
 CREATE TRIGGER trg_locais_ai
@@ -1376,19 +1419,20 @@ BEGIN
     DECLARE cutoff DATE;
     DECLARE sql_stmt TEXT;
 
-    SET cutoff = DATE_SUB(CURDATE(), INTERVAL dias DAY);
-
     -- Cursor: partições com data de corte menor que o cutoff
+    -- Obs.: todos os DECLAREs devem vir antes de qualquer instrução executável.
     DECLARE cur CURSOR FOR
         SELECT PARTITION_NAME, PARTITION_DESCRIPTION
         FROM INFORMATION_SCHEMA.PARTITIONS
         WHERE TABLE_SCHEMA = DATABASE()
           AND TABLE_NAME = 'auditoria_eventos'
+          AND PARTITION_NAME IS NOT NULL
           AND PARTITION_NAME != 'p_future'
-          AND PARTITION_ORDINAL_POSITION IS NOT NULL
-          AND CAST(PARTITION_DESCRIPTION AS UNSIGNED) < TO_DAYS(cutoff);
+          AND CAST(PARTITION_DESCRIPTION AS UNSIGNED) < TO_DAYS(DATE_SUB(CURDATE(), INTERVAL dias DAY));
 
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    SET cutoff = DATE_SUB(CURDATE(), INTERVAL dias DAY);
 
     OPEN cur;
     loop_partitions: LOOP
@@ -1397,7 +1441,7 @@ BEGIN
             LEAVE loop_partitions;
         END IF;
 
-        SET sql_stmt = CONCAT('ALTER TABLE auditoria_eventos DROP PARTITION ', part_name);
+        SET sql_stmt = CONCAT('ALTER TABLE auditoria_eventos DROP PARTITION `', part_name, '`');
         PREPARE stmt FROM sql_stmt;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;

@@ -15,6 +15,8 @@ require_once APP_ROOT . '/vendor/autoload.php';
 
 require_once APP_ROOT . '/config/app.php';
 require_once APP_ROOT . '/config/database.php';
+require_once APP_ROOT . '/inc/auto_migrate.php';
+runAutoMigrate();
 require_once APP_ROOT . '/inc/security.php';
 require_once APP_ROOT . '/inc/check_access.php';
 require_once APP_ROOT . '/inc/single_session.php';

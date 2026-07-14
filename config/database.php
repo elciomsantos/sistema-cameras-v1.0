@@ -151,11 +151,35 @@ class database implements \App\Database\DatabaseInterface
                 }
             }
             logError('Database error', ['error' => $err->getMessage()], 'database');
+            if ($this->isDuplicateError($err)) {
+                throw new \App\Database\DuplicateEntryException($err->getMessage(), 0, $err);
+            }
             throw new \RuntimeException('Erro interno no banco de dados.');
         } catch (\Throwable $err) {
+            if ($this->isDuplicateError($err)) {
+                throw new \App\Database\DuplicateEntryException($err->getMessage(), 0, $err);
+            }
             logError('Database error', ['error' => $err->getMessage()], 'database');
             throw new \RuntimeException('Erro interno no banco de dados.');
         }
+    }
+
+    /**
+     * Detecta violacao de UNIQUE ou SIGNAL de trigger anti-duplicidade.
+     * - SQLSTATE '23000' = integrity constraint violation (UNIQUE/PK).
+     * - SQLSTATE '45000' = SIGNAL custom (usado pelas triggers trg_locais_bi/bu).
+     * - errno 1062 = Duplicate entry (legacy).
+     * - Mensagem 'Ja existe um local...' = SIGNAL do trigger de locais.
+     */
+    private function isDuplicateError(\Throwable $e): bool
+    {
+        $code = (string)$e->getCode();
+        $msg = $e->getMessage();
+        return $code === '23000'
+            || $code === '45000'
+            || str_contains($msg, 'Duplicate entry')
+            || str_contains($msg, '1062')
+            || str_contains($msg, 'Ja existe um local');
     }
 
     private function isConnectionLostError(\Throwable $e): bool

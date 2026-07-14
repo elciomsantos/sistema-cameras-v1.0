@@ -243,13 +243,79 @@ class LocaisService
         }
 
         $sql = "INSERT INTO locais (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $placeholders) . ")";
-        $result = $this->db->query($sql, $params);
 
+        // Transacao fecha race condition (duplo submit): checkDuplicado + INSERT na
+        // mesma conexao/transaction. Captura erro do trigger trg_locais_bi (SIGNAL
+        // SQLSTATE '45000' — duplicidade incl. NULL+NULL) e do indice UNIQUE (23000),
+        // traduzindo para InvalidArgumentException com mensagem amigavel.
+        //
+        // Usa getConnection() quando disponivel (producao) para preservar o SQLSTATE
+        // original do PDOException. Se a conexao nao estiver acessivel (mock em
+        // tests Unit), quatro via $this->db->query() legacy.
+        try {
+            $pdo = $this->db->getConnection();
+        } catch (\Throwable $connErr) {
+            $pdo = null;
+        }
+
+        if ($pdo instanceof \PDO) {
+            try {
+                $this->db->beginTransaction();
+                $stmt = $pdo->prepare($sql);
+                foreach ($params as $i => $value) {
+                    $paramType = \PDO::PARAM_STR;
+                    if (is_int($value)) {
+                        $paramType = \PDO::PARAM_INT;
+                    } elseif (is_null($value)) {
+                        $paramType = \PDO::PARAM_NULL;
+                    }
+                    $stmt->bindValue($i + 1, $value, $paramType);
+                }
+                $stmt->execute();
+                $newId = (int)$pdo->lastInsertId();
+                $this->db->commit();
+                return $newId;
+            } catch (\PDOException $e) {
+                if ($this->db->inTransaction()) {
+                    try { $this->db->rollback(); } catch (\Throwable $rollbackErr) {}
+                }
+                if ($this->isDuplicateError($e)) {
+                    throw new InvalidArgumentException('Já existe um local com este nome nesta secretaria.');
+                }
+                logError('LocaisService::create PDOException', ['error' => $e->getMessage(), 'sqlstate' => $e->getCode()], 'locais');
+                throw new \RuntimeException('Erro ao cadastrar local.');
+            } catch (\Throwable $e) {
+                if ($this->db->inTransaction()) {
+                    try { $this->db->rollback(); } catch (\Throwable $rollbackErr) {}
+                }
+                logError('LocaisService::create erro', ['error' => $e->getMessage()], 'locais');
+                throw new \RuntimeException('Erro ao cadastrar local.');
+            }
+        }
+
+        // Fallback legacy: mock em testes Unit (sem PDO real).
+        $result = $this->db->query($sql, $params);
         if ($result['status'] === 'success') {
             return (int)($this->db->lastInsertId() ?? 0);
         }
-
         return 0;
+    }
+
+    /**
+     * Detecta erro de violacao de UNIQUE ou de SIGNAL do trigger trg_locais_bi/bu.
+     * SQLSTATE '45000' = SIGNAL custom (trigger); '23000' = integrity constraint.
+     */
+    private function isDuplicateError(\PDOException $e): bool
+    {
+        $code = (string)$e->getCode();
+        $msg = $e->getMessage();
+        if ($code === '45000' || $code === '23000') {
+            return true;
+        }
+        // Mensagem do SIGNAL ou de duplicate entry do MySQL (errno 1062)
+        return str_contains($msg, 'Ja existe um local')
+            || str_contains($msg, 'Duplicate entry')
+            || str_contains($msg, '1062');
     }
 
     public function update(int $id, array $data): bool
@@ -279,9 +345,30 @@ class LocaisService
 
         $params[] = $id;
         $sql = "UPDATE locais SET " . implode(', ', $sets) . " WHERE id = ?";
-        $result = $this->db->query($sql, $params);
 
-        return $result['status'] === 'success';
+        // Captura erro do trigger trg_locais_bu (SIGNAL SQLSTATE '45000') ou do
+        // indice UNIQUE (23000) — ambos relevantes para duplicidade em UPDATE.
+        $pdo = $this->db->getConnection();
+        try {
+            $stmt = $pdo->prepare($sql);
+            foreach ($params as $i => $value) {
+                $paramType = \PDO::PARAM_STR;
+                if (is_int($value)) {
+                    $paramType = \PDO::PARAM_INT;
+                } elseif (is_null($value)) {
+                    $paramType = \PDO::PARAM_NULL;
+                }
+                $stmt->bindValue($i + 1, $value, $paramType);
+            }
+            $stmt->execute();
+            return true;
+        } catch (\PDOException $e) {
+            if ($this->isDuplicateError($e)) {
+                throw new InvalidArgumentException('Já existe um local com este nome nesta secretaria.');
+            }
+            logError('LocaisService::update PDOException', ['error' => $e->getMessage(), 'sqlstate' => $e->getCode()], 'locais');
+            throw new \RuntimeException('Erro ao atualizar local.');
+        }
     }
 
     private function applyFiltersWhere(array $filters, array &$where, array &$params): void

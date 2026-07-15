@@ -1,6 +1,7 @@
 {
     "name": "gml/sistema-cameras",
     "description": "Sistema de Gerenciamento de Câmeras de Segurança",
+    "license": "proprietary",
     "type": "project",
     "require": {
         "php": ">=8.3",

@@ -84,3 +84,7 @@ body.dark-mode .editar-alarme-wrapper .alarme-section-header {
 .autocomplete-dropdown-camera .dropdown-item:hover,
 .autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
 
+/* Camera GM — estilos antes inline (violavam CSP style-src-attr 'none') */
+.editar-alarme-wrapper .camera-gm-label { white-space: nowrap; }
+.editar-alarme-wrapper .camera-gm-quant { width: 70px; }
+

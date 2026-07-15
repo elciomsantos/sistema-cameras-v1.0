@@ -84,11 +84,11 @@ CREATE INDEX idx_usuarios_nivel_acesso ON usuarios(nivel_acesso_id);
 CREATE INDEX idx_usuarios_secretaria ON usuarios(secretaria_id);
 CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
 
--- Senhas padrao (seed): admin / admin123, supervisor / sup123, usuario / user123
+-- Senhas padrao (seed): admin / admin@123, supervisor / admin@123, usuario / admin@123
 INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, secretaria_id) VALUES
-('Administrador', 'admin', 'admin@sistema.local', '$2y$12$fdnhj.EWAy.Po1j2BfrFWOgAcNplbgdMaX7QF/BMEMWGdAtrMy7w.', 1, 1),
-('Supervisor', 'supervisor', 'supervisor@sistema.local', '$2y$12$9OyosGMEQqupd1nom3qNJO6Coz7R6OG3gyMxnCx7OO2//jCkKTXw.', 2, 1),
-('Usuario Padrao', 'usuario', 'usuario@sistema.local', '$2y$12$rurfcjaYNYCNm40JlLfFKO5ptB98.pjH3s/9ZnHLS2NYl6lfNx7Ny', 3, 1);
+('Administrador', 'admin', 'admin@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 1, 1),
+('Supervisor', 'supervisor', 'supervisor@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 2, 1),
+('Usuario Padrao', 'usuario', 'usuario@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 3, 1);
 
 -- =====================================================
 -- SESSAO UNICA POR USUARIO
@@ -400,12 +400,17 @@ CREATE TABLE locais (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at DATETIME NULL COMMENT 'Data de exclusao logica (soft delete)',
+    -- Coluna virtual que retorna o nome apenas para registros ativos (soft-delete).
+    -- Em MariaDB, valores NULL em UNIQUE nao conflitam, permitindo recriar um
+    -- local com mesmo nome de outro ja excluido logicamente (deleted_at NOT NULL).
+    nome_ativo VARCHAR(150) AS (IF(deleted_at IS NULL, nome, NULL)) VIRTUAL,
     CONSTRAINT fk_locais_regiao FOREIGN KEY (regiao_id) REFERENCES regioes(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_secretaria FOREIGN KEY (secretaria_id) REFERENCES secretarias(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_tipo_local FOREIGN KEY (tipo_local_id) REFERENCES tipos_locais(id) ON DELETE SET NULL,
     CONSTRAINT fk_locais_classif_endereco FOREIGN KEY (classificacao_endereco_id) REFERENCES classificacao_enderecos(id) ON DELETE SET NULL,
     CONSTRAINT ck_locais_latitude CHECK (latitude IS NULL OR (latitude BETWEEN -90 AND 90)),
-    CONSTRAINT ck_locais_longitude CHECK (longitude IS NULL OR (longitude BETWEEN -180 AND 180))
+    CONSTRAINT ck_locais_longitude CHECK (longitude IS NULL OR (longitude BETWEEN -180 AND 180)),
+    CONSTRAINT uq_locais_nome_ativo UNIQUE (nome_ativo)
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_locais_regiao ON locais(regiao_id);
@@ -682,7 +687,11 @@ FOREIGN KEY (alarme_conta) REFERENCES central_alarmes(conta) ON DELETE SET NULL;
 
 CREATE FULLTEXT INDEX ftx_locais_busca ON locais(nome, logradouro, bairro);
 
-ALTER TABLE locais ADD CONSTRAINT uq_locais_nome_secretaria UNIQUE (nome, secretaria_id);
+-- A unicidade do nome do local e garantida pela constraint uq_locais_nome_ativo
+-- definida na propria CREATE TABLE locais (sobre coluna virtual nome_ativo),
+-- que respeita o soft-delete (deleted_at). A antiga uq_locais_nome_secretaria
+-- (nome, secretaria_id) foi removida porque, quando secretaria_id era NULL,
+-- o MySQL/MariaDB permitia nomes duplicados.
 
 CREATE TABLE alarmes_manutencoes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -762,28 +771,44 @@ INSERT INTO tipos_operacao(id, nome) VALUES
 -- AUDITORIA
 -- =====================================================
 CREATE TABLE auditoria_eventos (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT,
     entidade VARCHAR(80) NOT NULL COMMENT 'Nome da tabela',
     entidade_id BIGINT UNSIGNED NOT NULL COMMENT 'ID do registro',
-    operacao_id TINYINT NOT NULL COMMENT 'FK para tipos_operacao (1=INSERT, 2=UPDATE, 3=DELETE)',
+    operacao_id TINYINT NOT NULL COMMENT '1=INSERT, 2=UPDATE, 3=DELETE',
     dados_antes JSON NULL COMMENT 'Estado anterior (para UPDATE/DELETE)',
     dados_depois JSON NULL COMMENT 'Novo estado (para INSERT/UPDATE)',
-    origem VARCHAR(100) NULL COMMENT 'Origem da ação (IP, módulo, etc)',
-    changed_by INT NULL COMMENT 'ID do usuário que realizou a ação',
+    origem VARCHAR(100) NULL COMMENT 'Origem da ação',
+    changed_by INT NULL COMMENT 'ID do usuário',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status_novo INT GENERATED ALWAYS AS (CAST(JSON_UNQUOTE(JSON_EXTRACT(dados_depois,'$.status_id')) AS UNSIGNED)) STORED,
-    equipamento_id_virtual BIGINT GENERATED ALWAYS AS (CAST(JSON_UNQUOTE(JSON_EXTRACT(dados_depois,'$.id')) AS UNSIGNED)) STORED COMMENT 'Equipamento ID extraído do JSON para indexação',
-    INDEX idx_audit_status (status_novo),
-    INDEX idx_audit_equip_virtual (equipamento_id_virtual),
-    INDEX idx_auditoria_entidade (entidade, entidade_id),
+    PRIMARY KEY (id, created_at),
+    INDEX idx_auditoria_entidade (entidade, created_at),
     INDEX idx_auditoria_operacao (operacao_id),
     INDEX idx_auditoria_usuario (changed_by),
-    INDEX idx_auditoria_created_at (created_at),
-    CONSTRAINT fk_audit_operacao FOREIGN KEY (operacao_id) REFERENCES tipos_operacao(id) ON DELETE RESTRICT,
-    CONSTRAINT fk_audit_user FOREIGN KEY (changed_by) REFERENCES usuarios(id) ON DELETE SET NULL,
-    CONSTRAINT ck_audit_dados_antes CHECK (dados_antes IS NULL OR JSON_VALID(dados_antes)),
-    CONSTRAINT ck_audit_dados_depois CHECK (dados_depois IS NULL OR JSON_VALID(dados_depois))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Auditoria de alterações nas tabelas principais';
+    INDEX idx_auditoria_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Auditoria particionada por mês'
+PARTITION BY RANGE (TO_DAYS(created_at)) (
+    PARTITION p2025_01 VALUES LESS THAN (TO_DAYS('2025-02-01')),
+    PARTITION p2025_02 VALUES LESS THAN (TO_DAYS('2025-03-01')),
+    PARTITION p2025_03 VALUES LESS THAN (TO_DAYS('2025-04-01')),
+    PARTITION p2025_04 VALUES LESS THAN (TO_DAYS('2025-05-01')),
+    PARTITION p2025_05 VALUES LESS THAN (TO_DAYS('2025-06-01')),
+    PARTITION p2025_06 VALUES LESS THAN (TO_DAYS('2025-07-01')),
+    PARTITION p2025_07 VALUES LESS THAN (TO_DAYS('2025-08-01')),
+    PARTITION p2025_08 VALUES LESS THAN (TO_DAYS('2025-09-01')),
+    PARTITION p2025_09 VALUES LESS THAN (TO_DAYS('2025-10-01')),
+    PARTITION p2025_10 VALUES LESS THAN (TO_DAYS('2025-11-01')),
+    PARTITION p2025_11 VALUES LESS THAN (TO_DAYS('2025-12-01')),
+    PARTITION p2025_12 VALUES LESS THAN (TO_DAYS('2026-01-01')),
+    PARTITION p2026_01 VALUES LESS THAN (TO_DAYS('2026-02-01')),
+    PARTITION p2026_02 VALUES LESS THAN (TO_DAYS('2026-03-01')),
+    PARTITION p2026_03 VALUES LESS THAN (TO_DAYS('2026-04-01')),
+    PARTITION p2026_04 VALUES LESS THAN (TO_DAYS('2026-05-01')),
+    PARTITION p2026_05 VALUES LESS THAN (TO_DAYS('2026-06-01')),
+    PARTITION p2026_06 VALUES LESS THAN (TO_DAYS('2026-07-01')),
+    PARTITION p2026_07 VALUES LESS THAN (TO_DAYS('2026-08-01')),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);
 
 CREATE INDEX idx_audit_entidade_data ON auditoria_eventos(entidade, created_at);
 CREATE INDEX idx_audit_entidade_operacao_data ON auditoria_eventos(entidade, operacao_id, created_at);
@@ -1432,6 +1457,10 @@ BEGIN
 
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+    -- IMPORTANTE: no MySQL/MariaDB todas as declaracoes DECLARE (variaveis,
+    -- cursores e handlers) devem vir ANTES de qualquer instrucao executavel
+    -- (SET, IF, etc). Por isso o SET cutoff fica apos o CONTINUE HANDLER.
+
     SET cutoff = DATE_SUB(CURDATE(), INTERVAL dias DAY);
 
     OPEN cur;
@@ -1643,6 +1672,44 @@ CREATE TABLE IF NOT EXISTS `notificacoes` (
     KEY `idx_notificacoes_lida_criadas` (`lida`, `created_at` DESC),
     KEY `idx_notificacoes_lookup` (`tipo`, `entidade_tipo`, `entidade_id`, `lida`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- TABELA DE MIGRATIONS
+-- =====================================================
+-- Mantem registro das migrations aplicadas para que o runner
+-- database/migrate.php (formato YYYY_MM_DD_HHMMSS_description.php)
+-- nao tente reaplicar transforms que ja estao incorporados neste
+-- schema (cftv_gml.sql). Em instalacao nova via este script, todas
+-- as migrations ja estao aplicadas — populamos a tabela para refletir
+-- isso e evitar que migrate.php reexecute DDL que quebraria em
+-- duplicidade (CREATE TABLE ja existe, CREATE INDEX ja existe, etc).
+--
+-- A estrutura espelha a criada por database/migrate.php, para
+-- coexistir com o runner em upgrades futuros.
+CREATE TABLE IF NOT EXISTS migrations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL UNIQUE,
+    executed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Migrations legadas (.sql) — schemas anteriores ao sistema PHP.
+-- Todos os objetos ja existem no cftv_gml.sql.
+INSERT INTO migrations (filename) VALUES
+('001_add_tem_camera_to_locais.sql'),
+('002_rename_classificacao_enderecos_nome.sql'),
+('003_add_deleted_at_to_locais.sql'),
+('004_create_rate_limits_table.sql'),
+('005_create_notificacoes_table.sql'),
+('006_add_idx_notificacoes_lookup.sql'),
+('007_add_alarme_local_id.sql'),
+-- Migrations PHP (somente timestamp — formato do runner):
+('2026_07_10_100000'),
+('2026_07_10_110000'),
+('2026_07_10_120000'),
+('2026_07_11_100000'),
+('2026_07_12_100000'),
+('2026_07_13_100000'),
+('2026_07_14_100000');
 
 -- =====================================================
 -- FIM DO SCRIPT

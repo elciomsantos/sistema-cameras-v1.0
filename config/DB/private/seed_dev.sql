@@ -17,6 +17,6 @@
 -- FLUSH PRIVILEGES;
 
 INSERT INTO usuarios (nome, usuario, senha, nivel_acesso_id, secretaria_id, senha_temporaria, ativo) VALUES
-('Administrador Sistema','admin','$2y$12$a92cIU97ddAI3htgwcTU7usurmDWIBqQm/413oF/bWoyvcUUlcz06',1,NULL,0,1),
-('Supervisor Sistema','supervisor','$2y$12$a92cIU97ddAI3htgwcTU7usurmDWIBqQm/413oF/bWoyvcUUlcz06',2,NULL,0,1),
-('User Sistema','user','$2y$12$a92cIU97ddAI3htgwcTU7usurmDWIBqQm/413oF/bWoyvcUUlcz06',3,NULL,0,1);
+('Administrador Sistema','admin','$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK',1,NULL,0,1),
+('Supervisor Sistema','supervisor','$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK',2,NULL,0,1),
+('User Sistema','user','$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK',3,NULL,0,1);

@@ -129,10 +129,10 @@ $isEdit = $modo === 'editar';
                 <input type="number" name="cameras_dvr" class="form-control" min="0">
             </div>
             <div class="col-md-4 d-flex align-items-end">
-                <div class="d-flex align-items-center gap-4 mb-2">
+                <div class="d-flex align-items-center gap-4 mb-2 camera-gm-group">
                     <input class="form-check-input" type="checkbox" id="camera_gm" name="camera_gm" value="1">
-                    <label class="form-check-label mb-0" for="camera_gm" style="white-space: nowrap;">Camera GM</label>
-                    <input type="number" name="quant_camera_gm" class="form-control form-control-sm ms-2" min="0" placeholder="Qtd." style="width: 70px;">
+                    <label class="form-check-label mb-0 camera-gm-label" for="camera_gm">Camera GM</label>
+                    <input type="number" name="quant_camera_gm" class="form-control form-control-sm ms-2 camera-gm-quant" min="0" placeholder="Qtd.">
                 </div>
             </div>
         </div>

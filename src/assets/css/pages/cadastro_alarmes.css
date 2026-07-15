@@ -90,3 +90,7 @@ body.dark-mode .alarme-cadastro-page .alarme-section-header {
 .autocomplete-dropdown-camera .dropdown-item:hover,
 .autocomplete-dropdown-camera .dropdown-item.active { background: #e9ecef; }
 
+/* Camera GM — estilos antes inline (violavam CSP style-src-attr 'none') */
+.alarme-cadastro-page .camera-gm-label { white-space: nowrap; }
+.alarme-cadastro-page .camera-gm-quant { width: 70px; }
+

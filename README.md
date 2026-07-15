@@ -392,15 +392,27 @@ php database/migrate.php
 php database/migrate.php --down 1
 ```
 
-### Migrations disponíveis
+### Migrations consolidadas no `cftv_gml.sql`
 
-| Migration | Descrição |
+As migrations abaixo já estão incorporadas ao schema principal
+(`config/DB/cftv_gml.sql`) e registradas na tabela `migrations` como
+aplicadas — ou seja, uma base nova importada via `cftv_gml.sql` **não
+precisa rodar `migrate.php`**. Os arquivos `.php` foram removidos do
+repositório; o histórico permanece no git para referência.
+
+| Timestamp | Descrição |
 |-----------|-----------|
-| `2026_07_10_100000_add_thumbnails_to_anexos` | Coluna `thumbnails` JSON em `equipamentos_anexos` |
-| `2026_07_10_110000_partition_auditoria_eventos` | Particionamento mensal de `auditoria_eventos` (RANGE por `created_at`) |
-| `2026_07_10_120000_auditoria_buffer_flush` | Buffer de auditoria + procedure + EVENT 10s + reescrita de 15 triggers |
-| `2026_07_11_100000_add_manutencoes_os_status_index` | Índice composto `(os_status_id, updated_at)` em `equipamentos_manutencoes` |
-| `2026_07_12_100000_add_performance_indexes` | Índices de performance (Tier 3 #18) |
+| `2026_07_10_100000` | Coluna `thumbnails` JSON em `equipamentos_anexos` |
+| `2026_07_10_110000` | Particionamento mensal de `auditoria_eventos` (RANGE por `created_at`) |
+| `2026_07_10_120000` | Buffer de auditoria + procedure + EVENT 10s + reescrita de 15 triggers |
+| `2026_07_11_100000` | Índice composto `(os_status_id, updated_at)` em `equipamentos_manutencoes` |
+| `2026_07_12_100000` | Índices de performance (Tier 3 #18) |
+| `2026_07_13_100000` | (obsoleto) UNIQUE `nome + secretaria_id` em `locais` — substituído pela `07_14` |
+| `2026_07_14_100000` | Fix: UNIQUE sobre coluna virtual `nome_ativo` em `locais` (corrige bug NULL+NULL) |
+
+Para adições futuras, crie novos arquivos `.php` em `database/migrations/`
+seguindo o formato `YYYY_MM_DD_HHMMSS_description.php` (com `'up'` e
+`'down'` idempotentes quando possível) e rode `php database/migrate.php`.
 
 > **Nota sobre DDL MySQL**: O MySQL faz commit implícito em operações DDL (`ALTER`, `CREATE TABLE`, `RENAME`, `DROP`, `TRIGGERS`, `EVENTS`). O runner detecta esse caso e registra a migration post-hoc via INSERT autônomo para evitar reprocesamento. Mensagem `OK (DDL auto-committed; migration registered post-hoc)` é esperada em migrations DDL-heavy.
 
@@ -417,7 +429,7 @@ php database/migrate.php --status
 
 ## Performance
 
-O sistema passou por uma análise e otimização de performance em 3 tiers (commits `e2bf436`, `d7cfb20`, `d049535`, `e2de9d6`). Diagnóstico completo em `docs/Relatorio_Performance.md`.
+O sistema passou por uma análise e otimização de performance em 3 tiers (commits `e2bf436`, `d7cfb20`, `d049535`, `e2de9d6`). Diagnóstico completo em `docs/concluidos/Relatorio_Performance.md` (relatório concluído, mantido para referência histórica).
 
 ### Resumo das otimizações aplicadas
 
@@ -490,16 +502,16 @@ npm install && npm run build
 **Última atualização**: 2026-07-12 (Performance Tier 1+2+3 aplicados)
 
 Passos para nova implantação:
-1. `mysql -u root -p < config/DB/cftv_gml.sql` — importa schema completo (com todos os índices)
+1. `mysql -u root -p < config/DB/cftv_gml.sql` — importa schema completo (com todos os objetos: índices, triggers, procedures, eventos, partições e tabela `migrations` já populada)
 2. Copiar `.env.example` → configurar credenciais em `C:\env\sistema-cameras\.env` (Windows) ou `/etc/sistema-cameras/.env` (Linux)
 3. `composer install` — dependências PHP
 4. `npm install && npm run build` — build frontend (Vite + Brotli + Font Awesome self-host + webfonts)
-5. `php database/migrate.php --status` — verificar migrations pendentes (em instalação nova, todas já aplicadas via schema)
+5. `php database/migrate.php --status` — confirma que não há migrations pendentes (`Total: 0 | Applied: 14 | Pending: 0`)
 6. `php scripts/check-opcache.php` — validar OPcache ativo (recomendado)
 7. Configurar Apache/Nginx apontando para `public/`
 
 Atualizações em instâncias existentes:
 1. `git pull` — obter código novo
 2. `composer install && npm install && npm run build` — atualizar dependências e rebuild frontend
-3. `php database/migrate.php` — aplicar migrations pendentes (índices, auditoria buffer, etc.)
+3. `php database/migrate.php` — aplicar migrations pendentes (índices, auditoria buffer, etc.) — em instalações novas via `cftv_gml.sql`, todas já aplicadas
 4. `php scripts/check-opcache.php` — validar OPcache (em especial se mudou PHP.ini)

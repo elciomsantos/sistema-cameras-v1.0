@@ -4,7 +4,7 @@
   "mcp": {
     "openrouter": {
       "type": "remote",
-      "url": "https://openrouter.ai/mcp",
+      "url": "https://mcp.openrouter.ai/mcp",
       "enabled": true
     }
   }

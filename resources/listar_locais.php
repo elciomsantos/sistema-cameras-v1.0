@@ -131,7 +131,32 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
             </div>
 
         <p class="text-muted small">Total: <strong><?= $total ?></strong> locais encontrados</p>
-        <?php if (!empty($locais)): ?>
+        <?php if (!empty($locais)):
+            $filtersQuery = http_build_query(array_filter([
+                'nome' => $filters['nome'],
+                'regiao_id' => $filters['regiao_id'],
+                'tipo_local_id' => $filters['tipo_local_id'],
+                'tem_alarme' => $filters['tem_alarme'],
+                'camera' => $filters['camera'],
+            ]));
+        ?>
+        <?php if ($totalPages > 1): ?>
+            <nav class="mb-3">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item <?= $pageNum <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $pageNum - 1 ?>&<?= $filtersQuery ?>">Anterior</a>
+                    </li>
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?= $i === $pageNum ? 'active' : '' ?>">
+                            <a class="page-link" href="?page=listar_locais&page_num=<?= $i ?>&<?= $filtersQuery ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                    <li class="page-item <?= $pageNum >= $totalPages ? 'disabled' : '' ?>">
+                        <a class="page-link" href="?page=listar_locais&page_num=<?= $pageNum + 1 ?>&<?= $filtersQuery ?>">Proximo</a>
+                    </li>
+                </ul>
+            </nav>
+        <?php endif; ?>
             <div class="table-responsive">
                 <table class="table table-hover table-striped table-sm">
                     <thead class="table-dark">
@@ -204,15 +229,7 @@ $locais = $locaisService->search($filters, $pageNum, $perPage);
                 </table>
             </div>
 
-            <?php if ($totalPages > 1):
-                $filtersQuery = http_build_query(array_filter([
-                    'nome' => $filters['nome'],
-                    'regiao_id' => $filters['regiao_id'],
-                    'tipo_local_id' => $filters['tipo_local_id'],
-                    'tem_alarme' => $filters['tem_alarme'],
-                    'camera' => $filters['camera'],
-                ]));
-            ?>
+            <?php if ($totalPages > 1): ?>
                 <nav>
                     <ul class="pagination pagination-sm justify-content-center">
                         <li class="page-item <?= $pageNum <= 1 ? 'disabled' : '' ?>">

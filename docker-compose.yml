@@ -1,22 +1,30 @@
-version: '3.8'
-
+# ============================================
+#Desenvolvimento — Apache 2 + PHP 8.3 + MySQL 8.0
+#Otimizado para WSL2: network_mode: host evita o netavark/nftables
+#(que falha em rootless Podman no WSL2). Bind mount do codigo-fonte
+#permite hot reload sem rebuild.
+#
+#Uso:
+#  docker compose up -d
+#  docker compose logs -f app
+#  docker compose down
+#============================================
 services:
   db:
     image: mysql:8.0
     container_name: cameras-db
     restart: unless-stopped
+    network_mode: host
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
       MYSQL_DATABASE: ${DB_NAME:-cftv_gml}
       MYSQL_USER: ${DB_USER:-cftv_user}
       MYSQL_PASSWORD: ${DB_PASS:-cftv_pass}
-    ports:
-      - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./config/DB/cftv_gml.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./config/DB/cftv_gml.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,22 +33,27 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev
     container_name: cameras-app
     restart: unless-stopped
-    ports:
-      - "80:8080"
+    network_mode: host
     environment:
-      CAMERAS_ENV: production
-      DB_HOST: db
+      CAMERAS_ENV: development
+      # network_mode: host -> DB acessivel em 127.0.0.1:3306 (nao por nome DNS)
+      DB_HOST: 127.0.0.1
       DB_PORT: 3306
-      DB_NAME: cftv_gml
-      DB_USER: cftv_user
-      DB_PASS: cftv_pass
+      DB_NAME: ${DB_NAME:-cftv_gml}
+      DB_USER: ${DB_USER:-cftv_user}
+      DB_PASS: ${DB_PASS:-cftv_pass}
       APP_TIMEZONE: America/Sao_Paulo
       CAMERAS_SESSION_TIMEOUT: 3600
       CAMERAS_SESSION_ABSOLUTE_TIMEOUT: 28800
-      CAMERAS_CSP_ALLOW_INLINE_STYLES: 0
+      # Em dev, permitir inline styles para evitar quebrar Bootstrap
+      CAMERAS_CSP_ALLOW_INLINE_STYLES: 1
     volumes:
+      # Bind mount do codigo-fonte — mudancas refletem sem rebuild
+      - ./:/var/www/html
+      # Persistir storage e uploads (nao sobrescrever com bind mount)
       - app_storage:/var/www/html/storage
       - app_uploads:/var/www/html/public/uploads
     depends_on:

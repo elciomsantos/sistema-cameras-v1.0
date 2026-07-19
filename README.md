@@ -487,7 +487,7 @@ npm install && npm run build
 
 ## Tecnologias
 
-- **Backend**: PHP 8.2+, PDO, Monolog
+- **Backend**: PHP 8.4+, PDO, Monolog
 - **Frontend**: TypeScript, Vite 8, Bootstrap 5.3, Chart.js, PostCSS, esbuild
 - **Banco**: MySQL 8.0+ / MariaDB 10.5+
 - **Ícones**: Font Awesome 6 (self-host via npm `@fortawesome/fontawesome-free`)

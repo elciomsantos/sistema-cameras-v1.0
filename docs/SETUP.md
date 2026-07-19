@@ -174,3 +174,22 @@ de `CREATE TABLE migrations` + `INSERT INTO migrations`).
 - Configurar VirtualHost do Apache apontando para `public/`
 - Ver `docs/DEPLOY.md` para implantação completa (Docker, CI/CD)
 - Ver `docs/SECURITY_ENV.md` para detalhes de segurança do `.env`
+
+
+
+
+
+#=====================================================
+suricato@mamute:~/projects/sistema-cameras-v1.0$ 
+Instalar nates de inicia o docker
+
+sudo snap install docker        
+sudo apt  install docker.io      
+sudo apt  install podman-docker 
+
+O Podman não está rodando. Execute:
+systemctl --user start podman.socket
+
+Executar
+
+docker compose -f docker-compose.nginx.yml up --build

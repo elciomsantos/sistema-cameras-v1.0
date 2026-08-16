@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['tests/Js/**/*.test.js', 'tests/Js/**/*.test.ts'],
     coverage: {
       reporter: ['text', 'clover', 'html'],
-      include: ['public/assets/js/**/*.js'],
+      include: ['src/assets/js/**/*.js', 'src/assets/js/**/*.ts'],
     },
   },
 });

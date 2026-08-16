@@ -164,8 +164,39 @@ class EquipamentoServiceTest extends TestCase
         $svc->validateTipoSpecific(4, '', null);
     }
 
-    public function testParseJsonInputReturnsPostData(): void
+    public function testParseJsonInputReturnsDecodedArray(): void
     {
-        $this->markTestIncomplete('php://input cannot be tested without stream mock');
+        $result = \EquipamentoService::parseJsonInput('{"conta": 1, "local": "Teste"}');
+
+        $this->assertSame(['conta' => 1, 'local' => 'Teste'], $result);
+    }
+
+    public function testParseJsonInputThrowsOnEmptyRaw(): void
+    {
+        $this->expectException(\Exception::class);
+        \EquipamentoService::parseJsonInput('');
+    }
+
+    public function testParseJsonInputThrowsOnInvalidJson(): void
+    {
+        $this->expectException(\Exception::class);
+        \EquipamentoService::parseJsonInput('{not json}');
+    }
+
+    public function testParseJsonInputThrowsOnEmptyObject(): void
+    {
+        $this->expectException(\Exception::class);
+        \EquipamentoService::parseJsonInput('{}');
+    }
+
+    public function testParseJsonInputThrowsOnOversizedPayload(): void
+    {
+        $_SERVER['CONTENT_LENGTH'] = (string)(10 * 1024 * 1024 + 1);
+        try {
+            $this->expectException(\Exception::class);
+            \EquipamentoService::parseJsonInput('{"a": 1}');
+        } finally {
+            unset($_SERVER['CONTENT_LENGTH']);
+        }
     }
 }

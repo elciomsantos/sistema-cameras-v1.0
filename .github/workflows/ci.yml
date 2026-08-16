@@ -44,7 +44,7 @@ jobs:
           php-version: 8.4
           extensions: pdo_mysql, mbstring, zip, gd, xml, curl
           tools: composer:v2
-          coverage: none
+          coverage: pcov
 
       - name: Validate composer files
         run: composer validate --strict
@@ -78,7 +78,14 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress
 
       - name: PHPUnit tests
-        run: vendor/bin/phpunit --no-coverage
+        run: vendor/bin/phpunit --coverage-clover coverage.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-coverage
+          path: coverage.xml
+          if-no-files-found: ignore
 
   frontend:
     name: Frontend Checks

@@ -22,6 +22,7 @@
     "@types/bootstrap": "^5.2.11",
     "@types/node": "^26.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
+    "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.5.0",
     "cssnano": "^8.0.2",
     "esbuild": "^0.28.1",

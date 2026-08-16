@@ -11,13 +11,13 @@ trait ParsesInput
         requireApiAuth('supervisor');
     }
 
-    public static function parseJsonInput(): array
+    public static function parseJsonInput(?string $raw = null): array
     {
         $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
         if ($contentLength > 10 * 1024 * 1024) {
             throw ServiceException::badRequest('Payload muito grande. Maximo: 10MB.');
         }
-        $raw = file_get_contents('php://input');
+        $raw ??= file_get_contents('php://input');
         if ($raw === '' || $raw === false) {
             throw ServiceException::badRequest('Nenhum dado recebido.');
         }

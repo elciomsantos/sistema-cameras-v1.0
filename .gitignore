@@ -85,3 +85,7 @@ storage/ratelimit/
 
 # CEP cache
 storage/cep_cache/
+
+# Cobertura de testes
+coverage.xml
+coverage/

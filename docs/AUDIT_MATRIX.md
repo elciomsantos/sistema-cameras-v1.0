@@ -73,6 +73,11 @@
 | AUD-056 | DevOps | CI/CD / healthcheck / logs | OK | CI+CD robustos; healthcheck OK | — |
 | AUD-057 | DevOps | Paridade CI×prod | FALHA | CI PHP 8.3 vs prod 8.4 | [F-606] |
 | AUD-058 | Docker | Imagem nginx sobe em produção | FALHA | `brotli_static` sem módulo | [F-607] |
+| AUD-059 | Testes | Cobertura Vitest configurada? | FALHA | include aponta p/ `public/assets/js/` | [F-701] |
+| AUD-060 | Testes | API tests determinísticos | FALHA | 404 tratado como falha (14 falsas) | [F-702] |
+| AUD-061 | Testes | Cobertura PHP | FALHA | CI `--no-coverage`; sem xdebug/pcov | [F-703] |
+| AUD-062 | Testes | Smoke/E2E portáveis no CI | FALHA | Smoke PowerShell; sem E2E/UI | [F-704]/[F-705] |
+| AUD-063 | Testes | Integration fixtures | FALHA | DB real sem fixtures; parseJsonInput | [F-706]/[F-707] |
 
 ---
 
@@ -117,6 +122,13 @@
 | F-605 | Healthcheck HTTP sem auth (smoke) | Baixa | Não confirmado |
 | F-606 | CI PHP 8.3 vs produção 8.4 | Baixa | Corrigido |
 | F-607 | nginx não subia (`brotli_static` sem módulo) | Alta | Corrigido |
+| F-701 | Coverage Vitest aponta p/ diretório inexistente | Média | Corrigido |
+| F-702 | API tests: 404 tratado como falha (14 falsas) | Média | Corrigido |
+| F-703 | Sem cobertura PHP configurada | Baixa | Corrigido |
+| F-704 | Smoke tests PowerShell (não rodam no CI) | Baixa | Aberto |
+| F-705 | Sem testes E2E/UI/PWA | Média | Aberto |
+| F-706 | Integration sem fixtures de teste | Baixa | Aberto |
+| F-707 | `parseJsonInput` sem teste | Baixa | Corrigido |
 
 ---
 

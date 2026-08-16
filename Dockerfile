@@ -30,13 +30,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && locale-gen pt_BR.UTF-8 \
     && docker-php-ext-install pdo_mysql mbstring zip gd xml curl \
     && pecl install apcu && docker-php-ext-enable apcu \
-    && pecl install mongodb-stable 2>/dev/null || true \
     && a2enmod rewrite deflate expires headers \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+# Composer (versao pinada para reprodutibilidade)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 # Configuracoes PHP (validas para dev e prod)
 RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/memory.ini \

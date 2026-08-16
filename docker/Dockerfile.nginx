@@ -28,18 +28,17 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nginx curl libpng-dev libzip-dev libonig-dev \
         libxml2-dev libcurl4-openssl-dev pkg-config libssl-dev \
-        libbrotli-dev \
+        libbrotli-dev libnginx-mod-http-brotli-static \
         locales \
     && sed -i 's/# pt_BR.UTF-8/pt_BR.UTF-8/' /etc/locale.gen \
     && locale-gen pt_BR.UTF-8 \
     && docker-php-ext-install pdo_mysql mbstring zip gd xml curl \
     && pecl install apcu && docker-php-ext-enable apcu \
-    && pecl install mongodb-stable 2>/dev/null || true \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar composer e instalar dependencias PHP
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
@@ -84,11 +83,18 @@ RUN mkdir -p storage/ratelimit storage/cep_cache public/uploads \
 ENV CAMERAS_ENV=production
 
 # Remover default do Nginx (evitar conflito)
-RUN rm -f /etc/nginx/sites-enabled/default
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && mkdir -p /run/php /var/cache/nginx /var/log/nginx /var/lib/nginx/body \
+    && touch /run/php/php-fpm.pid /var/run/nginx.pid /var/log/nginx/access.log /var/log/nginx/error.log \
+    && chown -R www-data:www-data /run/php /var/cache/nginx /var/log/nginx /var/lib/nginx \
+    && chown www-data:www-data /var/run/nginx.pid
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -sf http://localhost:8080/ || exit 1
 
-CMD sh -c "nginx -g 'daemon off;' & exec php-fpm --nodaemonize"
+# Rodar como www-data (nao root) — nginx master + php-fpm
+USER www-data
+
+CMD ["sh", "-c", "nginx -g 'daemon off;' & exec php-fpm --nodaemonize"]

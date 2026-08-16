@@ -13,7 +13,6 @@
 services:
   db:
     image: mysql:8.0
-    container_name: cameras-db
     restart: unless-stopped
     command: ["--event-scheduler=ON"]
     environment:
@@ -40,7 +39,6 @@ services:
       dockerfile: docker/Dockerfile.nginx
     # Alternativa: usar imagem de registry pre-compilada
     # image: ghcr.io/${GITHUB_REPOSITORY:-ghostterminals/sistema-cameras-v1.0}:${APP_TAG:-latest}
-    container_name: cameras-app
     restart: unless-stopped
     ports:
       - "80:8080"

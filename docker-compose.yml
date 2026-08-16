@@ -12,7 +12,6 @@
 services:
   db:
     image: mysql:8.0
-    container_name: cameras-db
     restart: unless-stopped
     network_mode: host
     command: ["--event-scheduler=ON"]
@@ -35,7 +34,6 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    container_name: cameras-app
     restart: unless-stopped
     network_mode: host
     environment:

@@ -66,6 +66,13 @@
 | AUD-049 | Dependências | Versões desatualizadas | OK (F-502..506) | Sem urgência; majors de tooling dev postergadas | [F-502]..[F-506] |
 | AUD-050 | Dependências | Abandonadas / sem uso | OK | Nenhuma; deps com justificativa | — |
 | AUD-051 | Dependências | Licenciamento / conflitos | OK | composer validate --strict OK | — |
+| AUD-052 | Docker | Multi-stage builds / imagem base | OK | Base dev+prod, cache de camadas | — |
+| AUD-053 | Docker | Usuário / privileges | FALHA | Dockerfile.nginx roda como root | [F-603] |
+| AUD-054 | Docker | Secrets / volumes / redes / portas | OK | Senhas por env; DB não exposto | — |
+| AUD-055 | Docker | Repro..bilidade / tags / pacotes | FALHA | composer:latest; mongodb sem uso | [F-601]/[F-602] |
+| AUD-056 | DevOps | CI/CD / healthcheck / logs | OK | CI+CD robustos; healthcheck OK | — |
+| AUD-057 | DevOps | Paridade CI×prod | FALHA | CI PHP 8.3 vs prod 8.4 | [F-606] |
+| AUD-058 | Docker | Imagem nginx sobe em produção | FALHA | `brotli_static` sem módulo | [F-607] |
 
 ---
 
@@ -103,6 +110,13 @@
 | F-504 | php_codesniffer 3 → 4 (major) | Baixa | Aberto (postergado) |
 | F-505 | sentry 4.29 → 4.30 (patch) | Baixa | Aberto (próx. manutenção) |
 | F-506 | npm: minors/majors disponíveis | Baixa | Aberto (npm update) |
+| F-601 | `composer:latest` tag flutuante | Baixa | Aberto |
+| F-602 | Extensão mongodb sem uso (2 Dockerfiles) | Baixa | Aberto |
+| F-603 | Dockerfile.nginx roda como root (prod) | Média | Aberto |
+| F-604 | container_name fixo dev×prod | Baixa | Aberto |
+| F-605 | Healthcheck HTTP sem auth (smoke) | Baixa | Não confirmado |
+| F-606 | CI PHP 8.3 vs produção 8.4 | Baixa | Corrigido |
+| F-607 | nginx não subia (`brotli_static` sem módulo) | Alta | Corrigido |
 
 ---
 

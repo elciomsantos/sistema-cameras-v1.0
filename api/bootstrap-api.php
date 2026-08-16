@@ -215,11 +215,10 @@ function executeApiRequest(?string $endpointOverride = null): void
             echo json_encode(['success' => false, 'error' => 'Invalid host']);
             exit;
         }
-        $serverPort = (string)($_SERVER['SERVER_PORT'] ?? '80');
-        $defaultPort = ($serverScheme === 'https') ? '443' : '80';
-        $expectedOrigin = ($serverPort === $defaultPort)
-            ? "{$serverScheme}://{$serverHost}"
-            : "{$serverScheme}://{$serverHost}:{$serverPort}";
+        // HTTP_HOST reflete a URL usada no navegador (host[:porta], sem porta
+        // quando default). Comparar com o Origin direto evita mismatch quando
+        // o nginx interno escuta numa porta diferente da publicada (8080 vs 80).
+        $expectedOrigin = "{$serverScheme}://{$serverHost}";
         $isOriginAllowed = ($allowedOrigin === $expectedOrigin);
     }
 

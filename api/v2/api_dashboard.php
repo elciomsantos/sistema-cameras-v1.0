@@ -19,6 +19,19 @@ try {
 
     $db = db();
 
+    $usuarioSecretariaId = getUsuarioSecretariaId();
+    $escoparPorSecretaria = $usuarioSecretariaId !== null && resolveUserAccessLevel($_SESSION['usuario'] ?? null) === 'user';
+    $equipScope = '';
+    $alarmScope = '';
+    $equipParams = [];
+    $alarmParams = [];
+    if ($escoparPorSecretaria) {
+        $equipScope = ' AND e.secretaria_id = :secretaria_id_equip';
+        $equipParams[':secretaria_id_equip'] = $usuarioSecretariaId;
+        $alarmScope = ' AND EXISTS (SELECT 1 FROM locais l_sec WHERE l_sec.alarme_conta = ca.conta AND l_sec.secretaria_id = :secretaria_id_alarm)';
+        $alarmParams[':secretaria_id_alarm'] = $usuarioSecretariaId;
+    }
+
     $stats = [
         'total' => 0,
         'ativas' => 0,
@@ -37,10 +50,10 @@ try {
             COUNT(*) as quantidade
         FROM equipamentos e
         LEFT JOIN status s ON e.status_id = s.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
         GROUP BY s.id, s.nome
         ORDER BY quantidade DESC
-    ");
+    ", $equipParams);
     $statusData = $result['status'] === 'success' ? $result['data'] : [];
     foreach ($statusData as $row) {
         $nome = $row->status ?? '';
@@ -61,10 +74,10 @@ try {
         SELECT COUNT(DISTINCT m.equipamento_id) as atrasada
         FROM equipamentos_manutencoes m
         JOIN equipamentos e ON m.equipamento_id = e.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
           AND m.data_hora < DATE_SUB(NOW(), INTERVAL 7 DAY)
           AND e.status_id = (SELECT id FROM status WHERE nome = 'MANUTENCAO' LIMIT 1)
-    ");
+    ", $equipParams);
     $stats['atrasada'] = $result['status'] === 'success' ? (int)($result['data'][0]->atrasada ?? 0) : 0;
 
     $stats['uptime'] = $stats['total'] > 0 ? (int)round(($stats['ativas'] / $stats['total']) * 100) : 0;
@@ -75,10 +88,10 @@ try {
             COUNT(*) as quantidade
         FROM central_alarmes ca
         LEFT JOIN status s ON ca.status_id = s.id
-        WHERE ca.deleted_at IS NULL
+        WHERE ca.deleted_at IS NULL$alarmScope
         GROUP BY ca.status_id, s.nome
         ORDER BY quantidade DESC
-    ");
+    ", $alarmParams);
     $alarmStatusData = $result['status'] === 'success' ? $result['data'] : [];
     foreach ($alarmStatusData as $row) {
         $nome = $row->status ?? '';
@@ -96,18 +109,18 @@ try {
         JOIN central_alarmes ca ON am.alarme_id = ca.id
         WHERE am.data_hora < DATE_SUB(NOW(), INTERVAL 7 DAY)
           AND am.os_status_id IN (1, 2)
-          AND ca.deleted_at IS NULL
-    ");
+          AND ca.deleted_at IS NULL$alarmScope
+    ", $alarmParams);
     $stats['alarmes_atrasadas'] = $result['status'] === 'success' ? (int)($result['data'][0]->atrasadas ?? 0) : 0;
 
     $result = $db->query("
         SELECT COALESCE(te.nome, 'SEM TIPO') as tipo, COUNT(*) as quantidade
         FROM equipamentos e
         LEFT JOIN tipos_equipamento te ON e.tipo_equipamento_id = te.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
         GROUP BY te.id, te.nome
         ORDER BY quantidade DESC
-    ");
+    ", $equipParams);
     $tipos = $result['status'] === 'success' ? $result['data'] : [];
 
     $result = $db->query("
@@ -123,10 +136,10 @@ try {
         LEFT JOIN secretarias sec ON m.secretaria_id = sec.id
         LEFT JOIN status s ON e.status_id = s.id
         LEFT JOIN locais l ON e.local_id = l.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
         ORDER BY m.data_hora DESC
         LIMIT 5
-    ");
+    ", $equipParams);
     $manutencoes = $result['status'] === 'success' ? $result['data'] : [];
 
     $result = $db->query("
@@ -147,22 +160,22 @@ try {
             WHERE os_status_id IN (1, 2)
             GROUP BY equipamento_id
         ) m ON m.equipamento_id = e.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
           AND s.nome = 'MANUTENCAO'
           AND (m.data_hora IS NULL OR m.data_hora < DATE_SUB(NOW(), INTERVAL 7 DAY))
         ORDER BY m.data_hora ASC
         LIMIT 5
-    ");
+    ", $equipParams);
     $problemas = $result['status'] === 'success' ? $result['data'] : [];
 
     $result = $db->query("
         SELECT COALESCE(tc.nome, 'SEM TIPO') as tipo, COUNT(*) as quantidade
         FROM equipamentos e
         LEFT JOIN tipo_cameras tc ON e.tipo_camera_id = tc.id
-        WHERE e.deleted_at IS NULL
+        WHERE e.deleted_at IS NULL$equipScope
         GROUP BY tc.nome
         ORDER BY quantidade DESC
-    ");
+    ", $equipParams);
     $cameraTipoData = $result['status'] === 'success' ? $result['data'] : [];
 
     $responsePayload = [

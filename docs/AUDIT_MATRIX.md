@@ -49,7 +49,7 @@
 | AUD-032 | Performance | Paginação + COUNT separado | OK | Listagens paginadas com COUNT dedicado (`api_cameras.php:152-156` etc.) | — |
 | AUD-033 | Performance | N+1 | OK | Sem N+1; batch EXISTS/INSERT no `NotificacaoService`; lookup cacheado | — |
 | AUD-034 | Performance | Cache APCu | OK (F-201/F-202) | TTLs curtos; APCu/OPcache ativos no Docker | [F-201] dashboard global; [F-202] escrita não invalida |
-| AUD-035 | Performance | Escopo de dados por secretaria | FALHA | `api_dashboard.php:10-44` agrega sem filtro, mas cacheia por secretaria | [F-201] escopo + cache redundante |
+| AUD-035 | Performance | Escopo de dados por secretaria | OK | `api_dashboard.php` filtra por secretaria (perfil user) via `$equipScope`/`$alarmScope` + EXISTS em locais | [F-201] escopo + cache redundante |
 | AUD-036 | Banco | Integridade referencial / constraints | OK | FK completas com ON DELETE; CHECKs; soft delete indexado | — |
 | AUD-037 | Banco | Migrações | OK (F-303) | Runner robusto + auto_migrate com GET_LOCK | [F-303] seed divergente |
 | AUD-038 | Banco | Índices | OK (F-302) | Cobertura ampla; candidatos a redundância (EXPLAIN) | [F-302] duplicado em auditoria_eventos |
@@ -78,7 +78,7 @@
 | AUD-061 | Testes | Cobertura PHP | FALHA | CI `--no-coverage`; sem xdebug/pcov | [F-703] |
 | AUD-062 | Testes | Smoke/E2E portáveis no CI | FALHA | Smoke PowerShell; sem E2E/UI | [F-704]/[F-705] |
 | AUD-063 | Testes | Integration fixtures | FALHA | DB real sem fixtures; parseJsonInput | [F-706]/[F-707] |
-| AUD-064 | Documentação | API OpenAPI/Swagger | FALHA | openapi.yaml ausente → 404 | [F-801] |
+| AUD-064 | Documentação | API OpenAPI/Swagger | OK | `docs/openapi.yaml` criado (34 paths); rota `api/swagger-spec` mapeada | [F-801] |
 | AUD-065 | Documentação | Variáveis de ambiente | FALHA | DB_PORT ignorado; MYSQL_ROOT_PASS errado | [F-802]/[F-806] |
 | AUD-066 | Documentação | Versões e métricas | FALHA | PHP 8.2/8.3/8.4; testes desatualizados | [F-803]/[F-804] |
 | AUD-067 | Documentação | Deploy descrito | FALHA | DEPLOY.md SSH ≠ cd.yml | [F-805] |
@@ -101,7 +101,7 @@
 | F-102 | CWE-384 — session fixation mitigada; validar caminho de boot único de `session_start` | Informativo | Não confirmado |
 | F-103 | CWE-863 — supervisor isento de escopo de secretaria em equipamentos/anexos/alarmes | Baixa | Aberto (decisão de negócio) |
 | F-104 | Recuperação de senha expõe senha temporária em sessão (fluxo intencional) | Informativo | Não confirmado |
-| F-201 | CWE-200 — dashboard agrega dados globais sem filtro de secretaria, mas cacheia por secretaria | Média | Aberto |
+| F-201 | CWE-200 — dashboard agrega dados globais sem filtro de secretaria, mas cacheia por secretaria | Média | Corrigido |
 | F-202 | Escrita de câmeras/alarmes não invalida cache APCu de listagem/relatórios | Baixa | Corrigido |
 | F-301 | event_scheduler OFF → flush de auditoria e limpeza inoperantes | Média | Corrigido |
 | F-302 | Índice duplicado em `auditoria_eventos` (entidade, created_at) | Baixa | Corrigido |
@@ -134,7 +134,7 @@
 | F-705 | Sem testes E2E/UI/PWA | Média | Aberto |
 | F-706 | Integration sem fixtures de teste | Baixa | Aberto |
 | F-707 | `parseJsonInput` sem teste | Baixa | Corrigido |
-| F-801 | openapi.yaml ausente → Swagger 404 | Média | Aberto |
+| F-801 | openapi.yaml ausente → Swagger 404 | Média | Corrigido |
 | F-802 | DB_PORT ignorado pelo DSN | Baixa | Corrigido |
 | F-803 | Versão PHP divergente (8.2/8.3/8.4) | Baixa | Corrigido |
 | F-804 | Números de testes desatualizados | Baixa | Corrigido |

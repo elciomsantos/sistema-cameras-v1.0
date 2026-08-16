@@ -112,7 +112,7 @@ function executeApiRequest(?string $endpointOverride = null): void
         'manutencao_cameras', 'modelos_alarmes', 'modelos_cameras',
         'notificacoes',
         'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'session_check',
-        'status', 'swagger', 'upload_anexo',
+        'status', 'swagger', 'swagger-spec', 'upload_anexo',
     ];
 
     if (!in_array($endpoint, $allowedEndpoints, true)) {
@@ -126,6 +126,10 @@ function executeApiRequest(?string $endpointOverride = null): void
         if (file_exists($filepathAlt)) {
             $filepath = $filepathAlt;
         }
+    }
+
+    if ($endpoint === 'swagger-spec' && !file_exists($filepath)) {
+        $filepath = API_ROOT . '/v2/swagger.php';
     }
 
     $exists = file_exists($filepath);

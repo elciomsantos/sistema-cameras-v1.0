@@ -1,0 +1,1022 @@
+openapi: "3.0.3"
+info:
+  title: API v2 — Sistema de Gerenciamento de Câmeras e Alarmes
+  description: |
+    API REST do sistema de câmeras e alarmes v1.0. Autenticação por sessão
+    (cookie PHPSESSID) com token CSRF. Acesso controlado por perfil:
+    `admin`, `supervisor` e `user`.
+
+    - Autenticação: cookie de sessão (`PHPSESSID`) enviado automaticamente pelo navegador.
+    - CSRF: header `X-CSRF-Token` para requisições que não sejam GET.
+    - Todos os endpoints retornam JSON `application/json; charset=utf-8`.
+    - Rate limiting por IP (GET: 120 req/min; POST: 30 req/min).
+  version: "1.0.0"
+  contact:
+    name: Sistema de Câmeras
+servers:
+  - url: "/api/v2"
+security:
+  - cookieAuth: []
+tags:
+  - name: Autenticação
+    description: Verificação e renovação de sessão
+  - name: Câmeras
+    description: CRUD de câmeras e equipamentos
+  - name: Alarmes
+    description: CRUD de centrais de alarme
+  - name: Manutenção
+    description: Ordens de manutenção de câmeras e alarmes
+  - name: Locais
+    description: Locais, geocodificação e CEP
+  - name: Relatórios
+    description: Relatórios e exportações
+  - name: Auditoria
+    description: Trilha de auditoria
+  - name: Notificações
+    description: Notificações do usuário
+  - name: Anexos
+    description: Upload e consulta de anexos
+  - name: Utilitários
+    description: Health, status, modelos e utilitários
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+  schemas:
+    ApiError:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Erro ao carregar dashboard."
+    ValidationError:
+      type: object
+      required: [success, errors]
+      properties:
+        success:
+          type: boolean
+          example: false
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    Unauthorized:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Autenticação necessária."
+    Forbidden:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Perfil sem permissao para acessar este recurso."
+    NotFound:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Recurso não encontrado."
+    RateLimited:
+      type: object
+      required: [success, error]
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Muitas requisições. Tente novamente em breve."
+    GenericResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+  parameters:
+    PageNum:
+      name: page_num
+      in: query
+      description: Número da página (inicia em 1)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: per_page
+      in: query
+      description: Itens por página (máximo 200)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    Busca:
+      name: busca
+      in: query
+      description: Texto de busca
+      schema:
+        type: string
+        maxLength: 100
+    DataInicial:
+      name: data_inicial
+      in: query
+      description: Data inicial (YYYY-MM-DD)
+      schema:
+        type: string
+        format: date
+    DataFinal:
+      name: data_final
+      in: query
+      description: Data final (YYYY-MM-DD)
+      schema:
+        type: string
+        format: date
+  responses:
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Unauthorized"
+    Forbidden:
+      description: Perfil sem permissão
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Forbidden"
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/NotFound"
+    RateLimited:
+      description: Limite de requisições excedido
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimited"
+    InternalError:
+      description: Erro interno
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+
+paths:
+  /ping:
+    get:
+      tags: [Utilitários]
+      summary: Ping de autenticação
+      description: Endpoint público que verifica se a API está ativa.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /health:
+    get:
+      tags: [Utilitários]
+      summary: Health check
+      description: "Requisição que verifica a saúde da aplicação. Requer perfil: admin."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /session_check:
+    get:
+      tags: [Autenticação]
+      summary: Verificar sessão ativa
+      description: Retorna informações do usuário autenticado na sessão atual.
+      responses:
+        "200":
+          description: Sessão válida
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /renovar_sessao:
+    post:
+      tags: [Autenticação]
+      summary: Renovar sessão
+      description: Renova o tempo de vida da sessão atual.
+      responses:
+        "200":
+          description: Sessão renovada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /limpar_sessoes_orfas:
+    post:
+      tags: [Autenticação]
+      summary: Limpar sessões órfãs
+      description: "Remove sessões órfãs do banco. Requer perfil: admin."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Sessões limpas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /cameras:
+    get:
+      tags: [Câmeras]
+      summary: Listar câmeras
+      description: Lista paginada de câmeras (tipo_equipamento = 1). Filtros por status, modelo, local e busca.
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - name: id
+          in: query
+          description: Filtra por ID específico
+          schema:
+            type: integer
+            minimum: 0
+        - name: status
+          in: query
+          description: "Nome do status (ex: FUNCIONANDO, MANUTENCAO, DESATIVADA)"
+          schema:
+            type: string
+        - name: modelo_id
+          in: query
+          description: Filtra por modelo
+          schema:
+            type: integer
+        - name: local_id
+          in: query
+          description: Filtra por local
+          schema:
+            type: integer
+        - name: excluir_manutencao
+          in: query
+          description: Exclui equipamentos em manutenção
+          schema:
+            type: string
+        - name: nocache
+          in: query
+          description: Ignora cache APCu
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Lista de câmeras
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /cadastrar_cameras:
+    post:
+      tags: [Câmeras]
+      summary: Cadastrar câmera
+      description: "Cadastra uma nova câmera. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "201":
+          description: Câmera criada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /editar_camera:
+    post:
+      tags: [Câmeras]
+      summary: Editar câmera
+      description: "Atualiza uma câmera existente. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Câmera atualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /excluir_camera:
+    post:
+      tags: [Câmeras]
+      summary: Excluir câmera (soft delete)
+      description: "Exclusão lógica de uma câmera. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Câmera excluída
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /modelos_cameras:
+    get:
+      tags: [Câmeras]
+      summary: Listar modelos de câmeras
+      responses:
+        "200":
+          description: Modelos de câmeras
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /alarmes:
+    get:
+      tags: [Alarmes]
+      summary: Listar alarmes
+      description: Lista paginada de centrais de alarme. Filtros por status, região, conta e busca.
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - name: id
+          in: query
+          description: Filtra por ID específico
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Nome do status
+          schema:
+            type: string
+        - name: regiao
+          in: query
+          description: Nome da região
+          schema:
+            type: string
+        - name: conta
+          in: query
+          description: Número da conta
+          schema:
+            type: string
+        - name: nome
+          in: query
+          description: Nome da central
+          schema:
+            type: string
+        - name: nocache
+          in: query
+          description: Ignora cache APCu
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Lista de alarmes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /cadastrar_alarmes:
+    post:
+      tags: [Alarmes]
+      summary: Cadastrar central de alarme
+      description: "Cadastra uma nova central de alarme. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "201":
+          description: Alarme criado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /editar_alarme:
+    post:
+      tags: [Alarmes]
+      summary: Editar central de alarme
+      description: "Atualiza uma central de alarme existente. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Alarme atualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /excluir_alarme:
+    post:
+      tags: [Alarmes]
+      summary: Excluir central de alarme (soft delete)
+      description: "Exclusão lógica de uma central de alarme. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Alarme excluído
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /modelos_alarmes:
+    get:
+      tags: [Alarmes]
+      summary: Listar modelos de alarmes
+      responses:
+        "200":
+          description: Modelos de alarmes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /manutencao_cameras:
+    get:
+      tags: [Manutenção]
+      summary: Listar manutenções de câmeras
+      description: Lista paginada de ordens de manutenção de câmeras, com filtros por data e equipamento.
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - $ref: "#/components/parameters/DataInicial"
+        - $ref: "#/components/parameters/DataFinal"
+        - name: equipamento_id
+          in: query
+          description: Filtra por equipamento
+          schema:
+            type: integer
+        - name: include_lists
+          in: query
+          description: Inclui listas auxiliares no payload (default 1)
+          schema:
+            type: integer
+        - name: sort_by
+          in: query
+          description: Campo de ordenação
+          schema:
+            type: string
+            default: data_hora
+        - name: sort_dir
+          in: query
+          description: Direção de ordenação
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        "200":
+          description: Lista de manutenções
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Manutenção]
+      summary: Criar/atualizar manutenção de câmera
+      responses:
+        "200":
+          description: Manutenção salva
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /manutencao_alarmes:
+    get:
+      tags: [Manutenção]
+      summary: Listar manutenções de alarmes
+      description: Lista paginada de ordens de manutenção de alarmes, com filtros por data e alarme.
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - $ref: "#/components/parameters/DataInicial"
+        - $ref: "#/components/parameters/DataFinal"
+        - name: alarme_id
+          in: query
+          description: Filtra por alarme
+          schema:
+            type: integer
+        - name: equipamento_id
+          in: query
+          description: Filtra por equipamento
+          schema:
+            type: integer
+        - name: include_lists
+          in: query
+          description: Inclui listas auxiliares no payload (default 1)
+          schema:
+            type: integer
+        - name: nocache
+          in: query
+          description: Ignora cache APCu
+          schema:
+            type: boolean
+        - name: sort_by
+          in: query
+          description: Campo de ordenação
+          schema:
+            type: string
+            default: data_hora
+        - name: sort_dir
+          in: query
+          description: Direção de ordenação
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        "200":
+          description: Lista de manutenções
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Manutenção]
+      summary: Criar/atualizar manutenção de alarme
+      responses:
+        "200":
+          description: Manutenção salva
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /manutencao_utils:
+    post:
+      tags: [Manutenção]
+      summary: Utilitários de manutenção
+      description: Endpoints auxiliares de manutenção (payload de dados para os formulários).
+      responses:
+        "200":
+          description: Dados de utilitário
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /locais:
+    get:
+      tags: [Locais]
+      summary: Listar locais
+      description: Autocompletar de locais por nome.
+      parameters:
+        - name: q
+          in: query
+          description: Texto de busca
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de locais
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /exportar_locais:
+    get:
+      tags: [Relatórios]
+      summary: Exportar locais
+      description: "Exporta locais em JSON ou CSV (format=json|csv). Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: format
+          in: query
+          description: Formato de saída
+          schema:
+            type: string
+            enum: [json, csv]
+            default: json
+        - name: nome
+          in: query
+          description: Filtro por nome
+          schema:
+            type: string
+        - name: regiao_id
+          in: query
+          description: Filtro por região
+          schema:
+            type: integer
+        - name: tipo_local_id
+          in: query
+          description: Filtro por tipo de local
+          schema:
+            type: integer
+        - name: tem_alarme
+          in: query
+          description: Filtra locais com alarme
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dados exportados
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /relatorios_cameras:
+    get:
+      tags: [Relatórios]
+      summary: Relatório de câmeras
+      description: "Relatório de câmeras com filtros por período, status, região e local. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/DataInicial"
+        - $ref: "#/components/parameters/DataFinal"
+        - name: status
+          in: query
+          description: Filtro por status
+          schema:
+            type: string
+        - name: regiao
+          in: query
+          description: Filtro por região
+          schema:
+            type: string
+        - name: local
+          in: query
+          description: Filtro por local
+          schema:
+            type: string
+        - name: pesquisa
+          in: query
+          description: Texto de busca
+          schema:
+            type: string
+        - name: nocache
+          in: query
+          description: Ignora cache APCu
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Relatório de câmeras
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /dashboard:
+    get:
+      tags: [Relatórios]
+      summary: Dashboard
+      description: Estatísticas gerais do sistema. Dados filtrados pela secretaria do usuário para o perfil user.
+      responses:
+        "200":
+          description: Dados do dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auditoria_cameras:
+    get:
+      tags: [Auditoria]
+      summary: Auditoria de câmeras
+      description: "Trilha de auditoria de equipamentos (câmeras), com filtros por período, usuário e operação. Requer perfil: admin."
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - $ref: "#/components/parameters/DataInicial"
+        - $ref: "#/components/parameters/DataFinal"
+        - name: equipamento_id
+          in: query
+          description: Filtra por equipamento
+          schema:
+            type: integer
+        - name: usuario_id
+          in: query
+          description: Filtra por usuário
+          schema:
+            type: integer
+        - name: operacao
+          in: query
+          description: Tipo de operação
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Registros de auditoria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /auditoria_alarmes:
+    get:
+      tags: [Auditoria]
+      summary: Auditoria de alarmes
+      description: Trilha de auditoria de centrais de alarme, com filtros por período, usuário e operação.
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - $ref: "#/components/parameters/Busca"
+        - $ref: "#/components/parameters/DataInicial"
+        - $ref: "#/components/parameters/DataFinal"
+        - name: alarme_id
+          in: query
+          description: Filtra por alarme
+          schema:
+            type: integer
+        - name: entidade
+          in: query
+          description: Entidade auditada
+          schema:
+            type: string
+        - name: usuario_id
+          in: query
+          description: Filtra por usuário
+          schema:
+            type: integer
+        - name: operacao
+          in: query
+          description: Tipo de operação
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Registros de auditoria
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /notificacoes:
+    get:
+      tags: [Notificações]
+      summary: Listar notificações
+      description: "Notificações do usuário autenticado. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PageNum"
+        - $ref: "#/components/parameters/PerPage"
+        - name: filtro_tipo
+          in: query
+          description: Filtro por tipo de notificação
+          schema:
+            type: string
+        - name: apenas_count
+          in: query
+          description: Retorna apenas a contagem de não lidas
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Lista de notificações
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /listar_anexos:
+    get:
+      tags: [Anexos]
+      summary: Listar anexos
+      description: Lista anexos de um equipamento ou alarme.
+      parameters:
+        - name: equipamento_id
+          in: query
+          description: ID do equipamento
+          schema:
+            type: integer
+        - name: alarme_id
+          in: query
+          description: ID do alarme
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lista de anexos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /upload_anexo:
+    post:
+      tags: [Anexos]
+      summary: Enviar anexo
+      description: "Faz upload de anexo para um equipamento ou alarme. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "201":
+          description: Anexo enviado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /excluir_anexo:
+    post:
+      tags: [Anexos]
+      summary: Excluir anexo
+      description: "Remove um anexo. Requer perfil: supervisor."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Anexo excluído
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /servir_anexo:
+    get:
+      tags: [Anexos]
+      summary: Servir anexo
+      description: Faz o download/visualização de um anexo (valida permissão por secretaria).
+      responses:
+        "200":
+          description: Conteúdo do anexo
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /cep_lookup:
+    get:
+      tags: [Utilitários]
+      summary: Consultar CEP
+      description: Consulta endereço por CEP via ViaCEP.
+      parameters:
+        - name: cep
+          in: query
+          description: CEP (somente dígitos)
+          schema:
+            type: string
+            pattern: "^[0-9]{8}$"
+      responses:
+        "200":
+          description: Endereço encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /geocode:
+    get:
+      tags: [Utilitários]
+      summary: Geocodificar endereço
+      description: Converte endereço em coordenadas (Nominatim/Photon). Sujeito a rate limit.
+      parameters:
+        - name: endereco
+          in: query
+          description: Endereço a geocodificar
+          schema:
+            type: string
+        - name: cidade
+          in: query
+          description: Cidade (opcional)
+          schema:
+            type: string
+        - name: uf
+          in: query
+          description: UF (opcional)
+          schema:
+            type: string
+          maxLength: 2
+      responses:
+        "200":
+          description: Coordenadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /status:
+    get:
+      tags: [Utilitários]
+      summary: Listar status
+      description: Lista os status disponíveis no sistema.
+      responses:
+        "200":
+          description: Lista de status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericResponse"
+  /swagger:
+    get:
+      tags: [Utilitários]
+      summary: Swagger UI
+      description: "Interface interativa da documentação. Requer perfil: admin."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: HTML do Swagger UI
+          content:
+            text/html:
+              schema:
+                type: string
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /swagger-spec:
+    get:
+      tags: [Utilitários]
+      summary: Spec OpenAPI (YAML)
+      description: "Especificação OpenAPI em formato YAML. Requer perfil: admin."
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Spec OpenAPI
+          content:
+            application/x-yaml:
+              schema:
+                type: string
+        "403":
+          $ref: "#/components/responses/Forbidden"

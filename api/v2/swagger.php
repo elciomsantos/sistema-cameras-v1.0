@@ -9,7 +9,8 @@
 
 // Detectar tipo de requisição
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
-$isSwaggerSpec = strpos($requestUri, '/swagger-spec') !== false;
+$pageParam = $_GET['page'] ?? '';
+$isSwaggerSpec = strpos($requestUri, '/swagger-spec') !== false || str_ends_with($pageParam, 'swagger-spec');
 $isSwaggerJson = strpos($requestUri, '/swagger.json') !== false;
 
 if (!isset($_SESSION['usuario'])) {
@@ -111,7 +112,7 @@ if ($isSwaggerSpec || $isSwaggerJson) {
     <script>
         window.onload = function() {
             SwaggerUIBundle({
-                url: "/api/v2/swagger-spec",
+                url: "<?= rtrim((defined('BASE_URL') ? BASE_URL : '/'), '/') ?>/index.php?page=api/swagger-spec",
                 dom_id: '#swagger-ui',
                 presets: [
                     SwaggerUIBundle.presets.apis,

@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/api_manutencao_utils.php';
 
 function loadManutencaoPayload(
@@ -296,8 +297,12 @@ try {
         $alarmeId = max(0, (int)($_GET['alarme_id'] ?? $_GET['equipamento_id'] ?? 0));
         $page = max(1, (int)($_GET['page_num'] ?? 1));
         $perPage = (int)($_GET['per_page'] ?? 20);
-        if ($perPage < 10) $perPage = 10;
-        if ($perPage > 100) $perPage = 100;
+        if ($perPage < 10) {
+            $perPage = 10;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
         $busca = trim((string)($_GET['busca'] ?? ''));
         $sortBy = trim((string)($_GET['sort_by'] ?? 'data_hora'));
         $sortDir = trim((string)($_GET['sort_dir'] ?? 'DESC'));
@@ -330,8 +335,7 @@ try {
     }
 
     if ($method === 'POST') {
-        $jsonInput = json_decode(file_get_contents('php://input'), true);
-        $payload = is_array($jsonInput) ? $jsonInput : [];
+        $payload = getInputPayload();
         $action = strtolower(trim((string)($payload['action'] ?? 'create_os')));
         $usuarioId = (int)($_SESSION['usuario']->id ?? 0);
 
@@ -550,7 +554,10 @@ try {
     }
 } catch (Throwable $e) {
     if (isset($db) && method_exists($db, 'rollback')) {
-        try { $db->rollback(); } catch (Throwable $ignored) {}
+        try {
+            $db->rollback();
+        } catch (Throwable $ignored) {
+        }
     }
     error_log('[api_manutencao_alarmes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao processar manutenção de alarmes.');

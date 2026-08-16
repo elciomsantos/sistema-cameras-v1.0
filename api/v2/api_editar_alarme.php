@@ -28,7 +28,6 @@ try {
         'message' => 'Alarme atualizado com sucesso.',
         'redirect' => '../../index.php?page=controle&modulo=alarmes',
     ]);
-
 } catch (ServiceException $e) {
     ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {

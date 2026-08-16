@@ -12,7 +12,6 @@ try {
         'data' => $status,
         'count' => count($status),
     ]);
-
 } catch (Throwable $e) {
     error_log('[api_status] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao buscar status.');

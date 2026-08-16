@@ -35,7 +35,9 @@ if ($format === 'csv') {
     header('Content-Disposition: attachment; filename="locais_' . date('Y-m-d') . '.csv"');
 
     $sanitizeCsv = function ($value) {
-        if ($value === null || $value === '') return '';
+        if ($value === null || $value === '') {
+            return '';
+        }
         $first = $value[0];
         if (in_array($first, ['=', '+', '-', '@', "\t", "\n", "\r"], true)) {
             return "'" . $value;

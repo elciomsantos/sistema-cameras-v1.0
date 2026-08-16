@@ -10,7 +10,8 @@ try {
         ApiResponse::error('BAD_REQUEST', 'Endereço não informado.');
     }
 
-    function geocodeHttpGet(string $url): array {
+    function geocodeHttpGet(string $url): array
+    {
         if (function_exists('curl_init')) {
             $ch = curl_init($url);
             curl_setopt_array($ch, [
@@ -49,7 +50,8 @@ try {
         return ['ok' => true, 'raw' => $raw];
     }
 
-    function parseGeocodeResponse($parsed): ?array {
+    function parseGeocodeResponse($parsed): ?array
+    {
         if (!is_array($parsed) || count($parsed) === 0) {
             return null;
         }
@@ -68,7 +70,8 @@ try {
         ];
     }
 
-    function parsePhotonResponse($parsed): ?array {
+    function parsePhotonResponse($parsed): ?array
+    {
         if (!is_array($parsed) || empty($parsed['features']) || !is_array($parsed['features'])) {
             return null;
         }
@@ -165,7 +168,6 @@ try {
     }
 
     ApiResponse::error('NOT_FOUND', $lastError);
-
 } catch (Throwable $e) {
     error_log('[api_geocode] ' . $e->getMessage());
     ApiResponse::internalError('Falha ao geocodificar endereço.');

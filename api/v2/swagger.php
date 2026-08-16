@@ -1,7 +1,8 @@
 <?php
+
 /**
  * Swagger UI - Interface interativa para API v2
- * 
+ *
  * Acesso: GET /api/v2/swagger
  * Especificação OpenAPI: GET /api/v2/swagger-spec
  */
@@ -30,24 +31,24 @@ if ($userLevel !== 'admin') {
 if ($isSwaggerSpec || $isSwaggerJson) {
     header('Content-Type: application/json');
     header('Access-Control-Allow-Methods: GET, OPTIONS');
-    
+
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
         exit;
     }
-    
+
     // Ler arquivo YAML e converter para JSON
     $yamlPath = __DIR__ . '/../../docs/openapi.yaml';
-    
+
     if (!file_exists($yamlPath)) {
         http_response_code(404);
         echo json_encode(['error' => 'OpenAPI specification not found']);
         exit;
     }
-    
+
     // Para produção, converter YAML para JSON usando symfony/yaml
     // Por agora, servir como texto simples com parse básico
     $yamlContent = file_get_contents($yamlPath);
-    
+
     // Simples conversão YAML para JSON (substitui por yaml parser em produção)
     // Se não tiver symfony/yaml, podemos servir o YAML como está
     header('Content-Type: application/x-yaml');

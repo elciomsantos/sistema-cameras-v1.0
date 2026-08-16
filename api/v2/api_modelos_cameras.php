@@ -23,7 +23,6 @@ try {
     $modelos = $lookup->getModelosCameras($marcaId, $tipoId);
 
     ApiResponse::success(['modelos' => $modelos]);
-
 } catch (Throwable $e) {
     error_log('[api_modelos_cameras] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao buscar modelos.');

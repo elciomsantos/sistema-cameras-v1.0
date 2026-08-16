@@ -119,4 +119,3 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
         exit(1);
     });
 }
-

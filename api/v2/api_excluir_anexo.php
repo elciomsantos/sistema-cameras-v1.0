@@ -98,7 +98,9 @@ try {
         if (isset($pathInfo['dirname'], $pathInfo['filename'], $pathInfo['extension'])) {
             foreach (['_sm', '_md'] as $suffix) {
                 $thumbPath = $pathInfo['dirname'] . '/' . $pathInfo['filename'] . $suffix . '.' . $pathInfo['extension'];
-                if (is_file($thumbPath)) { @unlink($thumbPath); }
+                if (is_file($thumbPath)) {
+                    @unlink($thumbPath);
+                }
             }
         }
         if (is_file($caminhoAbsoluto) && !@unlink($caminhoAbsoluto)) {
@@ -107,7 +109,6 @@ try {
     }
 
     ApiResponse::success(['message' => 'Anexo excluido com sucesso.']);
-
 } catch (Throwable $e) {
     if (isset($db) && $db instanceof database && $db->inTransaction()) {
         $db->rollback();

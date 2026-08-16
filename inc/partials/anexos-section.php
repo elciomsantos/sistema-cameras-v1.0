@@ -3,7 +3,7 @@ $modo = $modo ?? 'crud';
 $pending = $pending ?? ($modo === 'crud');
 $tipo = $tipo ?? 'camera';
 ?>
-<?php if ($modo === 'crud'): ?>
+<?php if ($modo === 'crud') : ?>
 <!-- Anexos (fotos / documentos)<?= $pending ? ' - aparece apos salvar' : '' ?> -->
 <div class="<?= $pending ? 'anexos-section-pending ' : '' ?>card alarme-section-card mb-3 <?= $pending ? 'mt-4' : 'mt-3' ?> anexos-editable" id="anexosSection">
     <div class="card-header alarme-section-header d-flex align-items-center gap-2">
@@ -28,7 +28,7 @@ $tipo = $tipo ?? 'camera';
         <div class="anexos-list" data-empty-msg="Nenhum anexo cadastrado."></div>
     </div>
 </div>
-<?php else: ?>
+<?php else : ?>
 <div id="secaoAnexosManutencao" class="anexos-section-pending d-none mt-4">
     <hr>
     <h6><i class="fas fa-paperclip me-2"></i>Anexos da Manutenção</h6>

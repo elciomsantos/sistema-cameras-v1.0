@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * API Response - Formato padronizado de respostas
- * 
+ *
  * Todos os endpoints retornam este formato:
  * {
  *   "success": true/false,

@@ -60,7 +60,6 @@ try {
 
     $tempo_restante = max(0, $tempo_maximo - $inatividade);
     ApiResponse::success(['status' => 'active', 'time_left' => $tempo_restante]);
-
 } catch (Throwable $e) {
     error_log('[session_check] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao verificar sessão.');

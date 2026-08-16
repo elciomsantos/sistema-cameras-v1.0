@@ -493,8 +493,8 @@ class EquipamentoService
             }
         } elseif ($tipoId === 2) {
             $result = $this->db->query(
-                    "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna) VALUES (?, ?, ?, ?, ?)",
-                    [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
+                "INSERT INTO equipamentos_lpr (equipamento_id, sentido_via, faixa_monitorada, url_acesso, leitura_noturna) VALUES (?, ?, ?, ?, ?)",
+                [$equipId, $fields['lpr_sentido_via'], $fields['lpr_faixa_monitorada'], $fields['lpr_url_acesso'], $fields['lpr_leitura_noturna']]
             );
             if ($result['status'] !== 'success') {
                 throw new Exception('Erro ao salvar dados LPR.');

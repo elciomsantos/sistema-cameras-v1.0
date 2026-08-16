@@ -132,9 +132,15 @@ try {
     $nomeArquivo = $hash . '.' . $ext;
 
     $subdir = 'equipamentos';
-    if ($alarmeId) $subdir = 'alarmes';
-    if ($manutencaoCameraId) $subdir = 'manutencoes_cameras';
-    if ($manutencaoAlarmeId) $subdir = 'manutencoes_alarmes';
+    if ($alarmeId) {
+        $subdir = 'alarmes';
+    }
+    if ($manutencaoCameraId) {
+        $subdir = 'manutencoes_cameras';
+    }
+    if ($manutencaoAlarmeId) {
+        $subdir = 'manutencoes_alarmes';
+    }
     $uploadDir = APP_ROOT . '/storage/uploads/' . $subdir . '/';
     $caminhoAbsoluto = $uploadDir . $nomeArquivo;
 
@@ -219,7 +225,9 @@ try {
         if ($expectedHeader !== null) {
             $fh = @fopen($file['tmp_name'], 'rb');
             $actualHeader = $fh !== false ? @fread($fh, strlen($expectedHeader)) : '';
-            if ($fh !== false) { @fclose($fh); }
+            if ($fh !== false) {
+                @fclose($fh);
+            }
             if ($actualHeader !== $expectedHeader) {
                 ApiResponse::error('VALIDATION_ERROR', 'Arquivo invalido ou corrompido.');
             }
@@ -284,10 +292,16 @@ try {
         $anexoId = (int)$db->lastInsertId();
         $db->commit();
     } catch (Throwable $e) {
-        if ($db->inTransaction()) { $db->rollback(); }
-        if ($salvarEmDisco && is_file($caminhoAbsoluto)) { @unlink($caminhoAbsoluto); }
+        if ($db->inTransaction()) {
+            $db->rollback();
+        }
+        if ($salvarEmDisco && is_file($caminhoAbsoluto)) {
+            @unlink($caminhoAbsoluto);
+        }
         foreach ($thumbnailPaths as $thumbPath) {
-            if (is_file($thumbPath)) { @unlink($thumbPath); }
+            if (is_file($thumbPath)) {
+                @unlink($thumbPath);
+            }
         }
         error_log('Erro ao inserir anexo: ' . $e->getMessage());
         ApiResponse::internalError('Erro ao registrar anexo no banco de dados.');
@@ -307,7 +321,6 @@ try {
             'descricao' => $descricao,
         ],
     ], $anexoId);
-
 } catch (Throwable $e) {
     error_log('[api_upload_anexo] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao fazer upload.');

@@ -30,8 +30,12 @@ try {
     $excluirManutencao = !empty($_GET['excluir_manutencao']);
     $page = max(1, (int)($_GET['page_num'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 50);
-    if ($perPage < 1) $perPage = 50;
-    if ($perPage > 200) $perPage = 200;
+    if ($perPage < 1) {
+        $perPage = 50;
+    }
+    if ($perPage > 200) {
+        $perPage = 200;
+    }
     $offset = ($page - 1) * $perPage;
 
     $db = db();
@@ -238,7 +242,6 @@ try {
     }
 
     ApiResponse::paginated($data, $page, $perPage, $total);
-
 } catch (Throwable $e) {
     error_log('[api_cameras] ' . $e->getMessage());
     ApiResponse::internalError();

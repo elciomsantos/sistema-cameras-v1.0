@@ -277,7 +277,10 @@ class LocaisService
                 return $newId;
             } catch (\PDOException $e) {
                 if ($this->db->inTransaction()) {
-                    try { $this->db->rollback(); } catch (\Throwable $rollbackErr) {}
+                    try {
+                        $this->db->rollback();
+                    } catch (\Throwable $rollbackErr) {
+                    }
                 }
                 if ($this->isDuplicateError($e)) {
                     throw new InvalidArgumentException('Já existe um local com este nome nesta secretaria.');
@@ -286,7 +289,10 @@ class LocaisService
                 throw new \RuntimeException('Erro ao cadastrar local.');
             } catch (\Throwable $e) {
                 if ($this->db->inTransaction()) {
-                    try { $this->db->rollback(); } catch (\Throwable $rollbackErr) {}
+                    try {
+                        $this->db->rollback();
+                    } catch (\Throwable $rollbackErr) {
+                    }
                 }
                 logError('LocaisService::create erro', ['error' => $e->getMessage()], 'locais');
                 throw new \RuntimeException('Erro ao cadastrar local.');

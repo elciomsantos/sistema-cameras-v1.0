@@ -16,7 +16,6 @@ try {
     }
 
     ApiResponse::success($health);
-
 } catch (Throwable $e) {
     error_log('[api_health] ' . $e->getMessage());
     ApiResponse::internalError();

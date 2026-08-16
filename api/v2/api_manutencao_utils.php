@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Funcoes compartilhadas entre api_manutencao_cameras.php e api_manutencao_alarmes.php
  */

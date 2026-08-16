@@ -1,6 +1,7 @@
 <?php
 
-function formatFileSize(int $bytes): string {
+function formatFileSize(int $bytes): string
+{
     if ($bytes >= 1048576) {
         return number_format($bytes / 1048576, 2, ',', '.') . ' MB';
     }
@@ -95,7 +96,6 @@ try {
         'data' => $anexos,
         'total' => count($anexos),
     ]);
-
 } catch (Throwable $e) {
     error_log('[api_listar_anexos] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao listar anexos.');

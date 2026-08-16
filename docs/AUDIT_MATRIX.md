@@ -55,6 +55,13 @@
 | AUD-038 | Banco | Índices | OK (F-302) | Cobertura ampla; candidatos a redundância (EXPLAIN) | [F-302] duplicado em auditoria_eventos |
 | AUD-039 | Banco | Auditoria / eventos agendados | FALHA | `event_scheduler` nunca habilitado; buffer de auditoria nunca é descarregado | [F-301] |
 | AUD-040 | Banco | Particionamento | OK (F-304) | Auditoria particionada por mês, sem manutenção futura | [F-304] |
+| AUD-041 | Qualidade | PSR-12 / estilo de código | FALHA | 226 erros + 187 warnings (212 autocorrigíveis via phpcbf) | [F-406] |
+| AUD-042 | Qualidade | DRY / duplicação | FALHA | Endpoints de manutenção de câmeras e alarmes espelhados (~600 linhas cada) | [F-401] |
+| AUD-043 | Qualidade | Código morto | FALHA | `getInputPayload()` não utilizado | [F-402] |
+| AUD-044 | Qualidade | Complexidade ciclomática | FALHA | `extractCommonData` (65) e `validateInput` (63) acima de 20 | [F-404] |
+| AUD-045 | Qualidade | Naming / coesão / acoplamento | OK | Nomes claros, coesão boa, acoplamento baixo | — |
+| AUD-046 | Qualidade | Namespaces / PSR-4 | FALHA | 13 classes `src/` sem namespace (classmap) | [F-403] |
+| AUD-047 | Qualidade | Documentação de código (README migrations) | FALHA | Tabela desatualizada vs commit de909e9 | [F-407] |
 
 ---
 
@@ -79,6 +86,13 @@
 | F-302 | Índice duplicado em `auditoria_eventos` (entidade, created_at) | Baixa | Corrigido |
 | F-303 | Seed da tabela `migrations` divergente (100000 inexistente; 110000 não registrada) | Baixa | Corrigido |
 | F-304 | Partições de `auditoria_eventos` sem manutenção futura | Baixa | Corrigido |
+| F-401 | Duplicação entre `api_manutencao_cameras` e `api_manutencao_alarmes` | Média | Aberto |
+| F-402 | Código morto: `getInputPayload()` | Baixa | Corrigido |
+| F-403 | Classes `src/` sem namespace (PSR-4) | Baixa | Aberto |
+| F-404 | Complexidade ciclomática alta (`extractCommonData` 65, `validateInput` 63) | Média | Aberto |
+| F-405 | `loadManutencaoPayload()` com 10 parâmetros | Baixa | Aberto |
+| F-406 | PSR-12: 226 erros + 187 warnings | Baixa | Corrigido |
+| F-407 | README.md: tabela de migrations desatualizada | Baixa | Corrigido |
 
 ---
 

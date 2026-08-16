@@ -39,7 +39,6 @@ try {
     ApiResponse::success([
         'message' => 'Alarme excluido com sucesso',
     ]);
-
 } catch (ServiceException $e) {
     ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {

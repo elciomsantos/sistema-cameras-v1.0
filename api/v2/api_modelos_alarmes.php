@@ -9,7 +9,6 @@ try {
     $modelos = $lookup->getModelosAlarmes();
 
     ApiResponse::success(['modelos' => $modelos]);
-
 } catch (Throwable $e) {
     error_log('[api_modelos_alarmes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao buscar modelos de alarmes.');

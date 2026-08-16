@@ -51,7 +51,7 @@ $lchecked = function (string $key) use ($formData, $data): string {
             <label for="tipo_local_id" class="form-label">Tipo de Local *</label>
             <select class="form-select form-select-sm" id="tipo_local_id" name="tipo_local_id" required<?= !empty($autofocusTipo) ? ' autofocus' : '' ?>>
                 <option value="">Selecione...</option>
-                <?php foreach ($tiposLocais as $t): ?>
+                <?php foreach ($tiposLocais as $t) : ?>
                 <option value="<?= (int)$t->id ?>" <?= $lselected('tipo_local_id', $t->id) ?>>
                     <?= htmlspecialchars($t->nome, ENT_QUOTES, 'UTF-8') ?>
                 </option>
@@ -68,7 +68,7 @@ $lchecked = function (string $key) use ($formData, $data): string {
             <label for="regiao_id" class="form-label">Regiao</label>
             <select class="form-select form-select-sm" id="regiao_id" name="regiao_id">
                 <option value="">Selecione...</option>
-                <?php foreach ($regioes as $r): ?>
+                <?php foreach ($regioes as $r) : ?>
                 <option value="<?= (int)$r->id ?>" <?= $lselected('regiao_id', $r->id) ?>>
                     <?= htmlspecialchars($r->nome, ENT_QUOTES, 'UTF-8') ?>
                 </option>
@@ -80,13 +80,13 @@ $lchecked = function (string $key) use ($formData, $data): string {
             <label for="secretaria_id" class="form-label">Secretaria</label>
             <select class="form-select form-select-sm" id="secretaria_id" name="secretaria_id" <?= $isScopedUser ? 'disabled' : '' ?>>
                 <option value="">Nenhuma</option>
-                <?php foreach ($secretarias as $s): ?>
+                <?php foreach ($secretarias as $s) : ?>
                 <option value="<?= (int)$s->id ?>" <?= $isScopedUser && (int)$s->id === (int)$usuarioSecretariaId ? 'selected' : $lselected('secretaria_id', $s->id) ?>>
                     <?= htmlspecialchars($s->sigla . ' - ' . $s->nome, ENT_QUOTES, 'UTF-8') ?>
                 </option>
                 <?php endforeach; ?>
             </select>
-            <?php if ($isScopedUser): ?>
+            <?php if ($isScopedUser) : ?>
             <input type="hidden" name="secretaria_id" value="<?= $usuarioSecretariaId ?>">
             <?php endif; ?>
         </div>
@@ -149,7 +149,7 @@ $lchecked = function (string $key) use ($formData, $data): string {
             <label for="uf" class="form-label">UF</label>
             <select class="form-select form-select-sm" id="uf" name="uf">
                 <option value="">Selecione</option>
-                <?php foreach ($ufs as $uf): ?>
+                <?php foreach ($ufs as $uf) : ?>
                 <option value="<?= $uf ?>" <?= $lselected('uf', $uf) ?>><?= $uf ?></option>
                 <?php endforeach; ?>
             </select>
@@ -170,7 +170,7 @@ $lchecked = function (string $key) use ($formData, $data): string {
             <label for="classificacao_endereco_id" class="form-label">Tipo de Logradouro</label>
             <select class="form-select form-select-sm" id="classificacao_endereco_id" name="classificacao_endereco_id">
                 <option value="">Selecione</option>
-                <?php foreach ($classificacoes as $c): ?>
+                <?php foreach ($classificacoes as $c) : ?>
                 <option value="<?= (int)$c->id ?>" <?= $lselected('classificacao_endereco_id', $c->id) ?>>
                     <?= htmlspecialchars($c->descricao, ENT_QUOTES, 'UTF-8') ?>
                 </option>

@@ -398,17 +398,17 @@ As migrations abaixo já estão incorporadas ao schema principal
 (`config/DB/cftv_gml.sql`) e registradas na tabela `migrations` como
 aplicadas — ou seja, uma base nova importada via `cftv_gml.sql` **não
 precisa rodar `migrate.php`**. Os arquivos `.php` foram removidos do
-repositório; o histórico permanece no git para referência.
+repositório no commit `de909e9`; o histórico permanece no git para
+referência.
 
 | Timestamp | Descrição |
 |-----------|-----------|
-| `2026_07_10_100000` | Coluna `thumbnails` JSON em `equipamentos_anexos` |
-| `2026_07_10_110000` | Particionamento mensal de `auditoria_eventos` (RANGE por `created_at`) |
-| `2026_07_10_120000` | Buffer de auditoria + procedure + EVENT 10s + reescrita de 15 triggers |
-| `2026_07_11_100000` | Índice composto `(os_status_id, updated_at)` em `equipamentos_manutencoes` |
-| `2026_07_12_100000` | Índices de performance (Tier 3 #18) |
-| `2026_07_13_100000` | (obsoleto) UNIQUE `nome + secretaria_id` em `locais` — substituído pela `07_14` |
-| `2026_07_14_100000` | Fix: UNIQUE sobre coluna virtual `nome_ativo` em `locais` (corrige bug NULL+NULL) |
+| `2026_07_13_110000` | Triggers `trg_locais_bi`/`trg_locais_bu` de anti-duplicidade em `locais` |
+
+As migrations `2026_07_10_100000`, `2026_07_10_110000`, `2026_07_10_120000`,
+`2026_07_11_100000`, `2026_07_12_100000`, `2026_07_13_100000` e
+`2026_07_14_100000` foram consolidadas diretamente no schema e **não**
+são mais arquivos nem entradas da tabela `migrations`.
 
 Para adições futuras, crie novos arquivos `.php` em `database/migrations/`
 seguindo o formato `YYYY_MM_DD_HHMMSS_description.php` (com `'up'` e

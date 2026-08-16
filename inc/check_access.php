@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Verifica se o usuario tem permissao para acessar a pagina
  * @param string $nivel_requerido Nivel requerido para a pagina
  * @return bool True se tem acesso, false caso contrario
  */
-function verificarAcesso($nivel_requerido = 'user') {
+function verificarAcesso($nivel_requerido = 'user')
+{
     return userHasAccess($nivel_requerido);
 }
 
@@ -26,7 +28,9 @@ function requererAcesso($nivel_requerido = 'user'): void
 function getUsuarioSecretariaId(): ?int
 {
     $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return null;
+    if (!$usuario) {
+        return null;
+    }
 
     $secretariaId = $usuario->secretaria_id ?? null;
     return $secretariaId !== null ? (int)$secretariaId : null;
@@ -35,13 +39,19 @@ function getUsuarioSecretariaId(): ?int
 function verificarEscopoLocal(int $localId): bool
 {
     $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return false;
+    if (!$usuario) {
+        return false;
+    }
 
     $nivel = resolveUserAccessLevel($usuario);
-    if ($nivel === 'admin') return true;
+    if ($nivel === 'admin') {
+        return true;
+    }
 
     $secretariaId = getUsuarioSecretariaId();
-    if ($secretariaId === null) return true;
+    if ($secretariaId === null) {
+        return true;
+    }
 
     $db = db();
     $result = $db->query(
@@ -72,12 +82,18 @@ function requererEscopoLocal(int $localId): void
 function verificarEscopoEquipamento(int $equipamentoId): bool
 {
     $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return false;
+    if (!$usuario) {
+        return false;
+    }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+        return true;
+    }
 
     $secretariaId = getUsuarioSecretariaId();
-    if ($secretariaId === null) return true;
+    if ($secretariaId === null) {
+        return true;
+    }
 
     $db = db();
     $result = $db->query(
@@ -128,15 +144,23 @@ function getAnexoLocalId(int $anexoId): ?int
 function verificarEscopoAnexo(int $anexoId): bool
 {
     $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return false;
+    if (!$usuario) {
+        return false;
+    }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+        return true;
+    }
 
     $secretariaId = getUsuarioSecretariaId();
-    if ($secretariaId === null) return true;
+    if ($secretariaId === null) {
+        return true;
+    }
 
     $localId = getAnexoLocalId($anexoId);
-    if ($localId === null) return false;
+    if ($localId === null) {
+        return false;
+    }
 
     return verificarEscopoLocal($localId);
 }
@@ -144,12 +168,18 @@ function verificarEscopoAnexo(int $anexoId): bool
 function verificarEscopoAlarme(int $alarmeId): bool
 {
     $usuario = $_SESSION['usuario'] ?? null;
-    if (!$usuario) return false;
+    if (!$usuario) {
+        return false;
+    }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) return true;
+    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+        return true;
+    }
 
     $secretariaId = getUsuarioSecretariaId();
-    if ($secretariaId === null) return true;
+    if ($secretariaId === null) {
+        return true;
+    }
 
     $db = db();
     $result = $db->query(

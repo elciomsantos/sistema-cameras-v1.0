@@ -69,7 +69,6 @@ try {
         'time_left' => $tempo_maximo,
         'csrf_token' => $newCsrfToken,
     ]);
-
 } catch (Throwable $e) {
     error_log('[renovar_sessao] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao renovar sessão.');

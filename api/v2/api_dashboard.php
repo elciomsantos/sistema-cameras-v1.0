@@ -46,9 +46,15 @@ try {
         $nome = $row->status ?? '';
         $qtd = (int)($row->quantidade ?? 0);
         $stats['total'] += $qtd;
-        if ($nome === 'FUNCIONANDO') $stats['ativas'] = $qtd;
-        if ($nome === 'MANUTENCAO') $stats['manutencao'] = $qtd;
-        if ($nome === 'DESATIVADA') $stats['desativadas'] = $qtd;
+        if ($nome === 'FUNCIONANDO') {
+            $stats['ativas'] = $qtd;
+        }
+        if ($nome === 'MANUTENCAO') {
+            $stats['manutencao'] = $qtd;
+        }
+        if ($nome === 'DESATIVADA') {
+            $stats['desativadas'] = $qtd;
+        }
     }
 
     $result = $db->query("
@@ -178,7 +184,6 @@ try {
     }
 
     ApiResponse::success($responsePayload);
-
 } catch (Throwable $e) {
     error_log('[api_dashboard] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao carregar dashboard.');

@@ -29,7 +29,10 @@ class RateLimiter
                 $this->storageFailed = true;
                 $fallbackPath = sys_get_temp_dir() . '/cftv_gml_ratelimit/';
                 if (!is_dir($fallbackPath)) {
-                    try { mkdir($fallbackPath, 0755, true); } catch (Throwable) {}
+                    try {
+                        mkdir($fallbackPath, 0755, true);
+                    } catch (Throwable) {
+                    }
                 }
                 if (is_dir($fallbackPath)) {
                     $this->storagePath = $fallbackPath;
@@ -70,7 +73,9 @@ class RateLimiter
 
         if ($this->strategy === 'token_bucket') {
             $data = $this->read($key);
-            if (!$data) return $limit;
+            if (!$data) {
+                return $limit;
+            }
             $tokens = $this->refillTokens($data, $limit, $config[1]);
             return (int)floor($tokens);
         }
@@ -86,16 +91,24 @@ class RateLimiter
 
         if ($this->strategy === 'token_bucket') {
             $data = $this->read($key);
-            if (!$data) return 0;
+            if (!$data) {
+                return 0;
+            }
             $tokens = $this->refillTokens($data, $config[0], $window);
-            if ($tokens >= 1) return 0;
+            if ($tokens >= 1) {
+                return 0;
+            }
             $refillRate = $config[0] / $window;
-            if ($refillRate <= 0) return $window;
+            if ($refillRate <= 0) {
+                return $window;
+            }
             return (int)ceil((1 - $tokens) / $refillRate);
         }
 
         $data = $this->read($key);
-        if (!$data || empty($data['timestamps'])) return 0;
+        if (!$data || empty($data['timestamps'])) {
+            return 0;
+        }
         $oldest = $data['timestamps'][0] ?? 0;
         $elapsed = time() - $oldest;
         return max(0, $window - $elapsed);
@@ -237,7 +250,9 @@ class RateLimiter
         $lastRefill = $data['updated_at'] ?? $now;
         $tokens = $data['tokens'] ?? $limit;
 
-        if ($lastRefill >= $now) return $tokens;
+        if ($lastRefill >= $now) {
+            return $tokens;
+        }
 
         $elapsed = $now - $lastRefill;
         $refillRate = $limit / $window;
@@ -246,9 +261,13 @@ class RateLimiter
 
     private function countInWindow(string $key, int $window): int
     {
-        if ($this->storageFailed) return 0;
+        if ($this->storageFailed) {
+            return 0;
+        }
         $data = $this->read($key);
-        if (!$data || empty($data['timestamps'])) return 0;
+        if (!$data || empty($data['timestamps'])) {
+            return 0;
+        }
 
         $cutoff = time() - $window;
         return count(array_filter($data['timestamps'], fn($ts) => $ts > $cutoff));
@@ -266,8 +285,12 @@ class RateLimiter
 
     private function canUseDatabase(): bool
     {
-        if ($this->useDb === false) return false;
-        if ($this->useDb === true) return true;
+        if ($this->useDb === false) {
+            return false;
+        }
+        if ($this->useDb === true) {
+            return true;
+        }
 
         static $cached = [];
         $cacheKey = spl_object_id($this);
@@ -326,7 +349,9 @@ class RateLimiter
             );
             $stmt->execute([hash('sha256', $key)]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$row) return null;
+            if (!$row) {
+                return null;
+            }
 
             $timestamps = [];
             if (!empty($row['timestamps'])) {
@@ -372,7 +397,9 @@ class RateLimiter
 
     private function safeRmdir(string $dir): void
     {
-        if (!is_dir($dir)) return;
+        if (!is_dir($dir)) {
+            return;
+        }
         set_error_handler(function (int $severity, string $message): bool {
             throw new \RuntimeException($message, $severity);
         });
@@ -402,7 +429,9 @@ class RateLimiter
     private function fileRead(string $key): ?array
     {
         $file = $this->getFilePath($key);
-        if (!file_exists($file)) return null;
+        if (!file_exists($file)) {
+            return null;
+        }
 
         $fp = $this->safeFopen($file, 'r');
         if (!$fp) {
@@ -460,7 +489,9 @@ class RateLimiter
 
     private function fileReadModifyWrite(string $key, callable $callback): void
     {
-        if ($this->storageFailed) return;
+        if ($this->storageFailed) {
+            return;
+        }
         $file = $this->getFilePath($key);
         $fp = $this->safeFopen($file, 'c+');
         if (!$fp) {
@@ -543,7 +574,9 @@ class RateLimiter
         $removed = 0;
         $cutoff = time() - $maxAge;
 
-        if (!is_dir($this->storagePath)) return 0;
+        if (!is_dir($this->storagePath)) {
+            return 0;
+        }
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->storagePath, RecursiveDirectoryIterator::SKIP_DOTS)
@@ -554,7 +587,9 @@ class RateLimiter
                 // filemtime é O(1) via inode — elimina leitura de JSON
                 if ($file->getMTime() < $cutoff) {
                     $path = $file->getPathname();
-                    if (is_file($path)) { unlink($path); }
+                    if (is_file($path)) {
+                        unlink($path);
+                    }
                     $removed++;
                 }
             }
@@ -566,7 +601,9 @@ class RateLimiter
 
     private function removeEmptyDirs(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -575,7 +612,9 @@ class RateLimiter
 
         $dirs = [];
         foreach ($iterator as $file) {
-            if ($file->isDir()) $dirs[] = $file->getPathname();
+            if ($file->isDir()) {
+                $dirs[] = $file->getPathname();
+            }
         }
 
         rsort($dirs);

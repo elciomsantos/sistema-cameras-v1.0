@@ -24,8 +24,12 @@ try {
     $id = max(0, (int)($_GET['id'] ?? 0));
     $page = max(1, (int)($_GET['page_num'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 20);
-    if ($perPage < 1) $perPage = 20;
-    if ($perPage > 100) $perPage = 100;
+    if ($perPage < 1) {
+        $perPage = 20;
+    }
+    if ($perPage > 100) {
+        $perPage = 100;
+    }
     $offset = ($page - 1) * $perPage;
 
     $status = trim((string)($_GET['status'] ?? ''));
@@ -225,7 +229,6 @@ try {
     }
 
     ApiResponse::paginated($rows, $page, $perPage, $total);
-
 } catch (Throwable $e) {
     error_log('[api_alarmes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao carregar alarmes.');

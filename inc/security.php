@@ -379,7 +379,9 @@ function generateTemporaryPassword(int $length = 12): string
             $byte = ord($bytes[$i]);
             if ($byte < $max) {
                 $password .= $all[$byte % $allLen];
-                if (strlen($password) >= $length) break;
+                if (strlen($password) >= $length) {
+                    break;
+                }
             }
         }
     }

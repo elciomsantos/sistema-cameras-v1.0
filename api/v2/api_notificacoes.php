@@ -18,8 +18,12 @@ try {
 
     $page = max(1, (int)($_GET['page_num'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 20);
-    if ($perPage < 1) $perPage = 20;
-    if ($perPage > 100) $perPage = 100;
+    if ($perPage < 1) {
+        $perPage = 20;
+    }
+    if ($perPage > 100) {
+        $perPage = 100;
+    }
     $filtroTipo = trim((string)($_GET['filtro_tipo'] ?? ''));
 
     $notificacaoService = new NotificacaoService();
@@ -37,7 +41,6 @@ try {
 
     $result = $notificacaoService->getAll($page, $perPage, $filtroTipo, $secretariaId);
     ApiResponse::paginated($result['data'], $result['page'], $result['per_page'], $result['total']);
-
 } catch (Throwable $e) {
     logError('[api_notificacoes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao carregar notificações.');

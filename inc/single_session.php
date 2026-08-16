@@ -99,7 +99,6 @@ function registerUniqueSession(database $db, int $usuarioId, string $token): voi
                 ':user_agent' => getSessionUserAgent(),
             ]
         );
-
     } catch (Throwable $e) {
         throw $e;
     } finally {

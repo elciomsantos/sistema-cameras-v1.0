@@ -57,14 +57,18 @@ class LoggerFactory
         ];
 
         foreach ($paths as $path) {
-            if ($path === null) continue;
+            if ($path === null) {
+                continue;
+            }
             if (is_dir($path) && is_writable($path)) {
                 return $path;
             }
         }
 
         foreach ($paths as $path) {
-            if ($path === null) continue;
+            if ($path === null) {
+                continue;
+            }
             try {
                 if (!is_dir($path)) {
                     mkdir($path, 0775, true);

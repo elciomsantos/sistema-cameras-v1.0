@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 /**
  * Request Validator - Validação centralizada de inputs
- * 
+ *
  * Suporta validação baseada em regras:
  * - Primitivas: required, string, numeric, boolean, array
  * - Tamanho: min, max, length
  * - Tipo: email, url, uuid, date, json
  * - Valor: in, not_in, regex, custom
- * 
+ *
  * Uso:
  * $validator = new RequestValidator($_POST);
  * $validator->validate([
@@ -19,7 +19,7 @@ declare(strict_types=1);
  *   'idade' => 'required|numeric|min:18|max:150',
  *   'status' => 'required|in:ativo,inativo,pendente'
  * ]);
- * 
+ *
  * if ($validator->fails()) {
  *   ApiResponse::validationError($validator->errors());
  * }
@@ -54,7 +54,7 @@ class RequestValidator
 
     /**
      * Valida dados contra schema de regras
-     * 
+     *
      * @param array $rules Schema com regras (field => 'rule1|rule2|rule3')
      * @param array $customMessages Mensagens customizadas por campo
      * @return bool True se válido, false se houver erros
@@ -480,7 +480,7 @@ class RequestValidator
     private function addError(string $field, string $rule, array $params = []): void
     {
         $message = $this->customMessages[$field][$rule] ?? $this->getDefaultMessage($rule, $field, $params);
-        
+
         if (!isset($this->errors[$field])) {
             $this->errors[$field] = [];
         }
@@ -528,5 +528,4 @@ class RequestValidator
         json_decode($value);
         return json_last_error() === JSON_ERROR_NONE;
     }
-
 }

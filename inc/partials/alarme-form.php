@@ -9,7 +9,7 @@ $isEdit = $modo === 'editar';
 ?>
 
 <form id="<?= $formId ?>" class="needs-validation" novalidate>
-    <?php if ($isEdit): ?>
+    <?php if ($isEdit) : ?>
     <input type="hidden" name="id" id="alarme_id">
     <?php endif; ?>
 
@@ -30,7 +30,7 @@ $isEdit = $modo === 'editar';
                     <label class="form-label">Status <span class="text-danger">*</span></label>
                     <select name="status" class="form-select" required>
                         <option value="">Selecione...</option>
-                        <?php foreach ($statusList as $s): ?>
+                        <?php foreach ($statusList as $s) : ?>
                             <option value="<?= htmlspecialchars($s['nome'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($s['nome'], ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -40,7 +40,7 @@ $isEdit = $modo === 'editar';
                     <label class="form-label">Regiao</label>
                     <select name="regiao" class="form-select">
                         <option value="">Selecione...</option>
-                        <?php foreach ($regiaoList as $r): ?>
+                        <?php foreach ($regiaoList as $r) : ?>
                             <option value="<?= htmlspecialchars($r['nome'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($r['nome'], ENT_QUOTES, 'UTF-8') ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -190,7 +190,7 @@ $isEdit = $modo === 'editar';
         <button type="submit" class="btn btn-<?= $isEdit ? 'primary' : 'danger' ?>" id="btnSubmit">
             <i class="fas fa-save me-1"></i><?= $isEdit ? 'Salvar alteracoes' : 'Salvar' ?>
         </button>
-        <?php if (!$isEdit): ?>
+        <?php if (!$isEdit) : ?>
         <button type="button" class="btn btn-success d-none" id="btnFinalizar">
             <i class="fas fa-check me-1"></i>Finalizar Cadastro
         </button>

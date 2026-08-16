@@ -42,7 +42,6 @@ try {
 
     $db->rollback();
     ApiResponse::error('NOT_FOUND', 'Câmera já foi excluída ou não encontrada.');
-
 } catch (Throwable $e) {
     if (isset($db) && $db instanceof database && $db->inTransaction()) {
         $db->rollback();

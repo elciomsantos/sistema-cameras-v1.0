@@ -73,8 +73,12 @@ try {
 
     $page = max(1, (int)($_GET['page_num'] ?? 1));
     $perPage = (int)($_GET['per_page'] ?? 20);
-    if ($perPage < 1) $perPage = 20;
-    if ($perPage > 100) $perPage = 100;
+    if ($perPage < 1) {
+        $perPage = 20;
+    }
+    if ($perPage > 100) {
+        $perPage = 100;
+    }
     $offset = ($page - 1) * $perPage;
 
     $usuarioId = (int)($_GET['usuario_id'] ?? 0);
@@ -192,7 +196,6 @@ try {
     }
 
     ApiResponse::paginated($rows, $page, $perPage, $total);
-
 } catch (Throwable $e) {
     error_log('[api_auditoria_alarmes] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao carregar auditoria.');

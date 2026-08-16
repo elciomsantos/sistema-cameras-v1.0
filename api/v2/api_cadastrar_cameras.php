@@ -71,7 +71,6 @@ try {
         'camera_id' => $equipId,
         'redirect' => 'index.php?page=controle&modulo=cameras',
     ], $equipId);
-
 } catch (ServiceException $e) {
     ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {

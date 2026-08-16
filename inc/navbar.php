@@ -43,7 +43,7 @@
                     </ul>
                 </li>
 
-                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor') : ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-chart-column me-1"></i>Relatorios
@@ -55,22 +55,22 @@
                 </li>
                 <?php endif; ?>
 
-                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
-                <?php
-                try {
-                    $notifService = new NotificacaoService();
-                    $notifUsuarioSecId = getUsuarioSecretariaId();
-                    $notifNivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
-                    $notifSecId = ($notifNivel === 'user' && $notifUsuarioSecId !== null) ? $notifUsuarioSecId : null;
-                    $notifCount = $notifService->getCountNaoLidas($notifSecId);
-                } catch (Throwable $e) {
-                    $notifCount = 0;
-                }
-                ?>
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor') : ?>
+                    <?php
+                    try {
+                        $notifService = new NotificacaoService();
+                        $notifUsuarioSecId = getUsuarioSecretariaId();
+                        $notifNivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+                        $notifSecId = ($notifNivel === 'user' && $notifUsuarioSecId !== null) ? $notifUsuarioSecId : null;
+                        $notifCount = $notifService->getCountNaoLidas($notifSecId);
+                    } catch (Throwable $e) {
+                        $notifCount = 0;
+                    }
+                    ?>
                 <li class="nav-item">
                     <a class="nav-link position-relative" href="?page=notificacoes">
                         <i class="fas fa-bell me-1"></i>Notificações
-                        <?php if ($notifCount > 0): ?>
+                        <?php if ($notifCount > 0) : ?>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             <?= $notifCount < 100 ? $notifCount : '99+' ?>
                         </span>
@@ -79,14 +79,14 @@
                 </li>
                 <?php endif; ?>
 
-                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor'): ?>
+                <?php if ($_SESSION['usuario']->nivel_acesso === 'admin' || $_SESSION['usuario']->nivel_acesso === 'supervisor') : ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-cog me-1"></i>Administracao
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="?page=administracao"><i class="fas fa-gauge-high me-2"></i>Painel</a></li>
-                        <?php if ($_SESSION['usuario']->nivel_acesso === 'admin'): ?>
+                        <?php if ($_SESSION['usuario']->nivel_acesso === 'admin') : ?>
                         <li><a class="dropdown-item" href="?page=cadastroUsuario"><i class="fas fa-user-plus me-2"></i>Cadastro de Usuarios</a></li>
                         <li><a class="dropdown-item" href="?page=listarUsuario"><i class="fas fa-users me-2"></i>Listar Usuarios</a></li>
                         <?php endif; ?>
@@ -123,12 +123,12 @@
                   <i class="fas fa-moon"></i>
                 </button>
 
-                <?php if (isset($_SESSION['usuario'])): ?>
+                <?php if (isset($_SESSION['usuario'])) : ?>
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user-circle me-1"></i>
                         <strong><?= htmlspecialchars($_SESSION['usuario']->usuario ?? '', ENT_QUOTES, 'UTF-8') ?></strong>
-                        <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1): ?>
+                        <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1) : ?>
                         <span class="badge bg-warning ms-1">Trocar Senha</span>
                         <?php endif; ?>
                     </a>
@@ -143,7 +143,7 @@
                             <span class="dropdown-item-text text-muted small">
                                 <i class="fas fa-shield-alt me-1"></i>
                                 <?= htmlspecialchars($_SESSION['usuario']->nivel_acesso ?? 'user', ENT_QUOTES, 'UTF-8') ?>
-                                <?php if (($_SESSION['usuario']->nivel_acesso ?? '') === 'supervisor'): ?>
+                                <?php if (($_SESSION['usuario']->nivel_acesso ?? '') === 'supervisor') : ?>
                                 <span class="badge bg-info ms-1">Supervisor</span>
                                 <?php endif; ?>
                             </span>
@@ -154,7 +154,7 @@
                                 <i class="fas fa-key me-1"></i>Alterar Senha
                             </a>
                         </li>
-                        <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1): ?>
+                        <?php if (isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1) : ?>
                         <li>
                             <a class="dropdown-item text-warning" href="?page=trocar_senha">
                                 <i class="fas fa-exclamation-triangle me-1"></i>Trocar Senha (Obrigatoria)
@@ -172,7 +172,7 @@
                         </li>
                     </ul>
                 </div>
-                <?php else: ?>
+                <?php else : ?>
                 <a class="nav-link" href="?page=login">
                     <i class="fas fa-sign-in-alt me-1"></i>Login
                 </a>
@@ -182,7 +182,7 @@
     </div>
 </nav>
 
-<?php if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1): ?>
+<?php if (isset($_SESSION['usuario']) && isset($_SESSION['usuario']->senha_temporaria) && $_SESSION['usuario']->senha_temporaria === 1) : ?>
 <div class="alert alert-warning alert-dismissible fade show mb-0 text-center" role="alert">
     <i class="fas fa-exclamation-triangle me-2"></i>
     <strong>Alerta de Seguranca:</strong> Voce esta usando uma senha temporaria.

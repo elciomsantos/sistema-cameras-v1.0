@@ -102,7 +102,6 @@ try {
         'message' => 'Equipamento atualizado com sucesso!',
         'redirect' => '../../index.php?page=controle&modulo=cameras',
     ]);
-
 } catch (ServiceException $e) {
     ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {

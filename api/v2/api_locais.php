@@ -65,7 +65,6 @@ try {
     }
 
     ApiResponse::internalError('Erro ao buscar locais.');
-
 } catch (Throwable $e) {
     error_log('[api_locais] ' . $e->getMessage());
     ApiResponse::internalError('Erro ao buscar locais.');

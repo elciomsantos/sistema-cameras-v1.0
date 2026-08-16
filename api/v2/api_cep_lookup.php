@@ -102,7 +102,6 @@ try {
         apcu_store($cacheKey, $result, 86400);
     }
     ApiResponse::success($result);
-
 } catch (Throwable $e) {
     error_log('[api_cep_lookup] ' . $e->getMessage());
     ApiResponse::internalError('Falha ao consultar CEP.');

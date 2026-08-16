@@ -154,7 +154,6 @@ try {
 
     readfile($caminhoAbsoluto);
     exit;
-
 } catch (Throwable $e) {
     error_log('[api_servir_anexo] ' . $e->getMessage());
     ApiResponse::internalError();

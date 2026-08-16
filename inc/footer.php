@@ -1,4 +1,6 @@
-<?php if (($CURRENT_PAGE ?? '') === 'login') { return; } ?>
+<?php if (($CURRENT_PAGE ?? '') === 'login') {
+    return;
+} ?>
 <footer class="footer mt-auto py-3 bg-light">
     <div class="container text-center">
         <span class="text-muted">
@@ -8,7 +10,7 @@
     </div>
 </footer>
 
-<?php if (isset($_SESSION['usuario'])): ?>
+<?php if (isset($_SESSION['usuario'])) : ?>
 <!-- Modal de sessao -->
 <div class="modal fade" id="sessionModal" tabindex="-1" aria-labelledby="sessionModalLabel" aria-hidden="true"
     data-bs-backdrop="static" data-bs-keyboard="false">
@@ -49,11 +51,11 @@
     }
 })();
 
-let timeLeft = <?= 
-        isset($_SESSION['ultimo_acesso']) 
-            ? max(0, SESSION_TIMEOUT - (time() - $_SESSION['ultimo_acesso'])) 
-            : 0 
-    ?>;
+let timeLeft = <?=
+        isset($_SESSION['ultimo_acesso'])
+            ? max(0, SESSION_TIMEOUT - (time() - $_SESSION['ultimo_acesso']))
+            : 0
+?>;
 
 const tempoMaximo = <?= SESSION_TIMEOUT ?>;
 const alertTime = 60;

@@ -21,7 +21,6 @@ try {
         'alarme_id' => $id,
         'redirect' => '../../index.php?page=editar_alarmes&id=' . $id,
     ], $id);
-
 } catch (ServiceException $e) {
     ApiResponse::error($e->getErrorCode(), $e->getMessage());
 } catch (Throwable $e) {

@@ -11,9 +11,9 @@ atualizar documentação. Nenhuma alteração em lote sem validação intermedi�
 
 | ID | Problema | Prioridade | Esforço | Status |
 | -- | -------- | ---------- | ------- | ------ |
-| R-001 | Duplicação `api_manutencao_cameras` × `api_manutencao_alarmes` (~1180 linhas) | Alta | 3 | Aberto |
-| R-002 | `loadManutencaoPayload()` com 10 parâmetros posicionais | Média | 1 | Aberto |
-| R-003 | Complexidade ciclomática alta em `extractCommonData` (65) e `validateInput` (63) | Média | 2 | Aberto |
+| R-001 | Duplicação `api_manutencao_cameras` × `api_manutencao_alarmes` (~1180 linhas) | Alta | 3 | Resolvido |
+| R-002 | `loadManutencaoPayload()` com 10 parâmetros posicionais | Média | 1 | Resolvido |
+| R-003 | Complexidade ciclomática alta em `extractCommonData` (65) e `validateInput` (63) | Média | 2 | Resolvido |
 | R-004 | 13 classes `src/` sem namespace (PSR-4) | Baixa | 3 | Aberto |
 
 ---
@@ -168,13 +168,46 @@ $service = new ManutencaoService(db(), [
 
 ## 16. Métrica
 
-- `wc -l` somado dos 2 endpoints + service: alvo < 500 linhas totais (hoje 1180).
-- Nº de `grep "loadManutencaoPayload"` = 1 (hoje 2).
-- Cobertura unitária dos handlers POST de manutenção > 0 (hoje 0).
+- `wc -l` somado dos 2 endpoints + service: **667** (hoje 1180). O SQL específico de cada
+  entidade foi movido para os data files `api/v2/manutencao_config_cameras.php` (237 linhas)
+  e `api/v2/manutencao_config_alarmes.php` (213 linhas) — dados declarativos, não lógica
+  duplicada. Os endpoints caíram de 616/564 para 66/96 linhas.
+- Nº de `grep "loadManutencaoPayload"` = **0** (hoje 2; alvo 1 — a função foi eliminada,
+  o fluxo vive em `ManutencaoService::loadPayload`).
+- Cobertura unitária dos handlers POST de manutenção > 0 (hoje 0): 13 testes novos em
+  `tests/Unit/ManutencaoServiceTest.php`.
 
 ## 17. Status
 
-Aberto — aguardando implementação (esforço 3).
+Resolvido — commit desta alteração. `ManutencaoService` único parametrizado por config
+declarativo por entidade; endpoints reduzidos a wrappers. Validado com PHPUnit (191 testes
+OK, 0 falhas) e PHPStan (nível 5, `[OK]`).
+
+## 18. Notas de implementação (2026-08-16)
+
+- **Config declarativo por entidade** (em `api/v2/manutencao_config_*.php`): `table`,
+  `entity_id_param`, `entity_column`, `entity_title`, `entity_resource`, `scope_verifier`,
+  `scope_message`, `mismatch_message`, `audit`, `validate_numero_os`, `list_payload_key`,
+  `list_cache_key`, SQLs de listagem/pending/executing/count/history com placeholders
+  `{{where}}`/`{{historico_where}}`/`{{order}}`, `sort_map`, `search_builder`/
+  `history_search_builder`, `create_rules`, `create_entity_lookup`, `create_insert`,
+  `finalize_extra`.
+- **Correção de bug latente**: `api_manutencao_alarmes.php` chamava
+  `enableAuditTriggers('api')` (assinatura é `enableAuditTriggers($db, $origem)`), o que
+  causaria fatal `Call to a member function setUserContext() on string` em todo POST.
+  Corrigido no service: `enableAuditTriggers($this->db, 'api')` quando `audit=true` (alarmes).
+- **Desvios de contrato aceitos** (frontend lê apenas `success`/`message`/`error`):
+  - NOT_FOUND agora responde via `ApiResponse::error` com `data: []` (antes `{resource,id}`);
+    mensagem preservada (`Recurso 'x' com ID n não encontrado`).
+  - `data_hora` unificado para o formato das câmeras (aceita `Y-m-d\TH:i` e `Y-m-d H:i:s`,
+    vazio → agora); alarmes passam a aceitar ambos (antes só `Y-m-d H:i:s`).
+  - Erro de validação de `create_os` passa a vir como `VALIDATION_ERROR` com mensagem
+    achatada (antes `validationError` estruturado) — mesma classe de mensagem dos services.
+- **Decisão de cache**: `list_cache_key` (`manut_cameras_list`) é invalidado no create/start/
+  finalize das câmeras; alarmes sem invalidação (preserva comportamento original). O cache de
+  **resposta** GET dos alarmes (`manut_alarmes:*`, TTL 30s, bypass `nocache`) permanece no endpoint.
+- **Rollback**: `finalizeOs` usa `beginTransaction`; falhas pós-transação lançam
+  `RuntimeException` para o catch `Throwable` do endpoint executar `rollback` (mesmo padrão original).
 
 ---
 
@@ -280,7 +313,8 @@ function loadManutencaoPayload(array $opts): array {
 
 ## 17. Status
 
-Aberto — aguardando implementação (esforço 1).
+Resolvido — commit `a0c1275` (R-002). `loadManutencaoPayload(array $opts)` com os 10
+parâmetros agrupados; posteriormente eliminada na R-001 (fluxo em `ManutencaoService`).
 
 ---
 
@@ -397,7 +431,8 @@ public function extractCommonData(array $data): array
 
 ## 17. Status
 
-Aberto — aguardando implementação (esforço 2).
+Resolvido — commit `338af50` (R-003). `extractCommonData` e `validateInput` decompostos em
+sub-normalizadores por grupo (complexidade por método < 20).
 
 ---
 

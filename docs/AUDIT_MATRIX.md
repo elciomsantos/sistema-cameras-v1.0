@@ -107,11 +107,11 @@
 | F-302 | Índice duplicado em `auditoria_eventos` (entidade, created_at) | Baixa | Corrigido |
 | F-303 | Seed da tabela `migrations` divergente (100000 inexistente; 110000 não registrada) | Baixa | Corrigido |
 | F-304 | Partições de `auditoria_eventos` sem manutenção futura | Baixa | Corrigido |
-| F-401 | Duplicação entre `api_manutencao_cameras` e `api_manutencao_alarmes` | Média | Aberto |
+| F-401 | Duplicação entre `api_manutencao_cameras` e `api_manutencao_alarmes` | Média | Aberto (R-001) |
 | F-402 | Código morto: `getInputPayload()` | Baixa | Corrigido |
-| F-403 | Classes `src/` sem namespace (PSR-4) | Baixa | Aberto |
-| F-404 | Complexidade ciclomática alta (`extractCommonData` 65, `validateInput` 63) | Média | Aberto |
-| F-405 | `loadManutencaoPayload()` com 10 parâmetros | Baixa | Aberto |
+| F-403 | Classes `src/` sem namespace (PSR-4) | Baixa | Aberto (R-004) |
+| F-404 | Complexidade ciclomática alta (`extractCommonData` 65, `validateInput` 63) | Média | Aberto (R-003) |
+| F-405 | `loadManutencaoPayload()` com 10 parâmetros | Baixa | Aberto (R-002) |
 | F-406 | PSR-12: 226 erros + 187 warnings | Baixa | Corrigido |
 | F-407 | README.md: tabela de migrations desatualizada | Baixa | Corrigido |
 | F-501 | 5 vulns high em undici (via jsdom, testes) | Alta | Corrigido |

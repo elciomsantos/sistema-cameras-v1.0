@@ -54,6 +54,11 @@ Esforço em escala 1–5 (1 = trivial, 5 = grande). Apenas achados **abertos/nã
 - **F-403** (Baixa): 13 classes `src/` sem namespace.
 - **F-405** (Baixa): `loadManutencaoPayload()` com 10 parâmetros.
 
+Estes quatro achados são tratados no **Plano de Refatoração** (`docs/REFACTORING_PLAN.md`,
+Fase 14) como R-001 (F-401), R-002 (F-405), R-003 (F-404) e R-004 (F-403), cada um com
+o formato completo de 17 seções (problema, localização, evidência, causa raiz, impacto,
+implementação, código atual/sugerido, benefícios, riscos, compatibilidade, testes, métrica, status).
+
 ### Dependências (F-502..F-506) — prioridades 2, 2, 2, 1, 1
 - Majors de tooling dev postergadas (phpstan 2, phpunit 13, phpcs 4); sentry patch; npm minors/majors.
 
@@ -121,4 +126,7 @@ Esforço em escala 1–5 (1 = trivial, 5 = grande). Apenas achados **abertos/nã
 
 A auditoria percorreu **13 fases** (segurança, performance, banco, qualidade, dependências, docker/devops, testes, documentação) e gerou **72 achados**, dos quais **55 corrigidos**, incluindo os dois de maior prioridade na consolidação: **F-201** (dashboard agora escopa dados por secretaria para o perfil user) e **F-801** (spec OpenAPI criada com 34 paths e rota `api/swagger-spec` mapeada). Restam **13 abertos**, concentrados em: segurança de escopo por decisão de negócio (F-103), qualidade de código (F-401/F-403/F-404/F-405), testes E2E/fixtures/smoke (F-704/F-705/F-706) e majors de dependências dev (F-502..F-506). Nenhum achado de severidade **crítica** permanece aberto.
 
-A próxima etapa (Fase 14 — Plano de Refatoração) deve tratar os itens na ordem da seção 4, começando por F-103 (decisão de negócio) e os testes de baixo custo (F-704/F-706).
+A próxima etapa (Fase 14 — Plano de Refatoração) está documentada em `docs/REFACTORING_PLAN.md`,
+com as recomendações R-001..R-004 no formato obrigatório. Prioridade de implementação:
+R-002 → R-003 → R-001 → R-004. A decisão de negócio F-103 e os testes (F-704/F-705/F-706)
+permanecem abertos e dependem de decisão do proprietário.

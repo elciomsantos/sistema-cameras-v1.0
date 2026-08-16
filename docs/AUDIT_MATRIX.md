@@ -62,6 +62,10 @@
 | AUD-045 | Qualidade | Naming / coesão / acoplamento | OK | Nomes claros, coesão boa, acoplamento baixo | — |
 | AUD-046 | Qualidade | Namespaces / PSR-4 | FALHA | 13 classes `src/` sem namespace (classmap) | [F-403] |
 | AUD-047 | Qualidade | Documentação de código (README migrations) | FALHA | Tabela desatualizada vs commit de909e9 | [F-407] |
+| AUD-048 | Dependências | Vulnerabilidades (composer/npm) | FALHA | 5 high em undici (via jsdom, testes) | [F-501] Corrigido |
+| AUD-049 | Dependências | Versões desatualizadas | OK (F-502..506) | Sem urgência; majors de tooling dev postergadas | [F-502]..[F-506] |
+| AUD-050 | Dependências | Abandonadas / sem uso | OK | Nenhuma; deps com justificativa | — |
+| AUD-051 | Dependências | Licenciamento / conflitos | OK | composer validate --strict OK | — |
 
 ---
 
@@ -93,6 +97,12 @@
 | F-405 | `loadManutencaoPayload()` com 10 parâmetros | Baixa | Aberto |
 | F-406 | PSR-12: 226 erros + 187 warnings | Baixa | Corrigido |
 | F-407 | README.md: tabela de migrations desatualizada | Baixa | Corrigido |
+| F-501 | 5 vulns high em undici (via jsdom, testes) | Alta | Corrigido |
+| F-502 | phpstan 1.x → 2.x (major) | Baixa | Aberto (postergado) |
+| F-503 | phpunit 10 → 13 (major) | Baixa | Aberto (postergado) |
+| F-504 | php_codesniffer 3 → 4 (major) | Baixa | Aberto (postergado) |
+| F-505 | sentry 4.29 → 4.30 (patch) | Baixa | Aberto (próx. manutenção) |
+| F-506 | npm: minors/majors disponíveis | Baixa | Aberto (npm update) |
 
 ---
 

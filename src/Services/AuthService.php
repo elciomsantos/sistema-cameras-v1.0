@@ -66,10 +66,10 @@ class AuthService
 
     private function validateInput(): void
     {
-        if ($this->username !== null && mb_strlen($this->username) > 255) {
+        if (mb_strlen($this->username) > 255) {
             $this->fail('Falha de validacao.');
         }
-        if ($this->password !== null && mb_strlen($this->password) > 128) {
+        if (mb_strlen($this->password) > 128) {
             $this->fail('Falha de validacao.');
         }
         if (!$this->username || !$this->password) {

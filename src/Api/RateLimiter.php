@@ -308,13 +308,7 @@ class RateLimiter
         }
 
         try {
-            /** @var mixed $pdo */
             $pdo = db()->getConnection();
-            if ($pdo === null) {
-                $this->useDb = false;
-                $cached[$cacheKey] = false;
-                return false;
-            }
             $stmt = $pdo->query("SELECT 1 FROM rate_limits LIMIT 1");
             $this->useDb = true;
             $cached[$cacheKey] = true;

@@ -43,7 +43,7 @@ try {
         if (is_resource($conteudo)) {
             $conteudo = stream_get_contents($conteudo);
         }
-        if ($conteudo === false || $conteudo === null || $conteudo === '') {
+        if ($conteudo === false || $conteudo === '') {
             ApiResponse::notFound('arquivo');
         }
         // Descomprimir se necessario

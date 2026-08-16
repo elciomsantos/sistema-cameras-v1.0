@@ -103,7 +103,7 @@ function requireApiCsrf(bool $rotate = true): void
             'data' => [],
             'meta' => [
                 'timestamp' => date('Y-m-d\TH:i:s\Z'),
-                'request_id' => method_exists(\App\Api\ApiResponse::class, 'getRequestId') ? \App\Api\ApiResponse::getRequestId() : 'unknown'
+                'request_id' => \App\Api\ApiResponse::getRequestId()
             ]
         ], JSON_UNESCAPED_UNICODE);
         exit;
@@ -265,6 +265,9 @@ function ensureSessionUserAccessLevel(): void
 
 ensureSessionUserAccessLevel();
 
+/**
+ * @param-out array<int, string> $errors
+ */
 function validatePasswordPolicy(string $password, ?array &$errors = null): bool
 {
     $errors = [];

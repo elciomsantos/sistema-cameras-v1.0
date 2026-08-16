@@ -2,18 +2,19 @@
 
 require_once __DIR__ . '/api_manutencao_utils.php';
 
-function loadManutencaoPayload(
-    database $db,
-    int $equipamentoId,
-    int $page,
-    int $perPage,
-    string $busca,
-    string $sortBy,
-    string $sortDir,
-    bool $includeLists,
-    string $dataInicial = '',
-    string $dataFinal = ''
-): array {
+function loadManutencaoPayload(array $opts): array
+{
+    $db = $opts['db'] ?? db();
+    $equipamentoId = max(0, (int)($opts['equipamento_id'] ?? 0));
+    $page = max(1, (int)($opts['page'] ?? 1));
+    $perPage = max(10, (int)($opts['per_page'] ?? 20));
+    $busca = trim((string)($opts['busca'] ?? ''));
+    $sortBy = trim((string)($opts['sort_by'] ?? 'data_hora'));
+    $sortDir = trim((string)($opts['sort_dir'] ?? 'DESC'));
+    $includeLists = (bool)($opts['include_lists'] ?? true);
+    $dataInicial = trim((string)($opts['data_inicial'] ?? ''));
+    $dataFinal = trim((string)($opts['data_final'] ?? ''));
+
     $cameras = [];
     $statusOptions = [];
     $procedimentoOptions = [];
@@ -337,7 +338,18 @@ try {
         $dataInicial = trim((string)($_GET['data_inicial'] ?? ''));
         $dataFinal = trim((string)($_GET['data_final'] ?? ''));
 
-        $payload = loadManutencaoPayload($db, $equipamentoId, $page, $perPage, $busca, $sortBy, $sortDir, $includeLists, $dataInicial, $dataFinal);
+        $payload = loadManutencaoPayload([
+            'db' => $db,
+            'equipamento_id' => $equipamentoId,
+            'page' => $page,
+            'per_page' => $perPage,
+            'busca' => $busca,
+            'sort_by' => $sortBy,
+            'sort_dir' => $sortDir,
+            'include_lists' => $includeLists,
+            'data_inicial' => $dataInicial,
+            'data_final' => $dataFinal,
+        ]);
         ApiResponse::success($payload);
     }
 

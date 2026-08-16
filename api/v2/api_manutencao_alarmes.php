@@ -2,18 +2,19 @@
 
 require_once __DIR__ . '/api_manutencao_utils.php';
 
-function loadManutencaoPayload(
-    database $db,
-    int $alarmeId,
-    int $page,
-    int $perPage,
-    string $busca,
-    string $sortBy,
-    string $sortDir,
-    bool $includeLists,
-    string $dataInicial = '',
-    string $dataFinal = ''
-): array {
+function loadManutencaoPayload(array $opts): array
+{
+    $db = $opts['db'] ?? db();
+    $alarmeId = max(0, (int)($opts['alarme_id'] ?? $opts['equipamento_id'] ?? 0));
+    $page = max(1, (int)($opts['page'] ?? 1));
+    $perPage = max(10, (int)($opts['per_page'] ?? 20));
+    $busca = trim((string)($opts['busca'] ?? ''));
+    $sortBy = trim((string)($opts['sort_by'] ?? 'data_hora'));
+    $sortDir = trim((string)($opts['sort_dir'] ?? 'DESC'));
+    $includeLists = (bool)($opts['include_lists'] ?? true);
+    $dataInicial = trim((string)($opts['data_inicial'] ?? ''));
+    $dataFinal = trim((string)($opts['data_final'] ?? ''));
+
     $alarme = [];
     $statusOptions = [];
     $procedimentoOptions = [];
@@ -325,7 +326,18 @@ try {
             }
         }
 
-        $payload = loadManutencaoPayload($db, $alarmeId, $page, $perPage, $busca, $sortBy, $sortDir, $includeLists, $dataInicial, $dataFinal);
+        $payload = loadManutencaoPayload([
+            'db' => $db,
+            'alarme_id' => $alarmeId,
+            'page' => $page,
+            'per_page' => $perPage,
+            'busca' => $busca,
+            'sort_by' => $sortBy,
+            'sort_dir' => $sortDir,
+            'include_lists' => $includeLists,
+            'data_inicial' => $dataInicial,
+            'data_final' => $dataFinal,
+        ]);
 
         if (function_exists('apcu_store') && empty($_GET['nocache'])) {
             apcu_store($manutAlarmesCacheKey, $payload, 30);

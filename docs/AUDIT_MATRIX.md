@@ -120,10 +120,10 @@
 | F-504 | php_codesniffer 3 → 4 (major) | Baixa | Aberto (postergado) |
 | F-505 | sentry 4.29 → 4.30 (patch) | Baixa | Aberto (próx. manutenção) |
 | F-506 | npm: minors/majors disponíveis | Baixa | Aberto (npm update) |
-| F-601 | `composer:latest` tag flutuante | Baixa | Aberto |
-| F-602 | Extensão mongodb sem uso (2 Dockerfiles) | Baixa | Aberto |
-| F-603 | Dockerfile.nginx roda como root (prod) | Média | Aberto |
-| F-604 | container_name fixo dev×prod | Baixa | Aberto |
+| F-601 | `composer:latest` tag flutuante | Baixa | Corrigido |
+| F-602 | Extensão mongodb sem uso (2 Dockerfiles) | Baixa | Corrigido |
+| F-603 | Dockerfile.nginx roda como root (prod) | Média | Corrigido |
+| F-604 | container_name fixo dev×prod | Baixa | Corrigido |
 | F-605 | Healthcheck HTTP sem auth (smoke) | Baixa | Não confirmado |
 | F-606 | CI PHP 8.3 vs produção 8.4 | Baixa | Corrigido |
 | F-607 | nginx não subia (`brotli_static` sem módulo) | Alta | Corrigido |

@@ -15,6 +15,7 @@ services:
     image: mysql:8.0
     container_name: cameras-db
     restart: unless-stopped
+    command: ["--event-scheduler=ON"]
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD required}
       MYSQL_DATABASE: ${DB_NAME:-cftv_gml}

@@ -781,7 +781,6 @@ CREATE TABLE auditoria_eventos (
     changed_by INT NULL COMMENT 'ID do usuário',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, created_at),
-    INDEX idx_auditoria_entidade (entidade, created_at),
     INDEX idx_auditoria_operacao (operacao_id),
     INDEX idx_auditoria_usuario (changed_by),
     INDEX idx_auditoria_created_at (created_at)
@@ -1487,6 +1486,41 @@ BEGIN
       AND (locked_until IS NULL OR locked_until < NOW());
 END$$
 
+-- Adiciona partições mensais futuras de auditoria_eventos (pruning eficiente).
+-- Chama antes da limpeza: REORGANIZE divide p_future (MAXVALUE) criando a
+-- partição do próximo mês e mantendo p_future ao final.
+CREATE PROCEDURE sp_manter_particoes_auditoria(IN meses_futuros INT)
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE target DATE;
+    DECLARE part_name VARCHAR(64);
+    DECLARE sql_stmt TEXT;
+
+    WHILE i <= meses_futuros DO
+        SET target = DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL i MONTH);
+        SET part_name = CONCAT('p', DATE_FORMAT(target, '%Y_%m'));
+
+        IF NOT EXISTS (
+            SELECT 1 FROM INFORMATION_SCHEMA.PARTITIONS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'auditoria_eventos'
+              AND PARTITION_NAME = part_name
+        ) THEN
+            SET sql_stmt = CONCAT(
+                'ALTER TABLE auditoria_eventos REORGANIZE PARTITION p_future INTO (',
+                'PARTITION `', part_name, '` VALUES LESS THAN (TO_DAYS(',
+                QUOTE(DATE_FORMAT(DATE_ADD(target, INTERVAL 1 MONTH), '%Y-%m-01')),
+                ')), PARTITION p_future VALUES LESS THAN MAXVALUE)'
+            );
+            PREPARE stmt FROM sql_stmt;
+            EXECUTE stmt;
+            DEALLOCATE PREPARE stmt;
+        END IF;
+
+        SET i = i + 1;
+    END WHILE;
+END$$
+
 -- =====================================================
 -- EVENTOS AGENDADOS
 -- =====================================================
@@ -1494,6 +1528,7 @@ CREATE EVENT ev_limpeza_auditoria_mensal
 ON SCHEDULE EVERY 1 MONTH
 DO
 BEGIN
+    CALL sp_manter_particoes_auditoria(3); -- cria partições dos próximos 3 meses
     CALL sp_limpar_auditoria_antiga(730); -- remove registros com mais de 2 anos
 END$$
 
@@ -1506,8 +1541,9 @@ BEGIN
     CALL sp_limpar_login_attempts_antigos(30);
 END$$
 
--- Para executar os eventos agendados, ative o scheduler no servidor MariaDB
--- (ex.: SET GLOBAL event_scheduler = ON;) com um usuário administrativo.
+-- Para executar os eventos agendados, o scheduler deve estar ativo no MySQL:
+--   SET GLOBAL event_scheduler = ON;
+-- Os docker-compose (dev e prod) ja habilitam via command: --event-scheduler=ON.
 
 DELIMITER ;
 
@@ -1703,13 +1739,9 @@ INSERT INTO migrations (filename) VALUES
 ('006_add_idx_notificacoes_lookup.sql'),
 ('007_add_alarme_local_id.sql'),
 -- Migrations PHP (somente timestamp — formato do runner):
-('2026_07_10_100000'),
-('2026_07_10_110000'),
-('2026_07_10_120000'),
-('2026_07_11_100000'),
-('2026_07_12_100000'),
-('2026_07_13_100000'),
-('2026_07_14_100000');
+-- A unica migration PHP existente e 2026_07_13_110000 (commit de909e9
+-- removeu 2026_07_10_* .. 2026_07_13_100000, cujos objetos ja estao no schema).
+('2026_07_13_110000');
 
 -- =====================================================
 -- FIM DO SCRIPT

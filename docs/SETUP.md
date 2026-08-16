@@ -9,7 +9,7 @@ build frontend (Vite).
 ## 1. Arquitetura de Configuração
 
 ```
-DESENVOLVIMENTO (Windows + XAMPP)
+DESENVOLVIMENTO (Windows + WSL2 - LINUX)
 └── C:\env\sistema-cameras\
     └── .env
 
@@ -27,7 +27,7 @@ PRODUÇÃO (Linux)
 
 | Ferramenta | Versão mínima | Notas |
 |-------------|---------------|-------|
-| PHP         | 8.3           | Extensões: pdo_mysql, apcu, openssl, mbstring, fileinfo |
+| PHP         | 8.3 +          | Extensões: pdo_mysql, apcu, openssl, mbstring, fileinfo |
 | Composer    | 2.4+          | Para `composer install` e `composer audit` |
 | Node.js     | 20 LTS+       | Para `npm install && npm run build` |
 | MySQL/MariaDB | 8.0+ / 10.5+ | Schema em `config/DB/cftv_gml.sql` |

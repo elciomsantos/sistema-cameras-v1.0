@@ -11,5 +11,6 @@ parameters:
         - auth
         - accounts
         - config
+        - database
     excludePaths:
         - config/sentry.php

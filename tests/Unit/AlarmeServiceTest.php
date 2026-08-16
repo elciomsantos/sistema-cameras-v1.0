@@ -148,4 +148,68 @@ class AlarmeServiceTest extends TestCase
         $this->assertEquals('Ativo', $result['status']);
         $this->assertEquals(1, $result['status_id']);
     }
+
+    public function testValidateInputProducesCompleteKeySet(): void
+    {
+        $statusList = [
+            'status' => 'success',
+            'data' => [
+                (object)['nome' => 'Ativo'],
+                (object)['nome' => 'Inativo'],
+            ],
+        ];
+        $statusLookup = ['status' => 'success', 'data' => [(object)['id' => 1]]];
+        $regiaoLookup = ['status' => 'success', 'data' => [(object)['id' => 2]]];
+
+        $this->dbMock->method('query')
+            ->willReturnOnConsecutiveCalls($statusList, $statusLookup, $regiaoLookup);
+
+        $svc = new \AlarmeService($this->dbMock);
+        $result = $svc->validateInput([
+            'conta' => 42,
+            'local' => 'UBS Central',
+            'status' => 'Ativo',
+            'regiao' => 'NORTE',
+            'id' => 7,
+            'endereco' => 'Av. Principal',
+            'numero' => '99',
+            'bairro' => 'Centro',
+            'cidade' => 'GML',
+            'uf' => 'PR',
+            'cep' => '86010-000',
+            'local_id' => 3,
+            'pgm1' => 'p1',
+            'pgm2' => 'p2',
+            'mac' => 'AA:BB:CC:DD:EE:FF',
+            'ip' => '10.1.1.1',
+            'integracao' => '2026-01-01',
+            'camera_gm' => true,
+            'quant_camera_gm' => 2,
+            'ip_dvr' => '10.1.1.2',
+            'cameras_dvr' => 4,
+            'modelo_alarme_id' => 5,
+            'quant_repetidor' => 1,
+            'qtde_sensores' => 6,
+            'documentacao' => 'doc',
+            'monitorada' => 'sim',
+            'numero_sei' => 'SEI-1',
+            'data_atualizacao' => '2026-01-02',
+            'observacao' => 'obs',
+        ], true);
+
+        $expectedKeys = [
+            'id', 'conta', 'local', 'status', 'status_id', 'regiao', 'regiao_id',
+            'endereco', 'numero', 'bairro', 'cidade', 'uf', 'cep', 'local_id',
+            'pgm1', 'pgm2', 'mac', 'ip', 'integracao', 'camera_gm', 'quant_camera_gm',
+            'ip_dvr', 'cameras_dvr', 'modelo_alarme_id', 'quant_repetidor', 'qtde_sensores',
+            'documentacao', 'monitorada', 'numero_sei', 'data_atualizacao', 'observacao',
+        ];
+        sort($expectedKeys);
+        $actualKeys = array_keys($result);
+        sort($actualKeys);
+
+        $this->assertSame($expectedKeys, $actualKeys, 'Conjunto de chaves de validateInput deve ser completo');
+        $this->assertEquals(7, $result['id']);
+        $this->assertEquals(2, $result['regiao_id']);
+    }
 }

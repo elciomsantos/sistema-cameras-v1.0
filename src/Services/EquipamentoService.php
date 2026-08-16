@@ -17,6 +17,17 @@ class EquipamentoService
 
     public function extractCommonData(array $data): array
     {
+        return array_merge(
+            $this->extractCommonFields($data),
+            $this->extractAddressFields($data),
+            $this->extractLprFields($data),
+            $this->extractDvrFields($data),
+            $this->extractTotemFields($data),
+        );
+    }
+
+    private function extractCommonFields(array $data): array
+    {
         return [
             'status_id' => max(0, (int)($data['status_id'] ?? 0)),
             'procedimento_id' => max(0, (int)($data['procedimento_id'] ?? 0)),
@@ -31,13 +42,6 @@ class EquipamentoService
             'descricao_posicao' => trim((string)($data['descricao_posicao'] ?? '')) ?: null,
             'data_instalacao' => trim((string)($data['data_instalacao'] ?? '')) ?: null,
             'normalized_ip' => trim((string)($data['ip'] ?? '')) ?: null,
-            'classif_endereco_id' => max(0, (int)($data['classificacao_endereco_id'] ?? 0)) ?: null,
-            'logradouro' => trim((string)($data['logradouro'] ?? '')) ?: null,
-            'bairro' => trim((string)($data['bairro'] ?? '')) ?: null,
-            'cidade' => trim((string)($data['cidade'] ?? '')) ?: null,
-            'uf' => $this->validateUf($data['uf'] ?? null),
-            'cep' => $this->validateCep($data['cep'] ?? null),
-            'numero' => trim((string)($data['numero'] ?? '')) ?: null,
             'tem_alarme' => !empty($data['tem_alarme']) ? 1 : 0,
             'alarme_conta' => !empty($data['alarme_conta']) ? (int)$data['alarme_conta'] : null,
             'tem_camera' => !empty($data['tem_camera']) ? 1 : 0,
@@ -48,13 +52,44 @@ class EquipamentoService
             'coordenadas' => trim((string)($data['coordenadas'] ?? '')) ?: null,
             'numero_ruas' => trim((string)($data['numero_ruas'] ?? '')) ?: null,
             'horario_funcionamento' => trim((string)($data['horario_funcionamento'] ?? '')) ?: null,
+        ];
+    }
+
+    private function extractAddressFields(array $data): array
+    {
+        return [
+            'classif_endereco_id' => max(0, (int)($data['classificacao_endereco_id'] ?? 0)) ?: null,
+            'logradouro' => trim((string)($data['logradouro'] ?? '')) ?: null,
+            'bairro' => trim((string)($data['bairro'] ?? '')) ?: null,
+            'cidade' => trim((string)($data['cidade'] ?? '')) ?: null,
+            'uf' => $this->validateUf($data['uf'] ?? null),
+            'cep' => $this->validateCep($data['cep'] ?? null),
+            'numero' => trim((string)($data['numero'] ?? '')) ?: null,
+        ];
+    }
+
+    private function extractLprFields(array $data): array
+    {
+        return [
             'lpr_sentido_via' => trim((string)($data['lpr_sentido_via'] ?? '')) ?: null,
             'lpr_faixa_monitorada' => trim((string)($data['lpr_faixa_monitorada'] ?? '')) ?: null,
             'lpr_leitura_noturna' => !empty($data['lpr_leitura_noturna']) ? 1 : 0,
             'lpr_url_acesso' => trim((string)($data['lpr_url_acesso'] ?? '')) ?: null,
+        ];
+    }
+
+    private function extractDvrFields(array $data): array
+    {
+        return [
             'dvr_modelo' => trim((string)($data['dvr_modelo'] ?? '')) ?: null,
             'dvr_canais' => max(0, (int)($data['dvr_canais'] ?? 0)) ?: null,
             'dvr_armazenamento_tb' => $this->parseDecimal($data['dvr_armazenamento_tb'] ?? null),
+        ];
+    }
+
+    private function extractTotemFields(array $data): array
+    {
+        return [
             'totem_quantidade_cameras' => max(0, (int)($data['totem_quantidade_cameras'] ?? 0)) ?: null,
             'totem_tem_facial' => !empty($data['totem_tem_facial']) ? 1 : 0,
             'totem_tem_lpr' => !empty($data['totem_tem_lpr']) ? 1 : 0,

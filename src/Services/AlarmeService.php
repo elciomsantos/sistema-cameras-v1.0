@@ -26,6 +26,27 @@ class AlarmeService
 
     public function validateInput(array $data, bool $requireId = false): array
     {
+        $this->validateRequiredFields($data, $requireId);
+        $this->validateStatusField($data);
+        $this->validateNetworkFields($data);
+
+        $conta = max(1, (int)($data['conta'] ?? 0));
+        $local = trim((string)($data['local'] ?? ''));
+        $status = trim((string)($data['status'] ?? ''));
+        if ($local === '' || $status === '') {
+            throw ServiceException::validation('Local e Status sao obrigatorios.');
+        }
+
+        return array_merge(
+            $this->normalizeIdentification($data, $requireId, $conta, $local, $status),
+            $this->normalizeAddress($data),
+            $this->normalizeIntegration($data),
+            $this->normalizeMonitoring($data),
+        );
+    }
+
+    private function validateRequiredFields(array $data, bool $requireId): void
+    {
         $rules = [
             'conta' => 'required|numeric|min:1',
             'local' => 'required|string|max:255',
@@ -41,33 +62,19 @@ class AlarmeService
         if ($validator->fails()) {
             throw new ServiceException('VALIDATION_ERROR', implode('; ', $validator->errors()));
         }
+    }
 
+    private function validateStatusField(array $data): void
+    {
         $status = trim((string)($data['status'] ?? ''));
         $permitidos = $this->getStatusPermitidos();
         if (!in_array($status, $permitidos, true)) {
             throw ServiceException::validation('Status invalido. Use: ' . implode(', ', $permitidos));
         }
+    }
 
-        $statusLookup = $this->db->query(
-            "SELECT id FROM status WHERE nome = ? LIMIT 1",
-            [$status]
-        );
-        $statusId = ($statusLookup['status'] === 'success' && !empty($statusLookup['data']))
-            ? (int)$statusLookup['data'][0]->id
-            : null;
-
-        $regiaoText = trim((string)($data['regiao'] ?? '')) ?: null;
-        $regiaoId = null;
-        if ($regiaoText !== null) {
-            $regiaoLookup = $this->db->query(
-                "SELECT id FROM regioes WHERE nome = ? LIMIT 1",
-                [$regiaoText]
-            );
-            $regiaoId = ($regiaoLookup['status'] === 'success' && !empty($regiaoLookup['data']))
-                ? (int)$regiaoLookup['data'][0]->id
-                : null;
-        }
-
+    private function validateNetworkFields(array $data): void
+    {
         $ip = trim((string)($data['ip'] ?? ''));
         if ($ip !== '' && !filter_var($ip, FILTER_VALIDATE_IP)) {
             throw ServiceException::validation('IP invalido.');
@@ -77,12 +84,13 @@ class AlarmeService
         if ($mac !== '' && !preg_match('/^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/', $mac)) {
             throw ServiceException::validation('MAC invalido.');
         }
+    }
 
-        $conta = max(1, (int)($data['conta'] ?? 0));
-        $local = trim((string)($data['local'] ?? ''));
-        if ($local === '' || $status === '') {
-            throw ServiceException::validation('Local e Status sao obrigatorios.');
-        }
+    private function normalizeIdentification(array $data, bool $requireId, int $conta, string $local, string $status): array
+    {
+        $statusId = $this->resolveStatusId($status);
+        $regiaoText = trim((string)($data['regiao'] ?? '')) ?: null;
+        $regiaoId = $regiaoText !== null ? $this->resolveRegiaoId($regiaoText) : null;
 
         return [
             'id' => $requireId ? max(1, (int)($data['id'] ?? 0)) : null,
@@ -92,6 +100,12 @@ class AlarmeService
             'status_id' => $statusId,
             'regiao' => $regiaoText,
             'regiao_id' => $regiaoId,
+        ];
+    }
+
+    private function normalizeAddress(array $data): array
+    {
+        return [
             'endereco' => trim((string)($data['endereco'] ?? '')) ?: null,
             'numero' => trim((string)($data['numero'] ?? '')) ?: null,
             'bairro' => trim((string)($data['bairro'] ?? '')) ?: null,
@@ -99,6 +113,12 @@ class AlarmeService
             'uf' => trim((string)($data['uf'] ?? '')) ?: null,
             'cep' => trim((string)($data['cep'] ?? '')) ?: null,
             'local_id' => !empty($data['local_id']) ? max(0, (int)($data['local_id'])) : null,
+        ];
+    }
+
+    private function normalizeIntegration(array $data): array
+    {
+        return [
             'pgm1' => trim((string)($data['pgm1'] ?? '')) ?: null,
             'pgm2' => trim((string)($data['pgm2'] ?? '')) ?: null,
             'mac' => trim((string)($data['mac'] ?? '')) ?: null,
@@ -109,6 +129,12 @@ class AlarmeService
             'ip_dvr' => trim((string)($data['ip_dvr'] ?? '')) ?: null,
             'cameras_dvr' => max(0, (int)($data['cameras_dvr'] ?? 0)) ?: null,
             'modelo_alarme_id' => max(0, (int)($data['modelo_alarme_id'] ?? 0)) ?: null,
+        ];
+    }
+
+    private function normalizeMonitoring(array $data): array
+    {
+        return [
             'quant_repetidor' => max(0, (int)($data['quant_repetidor'] ?? 0)) ?: null,
             'qtde_sensores' => max(0, (int)($data['qtde_sensores'] ?? 0)) ?: null,
             'documentacao' => trim((string)($data['documentacao'] ?? '')) ?: null,
@@ -117,6 +143,28 @@ class AlarmeService
             'data_atualizacao' => trim((string)($data['data_atualizacao'] ?? date('Y-m-d'))) ?: date('Y-m-d'),
             'observacao' => trim((string)($data['observacao'] ?? '')) ?: null,
         ];
+    }
+
+    private function resolveStatusId(string $status): ?int
+    {
+        $statusLookup = $this->db->query(
+            "SELECT id FROM status WHERE nome = ? LIMIT 1",
+            [$status]
+        );
+        return ($statusLookup['status'] === 'success' && !empty($statusLookup['data']))
+            ? (int)$statusLookup['data'][0]->id
+            : null;
+    }
+
+    private function resolveRegiaoId(string $regiaoText): ?int
+    {
+        $regiaoLookup = $this->db->query(
+            "SELECT id FROM regioes WHERE nome = ? LIMIT 1",
+            [$regiaoText]
+        );
+        return ($regiaoLookup['status'] === 'success' && !empty($regiaoLookup['data']))
+            ? (int)$regiaoLookup['data'][0]->id
+            : null;
     }
 
     public function cadastrar(array $params): int

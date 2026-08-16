@@ -166,4 +166,73 @@ class EquipamentoServiceTest extends TestCase
         $this->assertArrayHasKey(':tipo_equipamento_id', $result);
         $this->assertEquals(1, $result[':local_id']);
     }
+
+    public function testExtractCommonDataProducesCompleteKeySet(): void
+    {
+        $svc = new \EquipamentoService($this->dbMock);
+        $result = $svc->extractCommonData([
+            'status_id' => 1,
+            'procedimento_id' => 2,
+            'regiao_id' => 3,
+            'tipo_id' => 4,
+            'tipo_camera' => 5,
+            'secretaria_id' => 6,
+            'marca_id' => 7,
+            'transmissao_id' => 8,
+            'origem_link_id' => 9,
+            'inscricao' => 'link',
+            'descricao_posicao' => 'pos',
+            'data_instalacao' => '2026-01-01',
+            'ip' => '10.0.0.1',
+            'classificacao_endereco_id' => 10,
+            'logradouro' => 'Rua A',
+            'bairro' => 'Centro',
+            'cidade' => 'GML',
+            'uf' => 'PR',
+            'cep' => '86010-000',
+            'numero' => '100',
+            'tem_alarme' => true,
+            'alarme_conta' => 123,
+            'tem_camera' => false,
+            'patrimonio' => 'pat-1',
+            'serie_mac' => 'serie-1',
+            'observacao' => 'obs',
+            'mosaico' => 'm',
+            'coordenadas' => 'c',
+            'numero_ruas' => '2',
+            'horario_funcionamento' => '24h',
+            'lpr_sentido_via' => 'N',
+            'lpr_faixa_monitorada' => '1',
+            'lpr_leitura_noturna' => true,
+            'lpr_url_acesso' => 'http://lpr',
+            'dvr_modelo' => 'X',
+            'dvr_canais' => 16,
+            'dvr_armazenamento_tb' => '4,5',
+            'totem_quantidade_cameras' => 4,
+            'totem_tem_facial' => true,
+            'totem_tem_lpr' => false,
+        ]);
+
+        $expectedKeys = [
+            'status_id', 'procedimento_id', 'regiao_id', 'tipo_id', 'tipo_camera_id',
+            'secretaria_id', 'marca_id', 'transmissao_id', 'origem_link_id',
+            'inscricao_link', 'descricao_posicao', 'data_instalacao', 'normalized_ip',
+            'classif_endereco_id', 'logradouro', 'bairro', 'cidade', 'uf', 'cep', 'numero',
+            'tem_alarme', 'alarme_conta', 'tem_camera', 'patrimonio', 'numero_serie',
+            'observacao', 'mosaico', 'coordenadas', 'numero_ruas', 'horario_funcionamento',
+            'lpr_sentido_via', 'lpr_faixa_monitorada', 'lpr_leitura_noturna', 'lpr_url_acesso',
+            'dvr_modelo', 'dvr_canais', 'dvr_armazenamento_tb', 'totem_quantidade_cameras',
+            'totem_tem_facial', 'totem_tem_lpr',
+        ];
+        sort($expectedKeys);
+        $actualKeys = array_keys($result);
+        sort($actualKeys);
+
+        $this->assertSame($expectedKeys, $actualKeys, 'Conjunto de chaves de extractCommonData deve ser completo');
+        $this->assertEquals(4.5, $result['dvr_armazenamento_tb']);
+        $this->assertEquals('PR', $result['uf']);
+        $this->assertEquals('86010000', $result['cep']);
+        $this->assertEquals(1, $result['tem_alarme']);
+        $this->assertEquals(0, $result['tem_camera']);
+    }
 }

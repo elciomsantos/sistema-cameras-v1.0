@@ -34,6 +34,8 @@ try {
     $svc = new AlarmeService($db);
     $svc->excluir($id);
 
+    invalidateListCaches();
+
     ApiResponse::success([
         'message' => 'Alarme excluido com sucesso',
     ]);

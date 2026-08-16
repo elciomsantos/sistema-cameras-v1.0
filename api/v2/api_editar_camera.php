@@ -96,6 +96,8 @@ try {
         $svc->resetAppUserContext();
     }
 
+    invalidateListCaches();
+
     ApiResponse::success([
         'message' => 'Equipamento atualizado com sucesso!',
         'redirect' => '../../index.php?page=controle&modulo=cameras',
@@ -114,5 +116,5 @@ try {
 
     $msg = $e->getMessage();
     error_log('[api_editar_camera] ' . $msg . ' | File: ' . $e->getFile() . ':' . $e->getLine());
-    ApiResponse::internalError('Erro ao editar camera: ' . $msg);
+    ApiResponse::internalError('Erro ao editar camera. Tente novamente ou contate o suporte.');
 }

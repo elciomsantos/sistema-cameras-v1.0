@@ -15,6 +15,8 @@ try {
 
     $id = $svc->cadastrar($params);
 
+    invalidateListCaches();
+
     ApiResponse::created([
         'alarme_id' => $id,
         'redirect' => '../../index.php?page=editar_alarmes&id=' . $id,

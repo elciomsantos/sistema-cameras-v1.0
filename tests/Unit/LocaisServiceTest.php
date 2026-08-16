@@ -32,6 +32,8 @@ class LocaisServiceTest extends TestCase
 
     public function testCreateReturnsZeroOnFailedQuery(): void
     {
+        $this->dbMock->method('getConnection')
+            ->willThrowException(new \RuntimeException('sem conexao real (mock)'));
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
@@ -46,6 +48,8 @@ class LocaisServiceTest extends TestCase
 
     public function testUpdateReturnsTrueOnSuccess(): void
     {
+        $this->dbMock->method('getConnection')
+            ->willThrowException(new \RuntimeException('sem conexao real (mock)'));
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => []]);
 
@@ -57,6 +61,8 @@ class LocaisServiceTest extends TestCase
 
     public function testUpdateReturnsFalseOnFailure(): void
     {
+        $this->dbMock->method('getConnection')
+            ->willThrowException(new \RuntimeException('sem conexao real (mock)'));
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 

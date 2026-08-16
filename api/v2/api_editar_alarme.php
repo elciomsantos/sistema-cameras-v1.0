@@ -22,6 +22,8 @@ try {
 
     $svc->atualizar($id, $params);
 
+    invalidateListCaches();
+
     ApiResponse::success([
         'message' => 'Alarme atualizado com sucesso.',
         'redirect' => '../../index.php?page=controle&modulo=alarmes',

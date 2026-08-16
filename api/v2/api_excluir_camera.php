@@ -33,6 +33,7 @@ try {
 
     if ($result['status'] === 'success' && !empty($result['affected_rows']) && $result['affected_rows'] > 0) {
         $db->commit();
+        invalidateListCaches();
         ApiResponse::success([
             'message' => 'Câmera excluída com sucesso',
         ]);

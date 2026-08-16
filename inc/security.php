@@ -436,3 +436,35 @@ function verifyPassword(string $password, string $hash, ?string &$newHash = null
     }
     return true;
 }
+
+function invalidateCachePrefix(string $prefix): void
+{
+    if (!function_exists('apcu_cache_info') || !function_exists('apcu_delete')) {
+        return;
+    }
+    $cache = apcu_cache_info(false);
+    if (empty($cache['cache_list'])) {
+        return;
+    }
+    $keys = [];
+    foreach ($cache['cache_list'] as $entry) {
+        $key = $entry['info'] ?? $entry['key'] ?? null;
+        if (is_string($key) && strpos($key, $prefix) === 0) {
+            $keys[] = $key;
+        }
+    }
+    if (!empty($keys)) {
+        apcu_delete($keys);
+    }
+}
+
+function invalidateListCaches(): void
+{
+    invalidateCachePrefix('cameras:');
+    invalidateCachePrefix('alarmes:');
+    invalidateCachePrefix('rel_cameras:');
+    invalidateCachePrefix('rel_alarmes:');
+    invalidateCachePrefix('manut_cameras_list');
+    invalidateCachePrefix('manut_alarmes_list');
+    invalidateCachePrefix('dashboard:');
+}

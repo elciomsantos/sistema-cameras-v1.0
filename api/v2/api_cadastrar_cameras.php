@@ -64,6 +64,8 @@ try {
         $svc->resetAppUserContext();
     }
 
+    invalidateListCaches();
+
     ApiResponse::created([
         'message' => "Equipamento cadastrado com sucesso! ID: $equipId",
         'camera_id' => $equipId,

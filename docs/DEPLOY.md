@@ -2,9 +2,10 @@
 
 ## Fluxo
 
-1. Push na `main` → CI executa lint, testes, PHPStan, security check, frontend build
-2. Job `docker` builda a imagem e publica em `ghcr.io/ghostterminals/sistema-cameras-v1.0`
-3. Job `deploy` faz SSH no VPS, faz pull da nova imagem e reinicia os containers
+1. Push de tag `v*` → job CD builda a imagem Docker e publica em `ghcr.io/<repo>/sistema-cameras-v1.0` (tags semver + sha).
+2. Push na `main` → CI executa lint, testes, PHPStan, security check, frontend build e valida o build Docker (sem publicar).
+
+> **Nota:** o CD **não** executa deploy automático via SSH. O pull e restart no servidor é feito manualmente (ver "Atualização manual" abaixo). O job `deploy` do workflow apenas publica a imagem no GHCR.
 
 ## Pré-requisitos no servidor
 
@@ -44,35 +45,15 @@ curl -fsSL https://get.docker.com | sh
 sudo usermod -aG docker $USER
 
 # Baixar docker-compose.prod.yml do repositório
-curl -O https://raw.githubusercontent.com/GhostTerminals/sistema-cameras-v1.0/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/elciomsantos/sistema-cameras-v1.0/main/docker-compose.prod.yml
 
 # Schema inicial
 mkdir -p config/DB
-curl -o config/DB/cftv_gml.sql https://raw.githubusercontent.com/GhostTerminals/sistema-cameras-v1.0/main/config/DB/cftv_gml.sql
+curl -o config/DB/cftv_gml.sql https://raw.githubusercontent.com/elciomsantos/sistema-cameras-v1.0/main/config/DB/cftv_gml.sql
 
 # Subir
 docker compose -f docker-compose.prod.yml up -d
 ```
-
-## Secrets do GitHub Actions
-
-Configurar em **Settings → Secrets and variables → Actions**:
-
-| Secret | Descrição |
-|--------|-----------|
-| `SSH_HOST` | IP ou domínio do VPS |
-| `SSH_USER` | Usuário SSH |
-| `SSH_PRIVATE_KEY` | Chave privada SSH (sem passphrase) |
-| `SSH_PORT` | Opcional (default 22) |
-
-### Gerar chave SSH para deploy
-
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/deploy_key -N ""
-cat ~/.ssh/deploy_key.pub >> ~/.ssh/authorized_keys
-```
-
-Cole o conteúdo de `~/.ssh/deploy_key` no secret `SSH_PRIVATE_KEY`.
 
 ## Testar manualmente
 
@@ -84,10 +65,19 @@ docker build -t cameras-app .
 docker compose up -d
 ```
 
-## Atualização automática
+## Atualização manual (servidor)
 
-Após configurar os secrets, todo push na `main`:
+Após publicar uma nova imagem no GHCR (via tag `v*`), atualize o servidor:
 
-1. CI valida o código
-2. Se passa: build → push para ghcr.io → SSH no servidor → `docker compose pull && up -d`
-3. Zero downtime (contêiner reinicia em segundos)
+```bash
+cd /opt/sistema-cameras
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Ou, apontando para uma tag específica:
+
+```bash
+# No docker-compose.prod.yml, defina APP_TAG (default: latest)
+APP_TAG=v1.0.1 docker compose -f docker-compose.prod.yml up -d
+```

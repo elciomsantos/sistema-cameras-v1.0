@@ -78,6 +78,11 @@
 | AUD-061 | Testes | Cobertura PHP | FALHA | CI `--no-coverage`; sem xdebug/pcov | [F-703] |
 | AUD-062 | Testes | Smoke/E2E portáveis no CI | FALHA | Smoke PowerShell; sem E2E/UI | [F-704]/[F-705] |
 | AUD-063 | Testes | Integration fixtures | FALHA | DB real sem fixtures; parseJsonInput | [F-706]/[F-707] |
+| AUD-064 | Documentação | API OpenAPI/Swagger | FALHA | openapi.yaml ausente → 404 | [F-801] |
+| AUD-065 | Documentação | Variáveis de ambiente | FALHA | DB_PORT ignorado; MYSQL_ROOT_PASS errado | [F-802]/[F-806] |
+| AUD-066 | Documentação | Versões e métricas | FALHA | PHP 8.2/8.3/8.4; testes desatualizados | [F-803]/[F-804] |
+| AUD-067 | Documentação | Deploy descrito | FALHA | DEPLOY.md SSH ≠ cd.yml | [F-805] |
+| AUD-068 | Documentação | Endpoints documentados | FALHA | 9 endpoints ausentes | [F-807] |
 
 ---
 
@@ -129,6 +134,13 @@
 | F-705 | Sem testes E2E/UI/PWA | Média | Aberto |
 | F-706 | Integration sem fixtures de teste | Baixa | Aberto |
 | F-707 | `parseJsonInput` sem teste | Baixa | Corrigido |
+| F-801 | openapi.yaml ausente → Swagger 404 | Média | Aberto |
+| F-802 | DB_PORT ignorado pelo DSN | Baixa | Corrigido |
+| F-803 | Versão PHP divergente (8.2/8.3/8.4) | Baixa | Corrigido |
+| F-804 | Números de testes desatualizados | Baixa | Corrigido |
+| F-805 | DEPLOY descreve SSH inexistente | Média | Corrigido |
+| F-806 | `MYSQL_ROOT_PASS` vs `DB_ROOT_PASSWORD` | Baixa | Corrigido |
+| F-807 | 9 endpoints não documentados | Baixa | Corrigido |
 
 ---
 

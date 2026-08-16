@@ -53,7 +53,7 @@ Sistema web para gerenciamento centralizado de câmeras de segurança e centrais
 
 ## Requisitos
 
-- **PHP 8.2+** com extensões: `pdo_mysql`, `json`, `session`, `fileinfo`, `mbstring`, `zip`
+- **PHP 8.4+** com extensões: `pdo_mysql`, `json`, `session`, `fileinfo`, `mbstring`, `zip`
 - **MySQL 8.0+** ou **MariaDB 10.5+**
 - **Composer** para dependências PHP
 - **Node.js 20+** (para build do frontend com Vite)
@@ -64,7 +64,7 @@ Sistema web para gerenciamento centralizado de câmeras de segurança e centrais
 ### 1. Clonar e instalar dependências
 
 ```bash
-git clone https://github.com/GhostTerminals/sistema-cameras-v1.0.git
+git clone https://github.com/elciomsantos/sistema-cameras-v1.0.git
 cd sistema-cameras-v1.0
 
 # Instalar dependências PHP
@@ -232,7 +232,7 @@ sistema-cameras-v1.0/
 ├── storage/                     # Dados runtime
 │   ├── cep_cache/              # Cache de consultas CEP
 │   └── ratelimit/              # Dados de rate limiting
-├── tests/                       # Testes PHPUnit (80 testes)
+├── tests/                       # Testes PHPUnit (176 testes)
 │   ├── Unit/                   # Testes unitários
 │   ├── Integration/            # Testes de integração
 │   ├── Api/                    # Testes de API (requer servidor http)
@@ -293,8 +293,20 @@ Todos os endpoints usam `index.php?page=api/` como base. Formato de resposta pad
 - `api/api_alarmes` — GET Listar (paginado)
 - `api/api_cadastrar_alarmes` — POST Cadastrar
 - `api/api_editar_alarme` — GET/POST Editar
+- `api/api_excluir_alarme` — POST Excluir
 - `api/api_manutencao_alarmes` — GET Manutenções
 - `api/api_modelos_alarmes` — GET Listar modelos
+
+### Auditoria
+- `api/api_auditoria_cameras` — GET Auditoria de câmeras (paginado)
+- `api/api_auditoria_alarmes` — GET Auditoria de alarmes (paginado)
+
+### Notificações
+- `api/api_notificacoes` — GET Notificações do usuário
+
+### Utilitários
+- `api/api_exportar_locais` — GET Exportar locais (CSV)
+- `api/api_manutencao_utils` — POST Payload de manutenção (utilidades)
 
 ### Dashboard e Relatórios
 - `api/api_dashboard` — GET Métricas do dashboard
@@ -312,6 +324,11 @@ Todos os endpoints usam `index.php?page=api/` como base. Formato de resposta pad
 ### Sessão
 - `api/session_check` — GET Verificar sessão
 - `api/renovar_sessao` — POST Renovar sessão
+- `api/limpar_sessoes_orfas` — POST Limpar sessões órfãs (admin)
+
+### Documentação da API
+- `api/v2/swagger` — UI Swagger interativa (admin)
+- `api/v2/swagger-spec` — Spec OpenAPI (admin)
 
 ## Níveis de Acesso
 
@@ -367,9 +384,9 @@ vendor/bin/phpunit tests/Api/
 vendor/bin/phpstan analyse
 ```
 
-**170+ testes, 0 erros PHPStan, 20 skipped, 1 incomplete.**
+**176+ testes, 0 erros PHPStan, 0 falhas.**
 
-> Nota: 28 erros pré-existentes da `Trait ParsesInput not found` em `EquipamentoServiceTest`/`AlarmeServiceTest` são de autoload legado — não relacionados às mudanças de performance.
+> Nota: skips ambientais ocorrem quando o servidor HTTP de teste não está no ar (tests/Api) ou o MySQL de teste não está disponível (tests/Integration) — não são regressões.
 
 | Suite | Testes | Cobertura |
 |-------|--------|-----------|

@@ -42,7 +42,7 @@ nano .env  # ou seu editor preferido
 ```bash
 # Criar arquivo .env com senhas fortes
 DB_PASS=$(openssl rand -base64 32)
-MYSQL_ROOT_PASS=$(openssl rand -base64 32)
+DB_ROOT_PASSWORD=$(openssl rand -base64 32)
 
 # Salvar em local seguro (não no repositório!)
 # Exemplo: /etc/sistema-cameras/.env
@@ -57,12 +57,12 @@ docker compose --env-file /etc/sistema-cameras/.env up -d
 # No secrets do repositório, adicionar:
 # - DB_USER
 # - DB_PASS
-# - MYSQL_ROOT_PASS
+# - DB_ROOT_PASSWORD
 
 env:
   DB_USER: ${{ secrets.DB_USER }}
   DB_PASS: ${{ secrets.DB_PASS }}
-  MYSQL_ROOT_PASS: ${{ secrets.MYSQL_ROOT_PASS }}
+  DB_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
 ```
 
 ## 📋 Checklist de Segurança
@@ -94,7 +94,7 @@ openssl rand -base64 32
 | `DB_NAME` | Nome do banco | `cftv_gml` |
 | `DB_USER` | Usuário do banco | `cftv_user` |
 | `DB_PASS` | Senha do banco | Mínimo 32 caracteres aleatórios |
-| `MYSQL_ROOT_PASS` | Senha root MySQL | Mínimo 32 caracteres aleatórios |
+| `DB_ROOT_PASSWORD` | Senha root MySQL | Mínimo 32 caracteres aleatórios |
 | `APP_TIMEZONE` | Timezone da aplicação | `America/Sao_Paulo` |
 | `CAMERAS_SESSION_TIMEOUT` | Timeout de sessão (segundos) | `3600` (1 hora) |
 | `CAMERAS_SESSION_ABSOLUTE_TIMEOUT` | Timeout absoluto (segundos) | `28800` (8 horas) |

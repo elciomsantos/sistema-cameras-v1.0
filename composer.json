@@ -15,9 +15,9 @@
         "roave/security-advisories": "dev-latest"
     },
     "autoload": {
-        "classmap": [
-            "src/"
-        ],
+        "psr-4": {
+            "App\\": "src/"
+        },
         "files": [
             "config/app.php",
             "config/database.php",

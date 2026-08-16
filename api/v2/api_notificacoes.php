@@ -1,5 +1,9 @@
 <?php
 
+use App\Api\ApiResponse;
+use App\Api\RequestValidator;
+use App\Services\NotificacaoService;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET é permitido');

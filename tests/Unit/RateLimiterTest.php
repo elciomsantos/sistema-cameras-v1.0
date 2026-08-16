@@ -20,9 +20,9 @@ class RateLimiterTest extends TestCase
      * Cria um RateLimiter isolado em filesystem (sem DB) — cada teste fica confinado
      * ao seu tempDir unico, evitando contaminacao entre casos via tabela rate_limits.
      */
-    private function createLimiter(string $strategy = 'sliding_window', array $configs = []): \RateLimiter
+    private function createLimiter(string $strategy = 'sliding_window', array $configs = []): \App\Api\RateLimiter
     {
-        $limiter = new \RateLimiter($this->tempDir, $strategy, $configs);
+        $limiter = new \App\Api\RateLimiter($this->tempDir, $strategy, $configs);
         $limiter->useDatabase(false);
         return $limiter;
     }
@@ -52,7 +52,7 @@ class RateLimiterTest extends TestCase
     public function testCanBeInstantiated(): void
     {
         $limiter = $this->createLimiter();
-        $this->assertInstanceOf(\RateLimiter::class, $limiter);
+        $this->assertInstanceOf(\App\Api\RateLimiter::class, $limiter);
     }
 
     public function testConsumeReturnsTrueWithinLimit(): void

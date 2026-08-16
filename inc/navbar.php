@@ -1,3 +1,4 @@
+<?php use App\Services\NotificacaoService; ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold" href="?page=home">

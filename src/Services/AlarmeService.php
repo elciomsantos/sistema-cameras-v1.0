@@ -2,7 +2,13 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
+use App\Api\RequestValidator;
 use App\Exception\ServiceException;
+use App\Services\Concerns\ParsesInput;
+use RuntimeException;
+use Throwable;
 
 class AlarmeService
 {

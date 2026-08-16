@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Api\ApiResponse;
+use App\Services\LocaisService;
+
 $format = $_GET['format'] ?? 'json';
 $format = in_array($format, ['json', 'csv'], true) ? $format : 'json';
 

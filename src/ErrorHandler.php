@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App;
+
 function registerGlobalErrorHandlers(string $context = 'web'): void
 {
     static $registered = null;
@@ -19,10 +21,10 @@ function registerGlobalErrorHandlers(string $context = 'web'): void
             return false;
         }
 
-        throw new ErrorException($message, 0, $severity, $file, $line);
+        throw new \ErrorException($message, 0, $severity, $file, $line);
     });
 
-    set_exception_handler(static function (Throwable $exception) use ($context): void {
+    set_exception_handler(static function (\Throwable $exception) use ($context): void {
         logError($exception->getMessage(), [
             'context' => $context,
             'file' => $exception->getFile(),

@@ -1,5 +1,8 @@
 <?php
 
+use App\Api\ApiResponse;
+use App\Api\RateLimiter;
+
 if (!defined('API_ROOT')) {
     define('API_ROOT', __DIR__);
 }
@@ -95,7 +98,7 @@ function requireApiAuth(string $minAccess = 'user', bool $writeClose = false): v
 
 function executeApiRequest(?string $endpointOverride = null): void
 {
-    registerGlobalErrorHandlers('api');
+    \App\registerGlobalErrorHandlers('api');
 
     $version = 'v2';
 

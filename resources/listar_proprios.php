@@ -1,4 +1,6 @@
 <?php
+use App\Services\LocaisService;
+
 require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('supervisor');
 

@@ -25,7 +25,7 @@ require_once __DIR__ . '/../inc/assets.php';
 require_once __DIR__ . '/../inc/single_session.php';
 require_once __DIR__ . '/../src/ErrorHandler.php';
 require_once __DIR__ . '/../inc/session_handler.php';
-registerGlobalErrorHandlers('web');
+\App\registerGlobalErrorHandlers('web');
 header('Content-Type: text/html; charset=UTF-8');
 
 $tempo_maximo = SESSION_TIMEOUT;

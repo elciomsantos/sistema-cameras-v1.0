@@ -1,6 +1,9 @@
 <?php
 
+use App\Api\ApiResponse;
+use App\Api\RequestValidator;
 use App\Exception\ServiceException;
+use App\Services\EquipamentoService;
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

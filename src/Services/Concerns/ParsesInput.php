@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Services\Concerns;
+
 use App\Exception\ServiceException;
 
 trait ParsesInput

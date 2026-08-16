@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
+use InvalidArgumentException;
+
 class LocaisService
 {
     private $db;

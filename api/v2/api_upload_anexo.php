@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 require_once __DIR__ . '/helpers/thumbnails.php';
 
 try {

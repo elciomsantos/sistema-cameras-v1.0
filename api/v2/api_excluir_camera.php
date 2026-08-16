@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         ApiResponse::error('BAD_REQUEST', 'Apenas POST é permitido');

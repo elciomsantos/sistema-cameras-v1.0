@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+namespace App\Api;
+
+use Throwable;
+
 /**
  * Request Validator - Validação centralizada de inputs
  *

@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 try {
     $health = [
         'status' => 'ok',

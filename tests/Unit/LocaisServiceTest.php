@@ -17,13 +17,13 @@ class LocaisServiceTest extends TestCase
 
     public function testServiceCanBeInstantiated(): void
     {
-        $svc = new \LocaisService($this->dbMock);
-        $this->assertInstanceOf(\LocaisService::class, $svc);
+        $svc = new \App\Services\LocaisService($this->dbMock);
+        $this->assertInstanceOf(\App\Services\LocaisService::class, $svc);
     }
 
     public function testCreateThrowsOnEmptyData(): void
     {
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('O campo nome é obrigatório.');
@@ -37,7 +37,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->create([
             'nome' => 'Local Teste',
             'secretaria_id' => 1,
@@ -53,7 +53,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->update(1, ['nome' => 'Novo Nome']);
 
         $this->assertTrue($result);
@@ -66,7 +66,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->update(1, ['nome' => 'Novo Nome']);
 
         $this->assertFalse($result);
@@ -74,7 +74,7 @@ class LocaisServiceTest extends TestCase
 
     public function testUpdateReturnsFalseOnEmptyData(): void
     {
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->update(1, []);
 
         $this->assertFalse($result);
@@ -85,7 +85,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getById(999);
 
         $this->assertNull($result);
@@ -97,7 +97,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => [$expected]]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getById(1);
 
         $this->assertInstanceOf(\stdClass::class, $result);
@@ -110,7 +110,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAll();
 
         $this->assertIsArray($result);
@@ -126,7 +126,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAll();
 
         $this->assertCount(2, $result);
@@ -137,7 +137,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->count(['nome' => 'Teste']);
 
         $this->assertEquals(0, $result);
@@ -148,7 +148,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => [(object)['total' => 5]]]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->count();
 
         $this->assertEquals(5, $result);
@@ -159,7 +159,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAllTiposLocais();
 
         $this->assertIsArray($result);
@@ -171,7 +171,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAllSecretarias();
 
         $this->assertIsArray($result);
@@ -183,7 +183,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAllRegioes();
 
         $this->assertIsArray($result);
@@ -195,7 +195,7 @@ class LocaisServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LocaisService($this->dbMock);
+        $svc = new \App\Services\LocaisService($this->dbMock);
         $result = $svc->getAllLocais();
 
         $this->assertIsArray($result);

@@ -19,17 +19,17 @@ class ApiResponseTest extends TestCase
 
     public function testGetRequestIdReturnsString(): void
     {
-        $id = \ApiResponse::getRequestId();
+        $id = \App\Api\ApiResponse::getRequestId();
         $this->assertIsString($id);
         $this->assertStringStartsWith('req_', $id);
     }
 
     public function testGetRequestIdIsUnique(): void
     {
-        \ApiResponse::resetRequestId();
-        $id1 = \ApiResponse::getRequestId();
-        \ApiResponse::resetRequestId();
-        $id2 = \ApiResponse::getRequestId();
+        \App\Api\ApiResponse::resetRequestId();
+        $id1 = \App\Api\ApiResponse::getRequestId();
+        \App\Api\ApiResponse::resetRequestId();
+        $id2 = \App\Api\ApiResponse::getRequestId();
         $this->assertNotEquals($id1, $id2);
     }
 
@@ -37,7 +37,7 @@ class ApiResponseTest extends TestCase
     {
         $data = ['id' => 1, 'nome' => 'Teste'];
         ob_start();
-        \ApiResponse::success($data);
+        \App\Api\ApiResponse::success($data);
         $output = ob_get_clean();
 
         $result = json_decode($output, true);
@@ -54,7 +54,7 @@ class ApiResponseTest extends TestCase
     public function testCreatedReturnsExpectedStructure(): void
     {
         ob_start();
-        \ApiResponse::created(['message' => 'Criado'], 42);
+        \App\Api\ApiResponse::created(['message' => 'Criado'], 42);
         $output = ob_get_clean();
 
         $result = json_decode($output, true);
@@ -66,7 +66,7 @@ class ApiResponseTest extends TestCase
     public function testErrorReturnsExpectedStructure(): void
     {
         ob_start();
-        \ApiResponse::error('BAD_REQUEST', 'Erro de validação');
+        \App\Api\ApiResponse::error('BAD_REQUEST', 'Erro de validação');
         $output = ob_get_clean();
 
         $result = json_decode($output, true);
@@ -78,7 +78,7 @@ class ApiResponseTest extends TestCase
     public function testNotFoundReturnsExpected(): void
     {
         ob_start();
-        \ApiResponse::notFound('resource', 'user_123');
+        \App\Api\ApiResponse::notFound('resource', 'user_123');
         $output = ob_get_clean();
 
         $result = json_decode($output, true);
@@ -90,7 +90,7 @@ class ApiResponseTest extends TestCase
     {
         $errors = ['nome' => ['Campo obrigatório']];
         ob_start();
-        \ApiResponse::validationError($errors);
+        \App\Api\ApiResponse::validationError($errors);
         $output = ob_get_clean();
 
         $result = json_decode($output, true);

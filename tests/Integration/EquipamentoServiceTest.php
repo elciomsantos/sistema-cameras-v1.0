@@ -26,13 +26,13 @@ class EquipamentoServiceTest extends TestCase
 
     public function testServiceCanBeInstantiated(): void
     {
-        $svc = new \EquipamentoService($this->db);
-        $this->assertInstanceOf(\EquipamentoService::class, $svc);
+        $svc = new \App\Services\EquipamentoService($this->db);
+        $this->assertInstanceOf(\App\Services\EquipamentoService::class, $svc);
     }
 
     public function testExtractCommonDataReturnsAllFields(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $data = [
             'status_id' => 1,
             'procedimento_id' => 2,
@@ -59,7 +59,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataWithMissingFieldsReturnsDefaults(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $fields = $svc->extractCommonData([]);
 
         $this->assertEquals(0, $fields['status_id']);
@@ -70,7 +70,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testBuildEquipDataReturnsCorrectStructure(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $fields = $svc->extractCommonData([
             'status_id' => 1,
             'procedimento_id' => 2,
@@ -95,7 +95,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testBuildAuditDataContainsRequiredKeys(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $fields = $svc->extractCommonData([
             'status_id' => 1,
             'procedimento_id' => 1,
@@ -118,21 +118,21 @@ class EquipamentoServiceTest extends TestCase
 
     public function testResolveClassificacaoEnderecoReturnsNullWhenNoInput(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $result = $svc->resolveClassificacaoEndereco(null, null);
         $this->assertNull($result);
     }
 
     public function testValidateCoordenadasAcceptsValidFormat(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
         $svc->validateCoordenadas('-23.5505, -46.6333');
         $this->expectNotToPerformAssertions();
     }
 
     public function testValidateCoordenadasRejectsInvalidFormat(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
 
         $this->expectException(\Exception::class);
         $svc->validateCoordenadas('invalid-coords');
@@ -140,7 +140,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateTipoSpecificAcceptsValidTypes(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
 
         $svc->validateTipoSpecific(1, '', 0);
         $this->expectNotToPerformAssertions();
@@ -148,7 +148,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateTipoSpecificRejectsDvrWithoutModelo(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Informe o modelo do DVR');
@@ -157,7 +157,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateTipoSpecificRejectsTotemWithoutQuantity(): void
     {
-        $svc = new \EquipamentoService($this->db);
+        $svc = new \App\Services\EquipamentoService($this->db);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Informe a quantidade de câmeras do Totem');
@@ -166,7 +166,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testParseJsonInputReturnsDecodedArray(): void
     {
-        $result = \EquipamentoService::parseJsonInput('{"conta": 1, "local": "Teste"}');
+        $result = \App\Services\EquipamentoService::parseJsonInput('{"conta": 1, "local": "Teste"}');
 
         $this->assertSame(['conta' => 1, 'local' => 'Teste'], $result);
     }
@@ -174,19 +174,19 @@ class EquipamentoServiceTest extends TestCase
     public function testParseJsonInputThrowsOnEmptyRaw(): void
     {
         $this->expectException(\Exception::class);
-        \EquipamentoService::parseJsonInput('');
+        \App\Services\EquipamentoService::parseJsonInput('');
     }
 
     public function testParseJsonInputThrowsOnInvalidJson(): void
     {
         $this->expectException(\Exception::class);
-        \EquipamentoService::parseJsonInput('{not json}');
+        \App\Services\EquipamentoService::parseJsonInput('{not json}');
     }
 
     public function testParseJsonInputThrowsOnEmptyObject(): void
     {
         $this->expectException(\Exception::class);
-        \EquipamentoService::parseJsonInput('{}');
+        \App\Services\EquipamentoService::parseJsonInput('{}');
     }
 
     public function testParseJsonInputThrowsOnOversizedPayload(): void
@@ -194,7 +194,7 @@ class EquipamentoServiceTest extends TestCase
         $_SERVER['CONTENT_LENGTH'] = (string)(10 * 1024 * 1024 + 1);
         try {
             $this->expectException(\Exception::class);
-            \EquipamentoService::parseJsonInput('{"a": 1}');
+            \App\Services\EquipamentoService::parseJsonInput('{"a": 1}');
         } finally {
             unset($_SERVER['CONTENT_LENGTH']);
         }

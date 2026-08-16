@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Api;
+
 /**
  * API Response - Formato padronizado de respostas
  *

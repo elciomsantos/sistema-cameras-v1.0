@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 function parseDateFilter(?string $value, bool $endOfDay = false): ?string
 {
     if (!$value || !is_string($value)) {

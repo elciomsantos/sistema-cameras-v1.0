@@ -2,9 +2,14 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
+use App\Exceptions\AuthException;
+use Throwable;
+
 class AuthService
 {
-    private database $db;
+    private \database $db;
     private string $ip;
     private string $username;
     private string $password;

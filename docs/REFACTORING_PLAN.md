@@ -14,7 +14,7 @@ atualizar documentação. Nenhuma alteração em lote sem validação intermedi�
 | R-001 | Duplicação `api_manutencao_cameras` × `api_manutencao_alarmes` (~1180 linhas) | Alta | 3 | Resolvido |
 | R-002 | `loadManutencaoPayload()` com 10 parâmetros posicionais | Média | 1 | Resolvido |
 | R-003 | Complexidade ciclomática alta em `extractCommonData` (65) e `validateInput` (63) | Média | 2 | Resolvido |
-| R-004 | 13 classes `src/` sem namespace (PSR-4) | Baixa | 3 | Aberto |
+| R-004 | 13 classes `src/` sem namespace (PSR-4) | Baixa | 3 | Resolvido |
 
 ---
 
@@ -466,8 +466,11 @@ Achado F-403 (Qualidade, Baixa); PSR-4 (PHP-FIG); composer.json `autoload`.
 
 ## 6. Situação Atual
 
-Classes globais como `EquipamentoService`, `ApiResponse`, `RateLimiter` são referenciadas
-sem `use` em dezenas de arquivos (API, tests, bootstrap).
+Resolvido — todas as classes de `src/` ganharam namespace PSR-4 (`App\`) e o autoload do
+composer foi migrado de `classmap` para `psr-4`. Todas as referências (API, tests, bootstrap,
+config, inc, resources, auth) foram atualizadas com `use App\...` (ou FQCN quando o uso era
+pontual). Antes da migração, classes globais como `EquipamentoService`, `ApiResponse`,
+`RateLimiter` eram referenciadas sem `use` em dezenas de arquivos.
 
 ## 7. Causa Raiz
 
@@ -529,16 +532,23 @@ class EquipamentoService { ... }
 
 ## 15. Testes
 
-- `vendor/bin/phpunit --no-coverage` (176 testes) e PHPStan `[OK]` após migração.
+- `vendor/bin/phpunit --no-coverage` (191 testes) e PHPStan `[OK]` após migração.
 - `composer validate --strict` e `composer dump-autoload --strict-psr`.
 
 ## 16. Métrica
 
-- `grep -rLn "namespace" src/` = 0 (hoje 13); `composer.json` autoload PSR-4 (hoje classmap).
+- `grep -rLn "namespace" src/` = 0 (hoje 15 arquivos, todos com namespace); `composer.json`
+  autoload PSR-4 (hoje `"psr-4": { "App\\": "src/" }`).
 
 ## 17. Status
 
-Aberto — aguardando implementação (esforço 3).
+Resolvido — commit dedicado (R-004). Namespaces adicionados aos 15 arquivos de `src/`
+(13 do plano + `ManutencaoService` da R-001), `src/ErrorHandler.php` migrado para
+`namespace App;` com a função `registerGlobalErrorHandlers()` virando `App\registerGlobalErrorHandlers`
+(callers atualizados para `\App\...`). Classes globais referenciadas sem qualificação
+(`Exception`, `RuntimeException`, `Throwable`, `PDO`, `InvalidArgumentException`,
+`RecursiveIteratorIterator`, etc.) receberam `use`/qualificação. Validado com PHPUnit
+(191 testes, 36 skipped — integrações dependem de DB) e PHPStan `[OK]`.
 
 ---
 

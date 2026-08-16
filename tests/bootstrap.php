@@ -18,7 +18,7 @@ if (file_exists(__DIR__ . '/../src/ErrorHandler.php')) {
     require_once __DIR__ . '/../src/ErrorHandler.php';
 }
 
-registerGlobalErrorHandlers('api');
+\App\registerGlobalErrorHandlers('api');
 
 if (session_status() === PHP_SESSION_NONE) {
     configureSessionSecurity();
@@ -26,8 +26,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Modo de teste: suprime exit e headers em ApiResponse para permitir asserts
-if (class_exists('ApiResponse', true)) {
-    ApiResponse::setTestMode(true);
+if (class_exists(\App\Api\ApiResponse::class, true)) {
+    \App\Api\ApiResponse::setTestMode(true);
 }
 
 function getTestDatabase(): database

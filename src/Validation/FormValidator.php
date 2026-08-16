@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Validation;
+
 class FormValidator
 {
     private array $data;

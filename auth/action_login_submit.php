@@ -1,5 +1,8 @@
 <?php
 
+use App\Exceptions\AuthException;
+use App\Services\AuthService;
+
 if($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: index.php?page=login');
     exit;

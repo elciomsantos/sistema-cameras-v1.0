@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
-class AuthException extends RuntimeException
+namespace App\Exceptions;
+
+class AuthException extends \RuntimeException
 {
 }

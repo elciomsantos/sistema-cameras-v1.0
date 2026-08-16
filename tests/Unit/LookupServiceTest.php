@@ -22,13 +22,13 @@ class LookupServiceTest extends TestCase
 
     public function testServiceCanBeInstantiated(): void
     {
-        $svc = new \LookupService($this->dbMock);
-        $this->assertInstanceOf(\LookupService::class, $svc);
+        $svc = new \App\Services\LookupService($this->dbMock);
+        $this->assertInstanceOf(\App\Services\LookupService::class, $svc);
     }
 
     public function testGetTableDataReturnsEmptyForNonAllowed(): void
     {
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getTableData('non_allowed_table');
         $this->assertIsArray($result);
         $this->assertEmpty($result);
@@ -40,7 +40,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getTableData('status');
 
         $this->assertCount(1, $result);
@@ -52,7 +52,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'error', 'data' => []]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getTableData('status');
 
         $this->assertIsArray($result);
@@ -69,7 +69,7 @@ class LookupServiceTest extends TestCase
                 return ['status' => 'success', 'data' => []];
             });
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getMultipleTableData(['status' => 'status', 'regioes' => 'regioes']);
 
         $this->assertArrayHasKey('status', $result);
@@ -81,7 +81,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => []]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getDadosCadastroCamera();
 
         $expectedKeys = ['status', 'procedimentos', 'regioes', 'tipos_equipamento',
@@ -98,7 +98,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getStatusList();
 
         $this->assertCount(1, $result);
@@ -110,7 +110,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getRegioesList();
 
         $this->assertCount(1, $result);
@@ -122,7 +122,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getModelosAlarmes();
 
         $this->assertCount(1, $result);
@@ -134,7 +134,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getContasAlarmes();
 
         $this->assertCount(1, $result);
@@ -147,7 +147,7 @@ class LookupServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturn(['status' => 'success', 'data' => $expected]);
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getModelosCameras(5);
 
         $this->assertCount(1, $result);
@@ -167,7 +167,7 @@ class LookupServiceTest extends TestCase
                 return ['status' => 'success', 'data' => []];
             });
 
-        $svc = new \LookupService($this->dbMock);
+        $svc = new \App\Services\LookupService($this->dbMock);
         $result = $svc->getModelosCameras(5, 2);
 
         $this->assertCount(1, $result);

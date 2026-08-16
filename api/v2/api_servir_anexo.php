@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         ApiResponse::error('BAD_REQUEST', 'Apenas GET e permitido', [], 405);

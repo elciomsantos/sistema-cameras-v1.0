@@ -1,5 +1,7 @@
 <?php
 
+use App\Api\ApiResponse;
+
 function formatFileSize(int $bytes): string
 {
     if ($bytes >= 1048576) {

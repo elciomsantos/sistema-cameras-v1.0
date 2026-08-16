@@ -1,8 +1,10 @@
 <?php
 
-require_once __DIR__ . '/api_manutencao_utils.php';
-
+use App\Api\ApiResponse;
 use App\Exception\ServiceException;
+use App\Services\ManutencaoService;
+
+require_once __DIR__ . '/api_manutencao_utils.php';
 
 $config = require __DIR__ . '/manutencao_config_alarmes.php';
 

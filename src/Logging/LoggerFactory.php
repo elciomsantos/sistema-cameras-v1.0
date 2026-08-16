@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace App\Logging;
+
 class LoggerFactory
 {
     private static array $instances = [];

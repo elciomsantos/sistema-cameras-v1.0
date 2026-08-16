@@ -2,7 +2,13 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
 use App\Exception\ServiceException;
+use App\Services\Concerns\ParsesInput;
+use Exception;
+use RuntimeException;
+use Throwable;
 
 class EquipamentoService
 {

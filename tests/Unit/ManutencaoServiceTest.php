@@ -107,8 +107,8 @@ class ManutencaoServiceTest extends TestCase
     public function testServiceCanBeInstantiated(): void
     {
         $dbMock = $this->createMock(\database::class);
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
-        $this->assertInstanceOf(\ManutencaoService::class, $svc);
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
+        $this->assertInstanceOf(\App\Services\ManutencaoService::class, $svc);
     }
 
     public function testLoadPayloadBuildsExpectedStructure(): void
@@ -121,7 +121,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => [(object)['id' => 1]]];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
         $payload = $svc->loadPayload([
             'equipamento_id' => 5,
             'page' => 1,
@@ -152,7 +152,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
         $svc->createOs([
             'equipamento_id' => 5,
             'problemas' => 'Câmera sem imagem há 3 dias.',
@@ -165,7 +165,7 @@ class ManutencaoServiceTest extends TestCase
     public function testCreateOsRejectsShortProblemas(): void
     {
         $dbMock = $this->createMock(\database::class);
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->createOs(['equipamento_id' => 5, 'problemas' => 'abc'], 2);
@@ -178,7 +178,7 @@ class ManutencaoServiceTest extends TestCase
     public function testCreateOsRejectsInvalidNumeroOs(): void
     {
         $dbMock = $this->createMock(\database::class);
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->createOs([
@@ -202,7 +202,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->createOs([
@@ -226,7 +226,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $config);
+        $svc = new \App\Services\ManutencaoService($dbMock, $config);
 
         try {
             $svc->createOs([
@@ -250,7 +250,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->alarmesConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->alarmesConfig());
         $svc->createOs([
             'alarme_id' => 5,
             'problemas' => 'Alarme sem comunicação com a central.',
@@ -270,7 +270,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
         $svc->startOs(['os_id' => 10, 'equipamento_id' => 5], 2);
 
         $this->addToAssertionCount(1);
@@ -286,7 +286,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->startOs(['os_id' => 10, 'equipamento_id' => 5], 2);
@@ -306,7 +306,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->startOs(['os_id' => 10, 'equipamento_id' => 5], 2);
@@ -337,7 +337,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $config);
+        $svc = new \App\Services\ManutencaoService($dbMock, $config);
         $svc->finalizeOs([
             'os_id' => 10,
             'equipamento_id' => 5,
@@ -361,7 +361,7 @@ class ManutencaoServiceTest extends TestCase
             return ['status' => 'success', 'data' => []];
         });
 
-        $svc = new \ManutencaoService($dbMock, $this->camerasConfig());
+        $svc = new \App\Services\ManutencaoService($dbMock, $this->camerasConfig());
 
         try {
             $svc->finalizeOs([

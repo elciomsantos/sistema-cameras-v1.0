@@ -17,13 +17,13 @@ class EquipamentoServiceTest extends TestCase
 
     public function testServiceCanBeInstantiated(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
-        $this->assertInstanceOf(\EquipamentoService::class, $svc);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
+        $this->assertInstanceOf(\App\Services\EquipamentoService::class, $svc);
     }
 
     public function testExtractCommonDataReturnsDefaults(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData([]);
 
         $this->assertArrayHasKey('status_id', $result);
@@ -36,7 +36,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataPreservesValues(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData([
             'status_id' => 1,
             'secretaria_id' => 2,
@@ -56,7 +56,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataSanitizesUf(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData(['uf' => 'pr']);
         $this->assertEquals('PR', $result['uf']);
 
@@ -69,7 +69,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataSanitizesCep(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData(['cep' => '86010-000']);
         $this->assertEquals('86010000', $result['cep']);
 
@@ -82,7 +82,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataHandlesDvrDecimal(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData(['dvr_armazenamento_tb' => '4,5']);
         $this->assertEquals(4.5, $result['dvr_armazenamento_tb']);
 
@@ -92,14 +92,14 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateRequiredIdsThrowsOnMissing(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $this->expectException(\RuntimeException::class);
         $svc->validateRequiredIds([]);
     }
 
     public function testValidateRequiredIdsPassesOnValid(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $data = [
             'status_id' => 1,
             'procedimento_id' => 1,
@@ -114,7 +114,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateCoordenadasAcceptsValid(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $svc->validateCoordenadas('-23.3105, -51.1628');
         $svc->validateCoordenadas('23.3105,51.1628');
         $svc->validateCoordenadas(null);
@@ -123,28 +123,28 @@ class EquipamentoServiceTest extends TestCase
 
     public function testValidateCoordenadasRejectsInvalid(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $this->expectException(\Exception::class);
         $svc->validateCoordenadas('invalid');
     }
 
     public function testValidateTipoSpecificDvrRequiresModelo(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $this->expectException(\Exception::class);
         $svc->validateTipoSpecific(3, null, null);
     }
 
     public function testValidateTipoSpecificTotemRequiresCameras(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $this->expectException(\Exception::class);
         $svc->validateTipoSpecific(4, null, null);
     }
 
     public function testBuildEquipDataReturnsStructuredArray(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $fields = [
             'tipo_id' => 1,
             'tipo_camera_id' => null,
@@ -169,7 +169,7 @@ class EquipamentoServiceTest extends TestCase
 
     public function testExtractCommonDataProducesCompleteKeySet(): void
     {
-        $svc = new \EquipamentoService($this->dbMock);
+        $svc = new \App\Services\EquipamentoService($this->dbMock);
         $result = $svc->extractCommonData([
             'status_id' => 1,
             'procedimento_id' => 2,

@@ -17,8 +17,8 @@ if (!validateCsrfToken($csrfToken)) {
 }
 
 $rateLimitPassed = false;
-if (class_exists('RateLimiter', true)) {
-    $rateLimiter = new RateLimiter();
+if (class_exists(\App\Api\RateLimiter::class, true)) {
+    $rateLimiter = new \App\Api\RateLimiter();
     $rateLimitKey = 'recuperar_senha:' . getSessionClientIp();
     $rateLimitPassed = $rateLimiter->consume($rateLimitKey, 3, 900);
 } else {

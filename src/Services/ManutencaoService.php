@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+namespace App\Services;
+
+use App\Api\RequestValidator;
 use App\Exception\ServiceException;
+use RuntimeException;
 
 /**
  * Serviço único de manutenção de câmeras e alarmes (R-001).

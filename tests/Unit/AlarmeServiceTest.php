@@ -17,13 +17,13 @@ class AlarmeServiceTest extends TestCase
 
     public function testServiceCanBeInstantiated(): void
     {
-        $svc = new \AlarmeService($this->dbMock);
-        $this->assertInstanceOf(\AlarmeService::class, $svc);
+        $svc = new \App\Services\AlarmeService($this->dbMock);
+        $this->assertInstanceOf(\App\Services\AlarmeService::class, $svc);
     }
 
     public function testBuildParamsStructure(): void
     {
-        $svc = new \AlarmeService($this->dbMock);
+        $svc = new \App\Services\AlarmeService($this->dbMock);
         $reflection = new \ReflectionMethod($svc, 'buildParams');
 
         $data = [
@@ -65,7 +65,7 @@ class AlarmeServiceTest extends TestCase
 
     public function testBuildParamsWithId(): void
     {
-        $svc = new \AlarmeService($this->dbMock);
+        $svc = new \App\Services\AlarmeService($this->dbMock);
         $reflection = new \ReflectionMethod($svc, 'buildParams');
 
         $data = [
@@ -133,7 +133,7 @@ class AlarmeServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturnOnConsecutiveCalls($statusList, $statusLookup, $regiaoLookup);
 
-        $svc = new \AlarmeService($this->dbMock);
+        $svc = new \App\Services\AlarmeService($this->dbMock);
         $result = $svc->validateInput([
             'conta' => 789,
             'local' => 'Escola Municipal Centro',
@@ -164,7 +164,7 @@ class AlarmeServiceTest extends TestCase
         $this->dbMock->method('query')
             ->willReturnOnConsecutiveCalls($statusList, $statusLookup, $regiaoLookup);
 
-        $svc = new \AlarmeService($this->dbMock);
+        $svc = new \App\Services\AlarmeService($this->dbMock);
         $result = $svc->validateInput([
             'conta' => 42,
             'local' => 'UBS Central',

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Logging\LoggerFactory;
+
 if (!function_exists('logger')) {
     function logger(string $channel = 'app'): \Monolog\Logger
     {

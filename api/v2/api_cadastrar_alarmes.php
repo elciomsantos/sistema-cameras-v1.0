@@ -1,6 +1,8 @@
 <?php
 
+use App\Api\ApiResponse;
 use App\Exception\ServiceException;
+use App\Services\AlarmeService;
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

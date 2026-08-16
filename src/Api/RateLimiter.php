@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+namespace App\Api;
+
+use PDO;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
+use Throwable;
+
 class RateLimiter
 {
     private string $storagePath;

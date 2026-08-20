@@ -2,6 +2,7 @@
 #Producao — Nginx + PHP-FPM 8.4 + MySQL 8.0
 #Para Ubuntu Server (Docker Engine nativo — NAO WSL2).
 #Sem bind mount de codigo: a imagem e auto-contida (build no CI/registry).
+#Baseline de hardening conforme ESPECIFICACAO-TECNICA-SEGURANCA-PHP.md (Secoes 33-41, 57)
 #
 #Uso (servidor Ubuntu):
 #   cp .env.prod.example .env       # configurar credenciais
@@ -20,10 +21,7 @@ services:
       MYSQL_DATABASE: ${DB_NAME:-cftv_gml}
       MYSQL_USER: ${DB_USER:-cftv_user}
       MYSQL_PASSWORD: ${DB_PASS:?DB_PASS required}
-    # Em producao, NAO expor a porta do DB para o host a menos que estritamente necessario.
-    # Comente a secao `ports:` abaixo para deixar o DB acessivel apenas na rede interna.
-    ports:
-      - "127.0.0.1:3306:3306"
+    # DB acessivel apenas na rede interna (backend), nao publicado no host
     volumes:
       - mysql_data:/var/lib/mysql
       - ./config/DB/cftv_gml.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
@@ -32,6 +30,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - backend
+    # Hardening: nao-root (mysql UID 999), capabilities minimas, read-only onde possivel
+    user: "999:999"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run/mysqld
+    mem_limit: 1g
+    cpus: "1.0"
+    pids_limit: 256
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   app:
     build:
@@ -54,12 +71,45 @@ services:
       CAMERAS_SESSION_ABSOLUTE_TIMEOUT: 28800
       CAMERAS_CSP_ALLOW_INLINE_STYLES: 0
       SENTRY_DSN: ${SENTRY_DSN:-}
+      # Confiar no proxy Nginx (container app) para headers X-Forwarded-For
+      PROXY_TRUSTED_IPS: "127.0.0.1"
     volumes:
       - app_storage:/var/www/html/storage
       - app_uploads:/var/www/html/public/uploads
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - frontend
+      - backend
+    # Hardening: non-root (www-data UID 33), capabilities drop, no-new-privileges, read-only, resource limits
+    user: "33:33"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/log/nginx
+      - /var/lib/nginx/body
+      - /run/php
+    mem_limit: 1g
+    cpus: "1.0"
+    pids_limit: 512
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
 
 volumes:
   mysql_data:

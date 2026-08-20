@@ -119,6 +119,14 @@ jobs:
           extensions: pdo_mysql, mbstring, zip, gd, xml, curl
           tools: composer:v2
 
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
       - name: Create .env for testing
         run: |
           sudo mkdir -p /etc/sistema-cameras
@@ -139,6 +147,10 @@ jobs:
       - name: Run Smoke Test (bash)
         run: |
           bash tests/smoke_basico.sh http://127.0.0.1:8080
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat /tmp/php-server.log
 
   frontend:
     name: Frontend Checks

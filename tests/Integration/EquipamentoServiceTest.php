@@ -199,4 +199,62 @@ class EquipamentoServiceTest extends TestCase
             unset($_SERVER['CONTENT_LENGTH']);
         }
     }
+    public function testExtractCommonDataWithFixtureReturnsExpected(): void
+    {
+        $svc = new \App\Services\EquipamentoService($this->db);
+
+        // Fixture: dados reais de equipamento com todos os campos
+        $data = [
+            "status_id" => 2,
+            "procedimento_id" => 1,
+            "regiao_id" => 1,
+            "tipo_id" => 2,
+            "tipo_camera" => 1,
+            "secretaria_id" => 1,
+            "marca_id" => 1,
+            "ip" => "192.168.15.100",
+            "patrimonio" => "PAT-1234-XYZ",
+            "nome" => "Camera Teste",
+            "descricao" => "Camera de teste para fixtures",
+            "logradouro" => "Rua das Flores",
+            "bairro" => "Centro",
+            "cidade" => "Londrina",
+            "uf" => "PR",
+            "cep" => "86015-120",
+            "numero" => "50",
+            "complemento" => "Apto 101",
+            "telefone" => "44-99999-1234",
+            "email" => "teste@exemplo.com",
+            "coordinates" => "-25.6953, -51.1702",
+            "area_cobertura" => "500",
+            "ativa" => 1,
+            "data_instalacao" => "2023-01-15 10:30:00",
+            "ultima_manutencao" => "2023-06-20 14:00:00",
+            "proximo_manutencao" => "2024-06-20 14:00:00",
+        ];
+
+        $fields = $svc->extractCommonData($data);
+
+        $this->assertIsArray($fields);
+        // Verifica campos críticos
+        $this->assertEquals(2, $fields["status_id"]);
+        $this->assertEquals(1, $fields["procedimento_id"]);
+        $this->assertEquals("192.168.15.100", $fields["normalized_ip"]);
+        $this->assertEquals("PAT-1234-XYZ", $fields["patrimonio"]);
+    }
+    public function testExtractCommonDataWithPartialFieldsReturnsDefaults(): void
+    {
+        $svc = new \App\Services\EquipamentoService($this->db);
+
+        // Fixture: dados mínimos - apenas alguns campos
+        $data = ["status_id" => 1, "secretaria_id" => 1];
+
+        $fields = $svc->extractCommonData($data);
+
+        $this->assertIsArray($fields);
+        $this->assertEquals(1, $fields["status_id"]);
+        $this->assertEquals(1, $fields["secretaria_id"]);
+        $this->assertEquals(0, $fields["status_id"]); // default when missing
+        $this->assertNull($fields["normalized_ip"]); // default when missing
+    }
 }

@@ -95,6 +95,20 @@ jobs:
       run:
         working-directory: /home/sistema-cameras-v1.0
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: cftv_gml_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -135,7 +149,7 @@ jobs:
         run: npm ci
 
       - name: Vitest tests
-        run: npm test
+        run: npm test -- --run
 
       - name: TypeScript type check
         run: npx tsc --noEmit

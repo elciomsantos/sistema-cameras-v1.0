@@ -254,7 +254,6 @@ class EquipamentoServiceTest extends TestCase
         $this->assertIsArray($fields);
         $this->assertEquals(1, $fields["status_id"]);
         $this->assertEquals(1, $fields["secretaria_id"]);
-        $this->assertEquals(0, $fields["status_id"]); // default when missing
         $this->assertNull($fields["normalized_ip"]); // default when missing
     }
 }

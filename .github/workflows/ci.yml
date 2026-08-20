@@ -61,8 +61,8 @@ jobs:
 
       - name: Create .env for testing
         run: |
-          mkdir -p "$HOME/env/sistema-cameras"
-          cat > "$HOME/env/sistema-cameras/.env" << 'ENVEOF'
+          sudo mkdir -p /etc/sistema-cameras
+          sudo tee /etc/sistema-cameras/.env > /dev/null << 'ENVEOF'
           CAMERAS_ENV=testing
           DB_HOST=127.0.0.1
           DB_PORT=3306
@@ -93,7 +93,7 @@ jobs:
     needs: php
     defaults:
       run:
-        working-directory: /home/sistema-cameras-v1.0
+        working-directory: /home/runner/work/sistema-cameras-v1.0/sistema-cameras-v1.0
 
     services:
       mysql:
@@ -112,14 +112,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install bash smoke test dependencies
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: pdo_mysql, mbstring, zip, gd, xml, curl
+          tools: composer:v2
+
+      - name: Create .env for testing
         run: |
-          # smoke test already bundled, no extra deps needed
-          echo "Smoke test ready"
+          sudo mkdir -p /etc/sistema-cameras
+          sudo tee /etc/sistema-cameras/.env > /dev/null << 'ENVEOF'
+          CAMERAS_ENV=testing
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_NAME=cftv_gml_test
+          DB_USER=root
+          DB_PASS=root
+          ENVEOF
+
+      - name: Start PHP dev server
+        run: |
+          php -S 127.0.0.1:8080 -t public > /tmp/php-server.log 2>&1 &
+          sleep 3
 
       - name: Run Smoke Test (bash)
         run: |
-          bash tests/smoke_basico.sh http://localhost:8080
+          bash tests/smoke_basico.sh http://127.0.0.1:8080
 
       - name: Run Smoke Test (PowerShell - Windows)
         if: runner.os == 'Windows'
@@ -173,8 +192,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: false
           tags: app:ci-${{ github.sha }}
-          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -28,6 +28,11 @@
             "src/ErrorHandler.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "scripts": {
         "test": "phpunit --do-not-cache-result",
         "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",

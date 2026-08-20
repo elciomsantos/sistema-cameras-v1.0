@@ -8,7 +8,7 @@ $locaisService = new LocaisService();
 
 // Carrega filtros
 $filters = [
-    'nome' => trim(filter_input(INPUT_GET, 'nome', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? ''),
+    'nome' => trim((string) filter_input(INPUT_GET, 'nome')),
     'regiao_id' => filter_input(INPUT_GET, 'regiao_id', FILTER_VALIDATE_INT) ?? '',
     'tipo_local_id' => filter_input(INPUT_GET, 'tipo_local_id', FILTER_VALIDATE_INT) ?? '',
     'tem_alarme' => filter_input(INPUT_GET, 'tem_alarme', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '',

@@ -8,7 +8,7 @@ $db = db();
 $locaisService = new LocaisService($db);
 $pageNum = max(1, filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1);
 $perPage = 50;
-$search = trim(filter_input(INPUT_GET, 'busca', FILTER_SANITIZE_FULL_SPECIAL_CHARS) ?? '');
+$search = trim((string) filter_input(INPUT_GET, 'busca'));
 
 $total = $locaisService->countByTipoNome('PREDIO PUBLICO', $search);
 $totalPages = max(1, ceil($total / $perPage));

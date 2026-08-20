@@ -2,36 +2,38 @@
 
 declare(strict_types=1);
 
+// Session security configuration is applied via configureSessionSecurity()
+// (defined in config/app.php) BEFORE session_start(), otherwise PHP rejects
+// ini_set() for session settings when the session is already active.
+// inc/security.php is the single boot point for session_start().
 if (session_status() === PHP_SESSION_NONE) {
+    if (function_exists('configureSessionSecurity')) {
+        configureSessionSecurity();
+    } else {
+        // Legacy path (e.g. scripts that include this file without the
+        // Composer autoloader): apply default secure settings manually.
+        ini_set('session.use_cookies', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.use_trans_sid', '0');
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_samesite', 'Strict');
+        ini_set('session.sid_length', '48');
+        ini_set('session.sid_bits_per_character', '6');
+        $secureCookie = (bool)(strpos($_SERVER['HTTPS'] ?? '', 'on') === 0 || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443);
+        ini_set('session.cookie_secure', $secureCookie ? '1' : '0');
+        session_set_cookie_params([
+            'lifetime' => 0,
+            'path' => '/',
+            'secure' => $secureCookie,
+            'httponly' => true,
+            'samesite' => 'Strict',
+        ]);
+    }
     session_start();
 }
 
 define('ACCESS_LEVEL_ADMIN', 1);
-// Session security configuration is applied via configureSessionSecurity()
-// called from entry points (public/index.php, api/bootstrap-api.php).
-// inc/security.php is the single boot point for session_start().
-
-// Verify session security config was applied; if not (e.g., legacy path),
-// apply default secure settings here to prevent session fixation:
-if (session_status() === PHP_SESSION_ACTIVE) {
-    ini_set('session.use_cookies', '1');
-    ini_set('session.use_only_cookies', '1');
-    ini_set('session.use_trans_sid', '0');
-    ini_set('session.use_strict_mode', '1');
-    ini_set('session.cookie_httponly', '1');
-    ini_set('session.cookie_samesite', 'Strict');
-    ini_set('session.sid_length', '48');
-    ini_set('session.sid_bits_per_character', '6');
-    $secureCookie = (bool)(strpos($_SERVER['HTTPS'] ?? '', 'on') === 0 || (int)(int)$_SERVER['SERVER_PORT'] === 443);
-    ini_set('session.cookie_secure', $secureCookie ? '1' : '0');
-    session_set_cookie_params([
-        'lifetime' => 0,
-        'path' => '/',
-        'secure' => $secureCookie,
-        'httponly' => true,
-        'samesite' => 'Strict',
-    ]);
-}
 define('ACCESS_LEVEL_SUPERVISOR', 2);
 define('ACCESS_LEVEL_USER', 3);
 

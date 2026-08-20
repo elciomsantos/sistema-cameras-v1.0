@@ -74,7 +74,6 @@ try {
             $_SESSION['sucesso'] = 'Registro adicionado ao relatório.';
             $rel = $service->getRelatorioPorId($relatorioId);
             $redirecionar(['data' => $rel->data ?? '', 'turno' => $rel->turno ?? '']);
-            break;
 
         case 'mudar_situacao':
             $registroId = filter_input(INPUT_POST, 'registro_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -85,7 +84,6 @@ try {
             $service->atualizarSituacao($registroId, $situacao, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Situação atualizada.';
             $redirecionar(['data' => $_POST['data'] ?? '', 'turno' => $_POST['turno'] ?? '']);
-            break;
 
         case 'excluir_registro':
             $registroId = filter_input(INPUT_POST, 'registro_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -95,7 +93,6 @@ try {
             $service->excluirRegistro($registroId, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Registro excluído.';
             $redirecionar(['data' => $_POST['data'] ?? '', 'turno' => $_POST['turno'] ?? '']);
-            break;
 
         case 'situacao_geral':
             $relatorioId = filter_input(INPUT_POST, 'relatorio_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -106,7 +103,6 @@ try {
             $service->atualizarSituacaoGeral($relatorioId, $texto, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Situação geral salva.';
             $redirecionar();
-            break;
 
         case 'passagem_turno':
             $relatorioId = filter_input(INPUT_POST, 'relatorio_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -117,7 +113,6 @@ try {
             $service->atualizarPassagemTurno($relatorioId, $texto, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Passagem de turno salva.';
             $redirecionar();
-            break;
 
         default:
             throw new RuntimeException('Ação inválida.');

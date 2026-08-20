@@ -140,17 +140,6 @@ jobs:
         run: |
           bash tests/smoke_basico.sh http://127.0.0.1:8080
 
-      - name: Run Smoke Test (PowerShell - Windows)
-        if: runner.os == 'Windows'
-        uses: microsoft/powershell@v1
-        with:
-          script: |
-            $Params = @{
-                BaseUrl = "http://localhost/sistema-cameras-v1.0/public"
-            }
-            & ./tests/smoke_basico.ps1 @Params
-        timeout-minutes: 10
-
   frontend:
     name: Frontend Checks
     runs-on: ubuntu-latest
@@ -161,12 +150,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Explicit Node 20 to avoid deprecation warning
-          cache: npm
+          node-version: '22'  # cssnano 8 requires Node ^22.11.0 || ^24.11.0 || >=26.0
 
       - name: Install dependencies
         run: |
-          npm config set engines.strict false
           npm ci
 
       - name: Vitest tests

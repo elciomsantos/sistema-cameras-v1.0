@@ -12,8 +12,6 @@ permissions:
   contents: read
   security-events: write
   actions: read
-  # Necessário para upload SARIF funcionar
-  id-token: write
 
 jobs:
   php-deps:
@@ -76,7 +74,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
-      id-token: write
+      actions: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -84,7 +82,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Trivy vulnerability scanner (fs)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -112,7 +110,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
-      id-token: write
+      actions: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -134,7 +132,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner (image)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: 'image'
           scan-ref: 'sistema-cameras:prod-scan'

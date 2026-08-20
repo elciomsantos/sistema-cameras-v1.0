@@ -86,7 +86,11 @@ function verificarEscopoEquipamento(int $equipamentoId): bool
         return false;
     }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+    $nivel = resolveUserAccessLevel($usuario);
+    // Admin: acesso global a todos equipamentos
+    // Supervisor: acesso global a todos equipamentos (por regra de negócio: pode gerenciar múltiplas secretarias)
+    // Usuário comum: escopo restrito à sua secretaria
+    if (in_array($nivel, ['admin', 'supervisor'], true)) {
         return true;
     }
 
@@ -148,7 +152,11 @@ function verificarEscopoAnexo(int $anexoId): bool
         return false;
     }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+    $nivel = resolveUserAccessLevel($usuario);
+    // Admin: acesso global a todos anexos
+    // Supervisor: acesso global a todos anexos (por regra de negócio: pode gerenciar múltiplas secretarias)
+    // Usuário comum: escopo restrito à sua secretaria
+    if (in_array($nivel, ['admin', 'supervisor'], true)) {
         return true;
     }
 
@@ -172,7 +180,11 @@ function verificarEscopoAlarme(int $alarmeId): bool
         return false;
     }
 
-    if (in_array(resolveUserAccessLevel($usuario), ['admin', 'supervisor'], true)) {
+    $nivel = resolveUserAccessLevel($usuario);
+    // Admin: acesso global a todos alarmes
+    // Supervisor: acesso global a todos alarmes (por regra de negócio: pode gerenciar múltiplas secretarias)
+    // Usuário comum: escopo restrito à sua secretaria
+    if (in_array($nivel, ['admin', 'supervisor'], true)) {
         return true;
     }
 

@@ -61,11 +61,8 @@ function requiredAccessForApiEndpoint(string $endpoint): string
 
 function requireApiAccessForEndpoint(string $endpoint): void
 {
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
+    // session_start() e configureSessionSecurity() são tratados por inc/security.php
+    // como ponto único de boot. Removido para evitar boot duplicado (F-102).
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }
@@ -78,11 +75,8 @@ function requireApiAccessForEndpoint(string $endpoint): void
 
 function requireApiAuth(string $minAccess = 'user', bool $writeClose = false): void
 {
-    configureSessionSecurity();
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
+    // session_start() e configureSessionSecurity() são tratados por inc/security.php
+    // como ponto único de boot. Removido para evitar boot duplicado (F-102).
     if (!isset($_SESSION['usuario'])) {
         ApiResponse::unauthorized();
     }

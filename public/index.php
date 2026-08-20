@@ -13,10 +13,8 @@ ob_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 
 require_once __DIR__ . '/../config/app.php';
-configureSessionSecurity();
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// configureSessionSecurity() e session_start() são tratados por inc/security.php
+// como ponto único de boot. Removido para evitar boot duplicado.
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../inc/auto_migrate.php';
 runAutoMigrate();

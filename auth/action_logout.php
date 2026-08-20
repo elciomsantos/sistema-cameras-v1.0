@@ -1,9 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
-configureSessionSecurity();
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// configureSessionSecurity() e session_start() são tratados por inc/security.php
+// como ponto único de boot (F-102). Removido para evitar boot duplicado.
 require_once __DIR__ . '/../inc/security.php';
 require_once __DIR__ . '/../inc/single_session.php';
 

@@ -98,11 +98,32 @@ import { escapeHtml } from './utils/html';
     });
   }
 
+  function bindListaComHifen() {
+    ['situacaoGeral', 'passagemTurno'].forEach((id) => {
+      const ta = document.getElementById(id) as HTMLTextAreaElement | null;
+      if (!ta) return;
+
+      ta.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+
+        event.preventDefault();
+        const start = ta.selectionStart ?? ta.value.length;
+        const end = ta.selectionEnd ?? start;
+        const prefixo = '\n- ';
+        ta.value = ta.value.slice(0, start) + prefixo + ta.value.slice(end);
+        const pos = start + prefixo.length;
+        ta.setSelectionRange(pos, pos);
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadEquipamentos();
     bindOsSelect();
     bindMudarSituacao();
     bindExcluirRegistro();
     limparCampoAposSalvar();
+    bindListaComHifen();
   });
 })();

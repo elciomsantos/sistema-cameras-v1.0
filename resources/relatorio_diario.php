@@ -205,11 +205,6 @@ vite_page_js('relatorio-diario');
                             <i class="fas fa-paper-plane me-1"></i>Salvar passagem de turno
                         </button>
                     </form>
-                    <?php elseif (!empty($relatorio->passagem_turno)): ?>
-                    <div class="alert alert-primary mt-4 mb-0">
-                        <h6 class="alert-heading"><i class="fas fa-arrow-right me-1"></i>Passagem de turno</h6>
-                        <p class="mb-0"><?= nl2br(htmlspecialchars($relatorio->passagem_turno, ENT_QUOTES, 'UTF-8')) ?></p>
-                    </div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -220,6 +215,28 @@ vite_page_js('relatorio-diario');
                     <h5 class="mb-0"><i class="fas fa-list me-2"></i>Registros do Turno</h5>
                 </div>
                 <div class="card-body p-0">
+                    <?php if (!empty($relatorio->situacao_geral) || !empty($relatorio->passagem_turno)): ?>
+                    <div class="list-group list-group-flush border-bottom">
+                        <?php if (!empty($relatorio->situacao_geral)): ?>
+                        <div class="list-group-item border-start border-4 border-primary bg-primary-subtle">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="badge bg-primary"><i class="fas fa-list-check me-1"></i>Situação geral do turno</span>
+                                <small class="text-muted">Conferir se não ficou faltando registrar nada.</small>
+                            </div>
+                            <p class="mb-0"><?= nl2br(htmlspecialchars($relatorio->situacao_geral, ENT_QUOTES, 'UTF-8')) ?></p>
+                        </div>
+                        <?php endif; ?>
+                        <?php if (!empty($relatorio->passagem_turno)): ?>
+                        <div class="list-group-item border-start border-4 border-success bg-success-subtle">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <span class="badge bg-success"><i class="fas fa-arrow-right me-1"></i>Passagem para o próximo turno</span>
+                            </div>
+                            <p class="mb-0"><?= nl2br(htmlspecialchars($relatorio->passagem_turno, ENT_QUOTES, 'UTF-8')) ?></p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <?php endif; ?>
+
                     <?php if (empty($registros)): ?>
                     <div class="text-center py-5">
                         <i class="fas fa-clipboard fa-3x text-muted mb-3"></i>

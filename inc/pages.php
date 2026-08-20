@@ -29,6 +29,7 @@ return [
     'action_deletar_usuario',
     'listar_escolas',
     'listar_cmeis',
+    'listar_tipo',
     'listar_operadoras',
     'listar_proprios',
     'listar_locais',

@@ -45,6 +45,7 @@ return [
     'listar_locais'   => 'supervisor',
     'listar_escolas'    => 'supervisor',
     'listar_cmeis'      => 'supervisor',
+    'listar_tipo'       => 'supervisor',
     'listar_operadoras' => 'supervisor',
     'listar_proprios'   => 'supervisor',
 

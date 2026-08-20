@@ -95,10 +95,13 @@
                         <li><a class="dropdown-item" href="?page=listar_locais"><i class="fas fa-map-marker-alt me-2"></i>Listar Locais</a></li>
                         <li><a class="dropdown-item" href="?page=cadastro_locais"><i class="fas fa-plus me-2"></i>Cadastro de Local</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="?page=listar_escolas"><i class="fas fa-school me-2"></i>Escolas</a></li>
-                        <li><a class="dropdown-item" href="?page=listar_cmeis"><i class="fas fa-child me-2"></i>CMEIs</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=escola"><i class="fas fa-school me-2"></i>Escolas</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=cmei"><i class="fas fa-child me-2"></i>CMEIs</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=cei"><i class="fas fa-baby me-2"></i>CEIs</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=cras"><i class="fas fa-hand-holding-heart me-2"></i>CRAS</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=caps"><i class="fas fa-brain me-2"></i>CAPS</a></li>
                         <li><a class="dropdown-item" href="?page=listar_operadoras"><i class="fas fa-network-wired me-2"></i>Operadoras / Links</a></li>
-                        <li><a class="dropdown-item" href="?page=listar_proprios"><i class="fas fa-building me-2"></i>Proprios Publicos</a></li>
+                        <li><a class="dropdown-item" href="?page=listar_tipo&tipo=proprios"><i class="fas fa-building me-2"></i>Proprios Publicos</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><h6 class="dropdown-header">Tabelas Lookup</h6></li>
                         <li><a class="dropdown-item" href="?page=admin_tabelas"><i class="fas fa-th-list me-2"></i>Painel de Tabelas</a></li>

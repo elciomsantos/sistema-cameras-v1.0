@@ -12,6 +12,8 @@ permissions:
   contents: read
   security-events: write
   actions: read
+  # Necessário para upload SARIF funcionar
+  id-token: write
 
 jobs:
   php-deps:
@@ -74,6 +76,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -93,8 +96,9 @@ jobs:
           hide-progress: true
 
       - name: Upload Trivy FS results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v4
         if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-fs.sarif'
           category: trivy-fs
@@ -108,6 +112,7 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -141,8 +146,9 @@ jobs:
           hide-progress: true
 
       - name: Upload Trivy Image results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v4
         if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-image.sarif'
           category: trivy-image

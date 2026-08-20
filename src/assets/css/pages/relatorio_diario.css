@@ -1,0 +1,8 @@
+.relatorio-diario-page .stat-card {
+    min-height: 90px;
+}
+
+.relatorio-diario-page .list-group-item .form-select-sm {
+    width: auto;
+    min-width: 140px;
+}

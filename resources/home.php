@@ -189,6 +189,19 @@ requererAcesso('user');
                             </a>
                         </div>
                     </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-body text-center p-4">
+                            <div class="text-success card-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h5 class="card-title">Relat&oacute;rio Di&aacute;rio de Turno</h5>
+                            <p class="card-text">Registre os acontecimentos de cada turno (diurno/noturno), ocorr&ecirc;ncias e a passagem para o pr&oacute;ximo turno</p>
+                            <a href="?page=relatorio_diario" class="btn btn-success w-100">
+                                <i class="fas fa-clipboard-list me-2"></i>Abrir Relat&oacute;rio
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="col-lg-6 col-12 mb-3">

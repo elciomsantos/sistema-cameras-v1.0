@@ -50,6 +50,8 @@ return [
     'auditoria_cameras',
     'auditoria_alarmes',
     'notificacoes',
+    'relatorio_diario',
+    'action_relatorio_diario',
 
     // ENDPOINTS AJAX (pasta /api)
     'api/api_cadastrar_cameras',
@@ -80,5 +82,6 @@ return [
     'api/api_excluir_anexo',
     'api/api_servir_anexo',
     'api/api_notificacoes',
+    'api/api_relatorio_diario',
 
 ];

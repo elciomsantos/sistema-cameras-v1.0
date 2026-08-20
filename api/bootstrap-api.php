@@ -109,7 +109,7 @@ function executeApiRequest(?string $endpointOverride = null): void
         'manutencao_cameras', 'modelos_alarmes', 'modelos_cameras',
         'notificacoes',
         'ping', 'relatorios_cameras', 'renovar_sessao', 'servir_anexo', 'session_check',
-        'status', 'swagger', 'swagger-spec', 'upload_anexo',
+        'status', 'swagger', 'swagger-spec', 'upload_anexo', 'relatorio_diario',
     ];
 
     if (!in_array($endpoint, $allowedEndpoints, true)) {
@@ -170,7 +170,7 @@ function executeApiRequest(?string $endpointOverride = null): void
         'ping', 'status', 'modelos_cameras', 'modelos_alarmes',
         'locais', 'dashboard', 'cameras', 'alarmes',
         'notificacoes', 'relatorios_cameras', 'listar_anexos',
-        'servir_anexo', 'auditoria_cameras', 'health',
+        'servir_anexo', 'auditoria_cameras', 'health', 'relatorio_diario',
     ];
     $isIdempotentGet = ($_SERVER['REQUEST_METHOD'] === 'GET')
         && in_array($endpoint, $idempotentGetEndpoints, true);
@@ -255,7 +255,7 @@ function executeApiRequest(?string $endpointOverride = null): void
         'alarmes', 'cameras', 'dashboard', 'cep_lookup', 'geocode',
         'locais', 'modelos_cameras', 'modelos_alarmes', 'notificacoes',
         'relatorios_cameras', 'servir_anexo', 'listar_anexos',
-        'auditoria_cameras', 'status', 'ping',
+        'auditoria_cameras', 'status', 'ping', 'relatorio_diario',
     ];
     if (!in_array($endpoint, $publicEndpoints, true)) {
         requireApiAccessForEndpoint($endpoint);

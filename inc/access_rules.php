@@ -24,6 +24,9 @@ return [
     'manutencao_cameras' => 'user',
     'manutencao_alarmes' => 'user',
 
+    'relatorio_diario'         => 'user',
+    'action_relatorio_diario'  => 'user',
+
     'alterar_senha'        => 'user',
 
     // =========================================================

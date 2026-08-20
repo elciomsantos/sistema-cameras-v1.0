@@ -14,7 +14,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     network_mode: host
-    command: ["--event-scheduler=ON"]
+    command: ["--event-scheduler=ON", "--log-bin-trust-function-creators=1"]
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
       MYSQL_DATABASE: ${DB_NAME:-cftv_gml}

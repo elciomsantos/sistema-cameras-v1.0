@@ -1,0 +1,159 @@
+- generic [active] [ref=f5e1]:
+  - navigation [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - link " Controle de Cameras" [ref=f5e4] [cursor=pointer]:
+        - /url: "?page=home"
+        - generic [ref=f5e5]: 
+        - text: Controle de Cameras
+      - generic [ref=f5e6]:
+        - list [ref=f5e7]:
+          - listitem [ref=f5e8]:
+            - link " Dashboard" [ref=f5e9] [cursor=pointer]:
+              - /url: "?page=home"
+              - generic [ref=f5e10]: 
+              - text: Dashboard
+          - listitem [ref=f5e11]:
+            - button " Cameras" [ref=f5e12] [cursor=pointer]:
+              - generic [ref=f5e13]: 
+              - text: Cameras
+            - text:  +   
+          - listitem [ref=f5e14]:
+            - button " Alarmes" [ref=f5e15] [cursor=pointer]:
+              - generic [ref=f5e16]: 
+              - text: Alarmes
+            - text:  +   
+          - listitem [ref=f5e17]:
+            - button " Relatorios" [ref=f5e18] [cursor=pointer]:
+              - generic [ref=f5e19]: 
+              - text: Relatorios
+            - text:  
+          - listitem [ref=f5e20]:
+            - link " Notificações" [ref=f5e21] [cursor=pointer]:
+              - /url: "?page=notificacoes"
+              - generic [ref=f5e22]: 
+              - text: Notificações
+          - listitem [ref=f5e23]:
+            - button " Administracao" [ref=f5e24] [cursor=pointer]:
+              - generic [ref=f5e25]: 
+              - text: Administracao
+            - text:     +           
+        - generic [ref=f5e26]:
+          - button "Ativar modo escuro" [ref=f5e27] [cursor=pointer]:
+            - generic [ref=f5e28]: 
+          - generic [ref=f5e29]:
+            - button " admin" [ref=f5e30] [cursor=pointer]:
+              - generic [ref=f5e31]: 
+              - strong [ref=f5e32]: admin
+            - text:    
+  - generic [ref=f5e33]:
+    - generic [ref=f5e35]:
+      - generic [ref=f5e36]:
+        - heading " Dashboard do Sistema" [level=1] [ref=f5e37]:
+          - generic [ref=f5e38]: 
+          - text: Dashboard do Sistema
+        - paragraph [ref=f5e39]:
+          - text: Bem-vindo,
+          - strong [ref=f5e40]: Administrador
+          - text: "!"
+      - generic [ref=f5e42]:
+        - generic [ref=f5e43]: 
+        - text: ADMIN
+    - text: 
+    - generic [ref=f5e44]:
+      - generic [ref=f5e48]:
+        - generic [ref=f5e49]:
+          - heading "0" [level=3] [ref=f5e50]
+          - text: Total de Câmeras
+        - generic [ref=f5e51]: 
+      - generic [ref=f5e55]:
+        - generic [ref=f5e56]:
+          - heading "0" [level=3] [ref=f5e57]
+          - text: Câmeras Ativas
+        - generic [ref=f5e58]: 
+      - generic [ref=f5e62]:
+        - generic [ref=f5e63]:
+          - heading "0" [level=3] [ref=f5e64]
+          - text: Em Manutenção
+        - generic [ref=f5e65]: 
+      - generic [ref=f5e69]:
+        - generic [ref=f5e70]:
+          - heading "0" [level=3] [ref=f5e71]
+          - text: Desativadas
+        - generic [ref=f5e72]: 
+      - generic [ref=f5e76]:
+        - generic [ref=f5e77]:
+          - heading "0" [level=3] [ref=f5e78]
+          - text: Manutenção Atrasada
+        - generic [ref=f5e79]: 
+      - generic [ref=f5e83]:
+        - generic [ref=f5e84]:
+          - heading "0%" [level=3] [ref=f5e85]
+          - text: Uptime do Sistema
+        - generic [ref=f5e86]: 
+    - generic [ref=f5e89]:
+      - heading " Status do Sistema" [level=5] [ref=f5e90]:
+        - generic [ref=f5e91]: 
+        - text: Status do Sistema
+      - generic [ref=f5e92]:
+        - generic [ref=f5e93]: "Disponibilidade do Sistema: 0%"
+        - generic [ref=f5e94]: 0/0 câmeras operacionais
+      - generic [ref=f5e95]:
+        - progressbar
+      - generic [ref=f5e96]: "Operacional: 0 Manutenção: 0 Desativadas: 0"
+    - generic [ref=f5e101]:
+      - generic [ref=f5e102]:
+        - 'heading " Câmeras: Status" [level=5] [ref=f5e104]':
+          - generic [ref=f5e105]: 
+          - text: "Câmeras: Status"
+        - heading " Tipos de Câmeras" [level=5] [ref=f5e109]:
+          - generic [ref=f5e110]: 
+          - text: Tipos de Câmeras
+        - generic [ref=f5e113]:
+          - 'heading " Alarmes: Status" [level=5] [ref=f5e114]':
+            - generic [ref=f5e115]: 
+            - text: "Alarmes: Status"
+          - paragraph [ref=f5e117]: Nenhum dado de alarme disponível.
+      - generic [ref=f5e119]:
+        - generic [ref=f5e120]:
+          - heading " Câmeras" [level=5] [ref=f5e121]:
+            - generic [ref=f5e122]: 
+            - text: Câmeras
+          - generic [ref=f5e124]:
+            - generic [ref=f5e125]: 
+            - heading "Painel de Câmeras" [level=5] [ref=f5e127]
+            - paragraph [ref=f5e128]: Visão geral de todas as câmeras, status, localização, cadastro, manutenção e relatórios
+            - link " Acessar Painel" [ref=f5e129] [cursor=pointer]:
+              - /url: "?page=controle&modulo=cameras"
+              - generic [ref=f5e130]: 
+              - text: Acessar Painel
+        - generic [ref=f5e131]:
+          - heading " Alarmes" [level=5] [ref=f5e132]:
+            - generic [ref=f5e133]: 
+            - text: Alarmes
+          - generic [ref=f5e135]:
+            - generic [ref=f5e136]: 
+            - heading "Painel de Alarmes" [level=5] [ref=f5e138]
+            - paragraph [ref=f5e139]: Visão geral dos alarmes, status, cadastro, manutenção e relatórios
+            - link " Acessar Painel" [ref=f5e140] [cursor=pointer]:
+              - /url: "?page=controle&modulo=alarmes"
+              - generic [ref=f5e141]: 
+              - text: Acessar Painel
+          - generic [ref=f5e143]:
+            - generic [ref=f5e144]: 
+            - heading "Administração do Sistema" [level=5] [ref=f5e146]
+            - paragraph [ref=f5e147]: Gerencie usuários, permissões e configurações do sistema
+            - link " Administrar" [ref=f5e148] [cursor=pointer]:
+              - /url: "?page=administracao"
+              - generic [ref=f5e149]: 
+              - text: Administrar
+    - generic [ref=f5e152]:
+      - heading " Últimas Manutenções" [level=5] [ref=f5e154]:
+        - generic [ref=f5e155]: 
+        - text: Últimas Manutenções
+      - generic [ref=f5e157]:
+        - generic [ref=f5e158]: 
+        - heading "Nenhuma manutenção recente encontrada" [level=5] [ref=f5e159]
+        - paragraph [ref=f5e160]: Registre manutenções para ver as atualizações aqui.
+  - contentinfo [ref=f5e161]:
+    - generic [ref=f5e162]: Sistema de Gerenciamento de Cameras e Alarmes © 2026 - Beta +
+  - text:  

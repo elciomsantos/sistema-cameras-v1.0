@@ -77,6 +77,10 @@ RewriteEngine On
 # Servir arquivos precomprimidos (.br e .gz gerados pelo Vite)
 # Brotli tem prioridade quando o cliente aceita ambos.
 # ============================================
+# Impedir que mod_deflate re-comprima arquivos ja precomprimidos (.br/.gz),
+# o que corromperia o corpo (Content-Encoding br + conteudo gzip).
+SetEnvIfNoCase Request_URI "\.br$" no-gzip dont-vary
+SetEnvIfNoCase Request_URI "\.gz$" no-gzip dont-vary
 <IfModule mod_rewrite.c>
     <IfModule mod_headers.c>
         # Brotli: ~15-20% menor que gzip. Clientes modernos enviam "br" primeiro.

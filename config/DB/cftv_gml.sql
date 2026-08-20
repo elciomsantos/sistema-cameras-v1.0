@@ -1441,7 +1441,6 @@ BEGIN
     DECLARE part_name VARCHAR(64);
     DECLARE part_limit DATE;
     DECLARE cutoff DATE;
-    DECLARE sql_stmt TEXT;
 
     -- Cursor: partições com data de corte menor que o cutoff
     -- Obs.: todos os DECLAREs devem vir antes de qualquer instrução executável.
@@ -1469,8 +1468,9 @@ BEGIN
             LEAVE loop_partitions;
         END IF;
 
-        SET sql_stmt = CONCAT('ALTER TABLE auditoria_eventos DROP PARTITION `', part_name, '`');
-        PREPARE stmt FROM sql_stmt;
+        -- PREPARE exige variavel de usuario (@var), nao variavel local
+        SET @sql_stmt = CONCAT('ALTER TABLE auditoria_eventos DROP PARTITION `', part_name, '`');
+        PREPARE stmt FROM @sql_stmt;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
     END LOOP;
@@ -1494,7 +1494,6 @@ BEGIN
     DECLARE i INT DEFAULT 1;
     DECLARE target DATE;
     DECLARE part_name VARCHAR(64);
-    DECLARE sql_stmt TEXT;
 
     WHILE i <= meses_futuros DO
         SET target = DATE_ADD(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL i MONTH);
@@ -1506,13 +1505,14 @@ BEGIN
               AND TABLE_NAME = 'auditoria_eventos'
               AND PARTITION_NAME = part_name
         ) THEN
-            SET sql_stmt = CONCAT(
+            -- PREPARE exige variavel de usuario (@var), nao variavel local
+            SET @sql_stmt = CONCAT(
                 'ALTER TABLE auditoria_eventos REORGANIZE PARTITION p_future INTO (',
                 'PARTITION `', part_name, '` VALUES LESS THAN (TO_DAYS(',
                 QUOTE(DATE_FORMAT(DATE_ADD(target, INTERVAL 1 MONTH), '%Y-%m-01')),
                 ')), PARTITION p_future VALUES LESS THAN MAXVALUE)'
             );
-            PREPARE stmt FROM sql_stmt;
+            PREPARE stmt FROM @sql_stmt;
             EXECUTE stmt;
             DEALLOCATE PREPARE stmt;
         END IF;

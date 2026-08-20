@@ -1,0 +1,55 @@
+- generic [active] [ref=f6e1]:
+  - navigation [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - link " Controle de Cameras" [ref=f6e4] [cursor=pointer]:
+        - /url: "?page=home"
+        - generic [ref=f6e5]: 
+        - text: Controle de Cameras
+      - generic [ref=f6e6]:
+        - list [ref=f6e7]:
+          - listitem [ref=f6e8]:
+            - link " Dashboard" [ref=f6e9] [cursor=pointer]:
+              - /url: "?page=home"
+              - generic [ref=f6e10]: 
+              - text: Dashboard
+          - listitem [ref=f6e11]:
+            - button " Cameras" [ref=f6e12] [cursor=pointer]:
+              - generic [ref=f6e13]: 
+              - text: Cameras
+            - text:  +   
+          - listitem [ref=f6e14]:
+            - button " Alarmes" [ref=f6e15] [cursor=pointer]:
+              - generic [ref=f6e16]: 
+              - text: Alarmes
+            - text:  +   
+          - listitem [ref=f6e17]:
+            - button " Relatorios" [ref=f6e18] [cursor=pointer]:
+              - generic [ref=f6e19]: 
+              - text: Relatorios
+            - text:  
+          - listitem [ref=f6e20]:
+            - link " Notificações" [ref=f6e21] [cursor=pointer]:
+              - /url: "?page=notificacoes"
+              - generic [ref=f6e22]: 
+              - text: Notificações
+          - listitem [ref=f6e23]:
+            - button " Administracao" [ref=f6e24] [cursor=pointer]:
+              - generic [ref=f6e25]: 
+              - text: Administracao
+            - text:     +           
+        - generic [ref=f6e26]:
+          - button "Ativar modo escuro" [ref=f6e27] [cursor=pointer]:
+            - generic [ref=f6e28]: 
+          - generic [ref=f6e29]:
+            - button " admin" [ref=f6e30] [cursor=pointer]:
+              - generic [ref=f6e31]: 
+              - strong [ref=f6e32]: admin
+            - text:    
+  - generic [ref=f6e35]:
+    - generic [ref=f6e36]: 
+    - heading "Erro Interno do Servidor" [level=2] [ref=f6e38]
+    - paragraph [ref=f6e39]: Ocorreu um erro inesperado. Tente novamente mais tarde.
+    - link " Voltar ao Inicio" [ref=f6e40] [cursor=pointer]:
+      - /url: "?page=home"
+      - generic [ref=f6e41]: 
+      - text: Voltar ao Inicio

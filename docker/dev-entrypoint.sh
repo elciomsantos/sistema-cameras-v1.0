@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+log() {
+    echo "[dev-entrypoint] $*"
+}
+
 APP_DIR="/var/www/html"
 STORAGE_DIR="$APP_DIR/storage"
 UPLOADS_DIR="$APP_DIR/public/uploads"

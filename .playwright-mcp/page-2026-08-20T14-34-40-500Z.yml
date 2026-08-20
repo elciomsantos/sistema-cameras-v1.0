@@ -1,0 +1,14 @@
+- generic [ref=f7e3]:
+  - heading "Login" [level=3] [ref=f7e4]
+  - separator [ref=f7e5]
+  - generic [ref=f7e6]:
+    - generic [ref=f7e7]:
+      - generic [ref=f7e8]: Usuario
+      - textbox "Usuario" [ref=f7e9]
+    - generic [ref=f7e10]:
+      - generic [ref=f7e11]: Senha
+      - textbox "Senha" [ref=f7e12]
+    - button "Entrar" [ref=f7e14] [cursor=pointer]
+  - generic [ref=f7e16]:
+    - generic [ref=f7e17]: 
+    - text: Esqueceu a senha? Contacte o administrador.

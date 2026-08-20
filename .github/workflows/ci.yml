@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -45,6 +47,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -69,9 +73,12 @@ jobs:
     continue-on-error: true
     permissions:
       security-events: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Run Trivy vulnerability scanner (fs)
         uses: aquasecurity/trivy-action@master
@@ -83,6 +90,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
           ignore-unfixed: true
+          hide-progress: true
 
       - name: Upload Trivy FS results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4
@@ -99,9 +107,12 @@ jobs:
     continue-on-error: true
     permissions:
       security-events: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -127,6 +138,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
           ignore-unfixed: true
+          hide-progress: true
 
       - name: Upload Trivy Image results to GitHub Security
         uses: github/codeql-action/upload-sarif@v4

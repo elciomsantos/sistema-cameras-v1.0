@@ -72,10 +72,12 @@ $locaisService = new LocaisService($db);
 $pageNum = max(1, filter_input(INPUT_GET, 'page_num', FILTER_VALIDATE_INT) ?: 1);
 $perPage = 50;
 $search = trim((string) filter_input(INPUT_GET, 'busca'));
+$regiaoId = filter_input(INPUT_GET, 'regiao_id', FILTER_VALIDATE_INT) ?: 0;
 
-$total = $locaisService->countByTipoNome($cfg['nome'], $search);
+$regioes = $locaisService->getAllRegioes();
+$total = $locaisService->countByTipoNome($cfg['nome'], $search, $regiaoId > 0 ? $regiaoId : null);
 $totalPages = max(1, ceil($total / $perPage));
-$locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPage);
+$locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPage, $regiaoId > 0 ? $regiaoId : null);
 ?>
 
 <div class="container mt-4">
@@ -96,6 +98,16 @@ $locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPag
                     <input type="text" name="busca" class="form-control form-control-sm"
                         placeholder="Buscar por nome, logradouro, bairro..."
                         value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+                </div>
+                <div class="col-md-3">
+                    <select name="regiao_id" class="form-select form-select-sm">
+                        <option value="">Todas as regioes</option>
+                        <?php foreach ($regioes as $r): ?>
+                        <option value="<?= (int)$r->id ?>" <?= (int)$regiaoId === (int)$r->id ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($r->nome, ENT_QUOTES, 'UTF-8') ?>
+                        </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-primary btn-sm w-100">
@@ -119,6 +131,7 @@ $locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPag
                             <th>Nome</th>
                             <th>Logradouro</th>
                             <th>Bairro</th>
+                            <th>Regiao</th>
                             <th>Cidade</th>
                             <th>Secretaria</th>
                         </tr>
@@ -129,6 +142,7 @@ $locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPag
                             <td><?= htmlspecialchars($l->nome ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars(($l->logradouro ?? '') . ($l->numero ? ', ' . $l->numero : ''), ENT_QUOTES, 'UTF-8') ?></td>
                             <td><?= htmlspecialchars($l->bairro ?? '', ENT_QUOTES, 'UTF-8') ?></td>
+                            <td><span class="badge badge-purple"><?= htmlspecialchars($l->regiao_nome ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
                             <td><?= htmlspecialchars($l->cidade ?? '', ENT_QUOTES, 'UTF-8') ?></td>
                             <td><span class="badge bg-info"><?= htmlspecialchars($l->sigla ?? $l->secretaria ?? '-', ENT_QUOTES, 'UTF-8') ?></span></td>
                         </tr>
@@ -141,15 +155,15 @@ $locais = $locaisService->getByTipoNome($cfg['nome'], $search, $pageNum, $perPag
             <nav>
                 <ul class="pagination pagination-sm justify-content-center">
                     <li class="page-item <?= $pageNum <= 1 ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&page_num=<?= $pageNum - 1 ?>&busca=<?= urlencode($search) ?>">Anterior</a>
+                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&regiao_id=<?= (int)$regiaoId ?>&page_num=<?= $pageNum - 1 ?>&busca=<?= urlencode($search) ?>">Anterior</a>
                     </li>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <li class="page-item <?= $i === $pageNum ? 'active' : '' ?>">
-                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&page_num=<?= $i ?>&busca=<?= urlencode($search) ?>"><?= $i ?></a>
+                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&regiao_id=<?= (int)$regiaoId ?>&page_num=<?= $i ?>&busca=<?= urlencode($search) ?>"><?= $i ?></a>
                     </li>
                     <?php endfor; ?>
                     <li class="page-item <?= $pageNum >= $totalPages ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&page_num=<?= $pageNum + 1 ?>&busca=<?= urlencode($search) ?>">Próximo</a>
+                        <a class="page-link" href="?page=listar_tipo&tipo=<?= htmlspecialchars($tipoKey, ENT_QUOTES, 'UTF-8') ?>&regiao_id=<?= (int)$regiaoId ?>&page_num=<?= $pageNum + 1 ?>&busca=<?= urlencode($search) ?>">Próximo</a>
                     </li>
                 </ul>
             </nav>

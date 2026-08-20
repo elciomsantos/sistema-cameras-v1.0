@@ -150,7 +150,7 @@ class LocaisService
         return $result['status'] === 'success' ? $result['data'] : [];
     }
 
-    public function getByTipoNome(string $tipoNome, string $search = '', int $page = 1, int $perPage = 20): array
+    public function getByTipoNome(string $tipoNome, string $search = '', int $page = 1, int $perPage = 20, ?int $regiaoId = null): array
     {
         $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1) AND l.deleted_at IS NULL';
         $params = [$tipoNome];
@@ -163,12 +163,18 @@ class LocaisService
             $params[] = $searchParam;
         }
 
+        if ($regiaoId !== null && $regiaoId > 0) {
+            $where .= ' AND l.regiao_id = ?';
+            $params[] = (int)$regiaoId;
+        }
+
         $offset = ($page - 1) * $perPage;
         $sql = "SELECT l.id, l.nome, l.logradouro, l.bairro, l.cidade, l.uf, l.numero,
-            s.nome as secretaria, s.sigla, tl.nome as tipo_local
+            s.nome as secretaria, s.sigla, tl.nome as tipo_local, r.nome as regiao_nome
         FROM locais l
             LEFT JOIN secretarias s ON l.secretaria_id = s.id
             LEFT JOIN tipos_locais tl ON l.tipo_local_id = tl.id
+            LEFT JOIN regioes r ON l.regiao_id = r.id
         WHERE {$where}
         ORDER BY l.nome
         LIMIT ? OFFSET ?";
@@ -179,7 +185,7 @@ class LocaisService
         return $result['status'] === 'success' ? $result['data'] : [];
     }
 
-    public function countByTipoNome(string $tipoNome, string $search = ''): int
+    public function countByTipoNome(string $tipoNome, string $search = '', ?int $regiaoId = null): int
     {
         $where = 'l.tipo_local_id = (SELECT id FROM tipos_locais WHERE nome = ? LIMIT 1) AND l.deleted_at IS NULL';
         $params = [$tipoNome];
@@ -190,6 +196,11 @@ class LocaisService
             $params[] = $searchParam;
             $params[] = $searchParam;
             $params[] = $searchParam;
+        }
+
+        if ($regiaoId !== null && $regiaoId > 0) {
+            $where .= ' AND l.regiao_id = ?';
+            $params[] = (int)$regiaoId;
         }
 
         $sql = "SELECT COUNT(*) as total FROM locais l WHERE {$where}";

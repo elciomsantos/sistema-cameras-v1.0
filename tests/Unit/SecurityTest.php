@@ -146,6 +146,19 @@ class SecurityTest extends TestCase
         $this->assertFalse($valid);
     }
 
+    public function testCsrfTokenIsValidDoesNotConsume(): void
+    {
+        $_SESSION['csrf_tokens'] = [];
+        $token = getCsrfToken();
+
+        $this->assertTrue(csrfTokenIsValid($token));
+        $this->assertTrue(csrfTokenIsValid($token), 'Token deve continuar válido após verificação (sem consumo)');
+        $this->assertEquals([$token], $_SESSION['csrf_tokens'], 'Pool não pode ser alterado por csrfTokenIsValid');
+
+        $this->assertFalse(csrfTokenIsValid(null));
+        $this->assertFalse(csrfTokenIsValid(str_repeat('x', 64)));
+    }
+
     public function testAccessLevelMapping(): void
     {
         // DB: admin=1, supervisor=2, user=3

@@ -88,6 +88,27 @@ function validateCsrfToken(?string $token): bool
     return false;
 }
 
+/**
+ * Valida o token contra o pool sem consumi-lo.
+ * Usado por endpoints que só renovam estado (ex.: renovar_sessao),
+ * para não invalidar os tokens fixos embutidos nos formulários estáticos.
+ */
+function csrfTokenIsValid(?string $token): bool
+{
+    if (!$token) {
+        return false;
+    }
+
+    $tokens = $_SESSION['csrf_tokens'] ?? [];
+    foreach ($tokens as $t) {
+        if (hash_equals($t, $token)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function rotateCsrfToken(): void
 {
     $tokens = $_SESSION['csrf_tokens'] ?? [];
@@ -115,6 +136,43 @@ function requireApiCsrf(bool $rotate = true): void
     }
 
     $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+
+    // Endpoints que não rotacionam (ex.: renovar_sessao) validam o token sem
+    // consumi-lo. Consumir aqui invalidaria os tokens embutidos nos formulários
+    // estáticos durante a renovação de sessão (disparada a cada load/atividade),
+    // gerando "Token CSRF inválido." em submits concorrentes.
+    if ($rotate === false) {
+        if (!csrfTokenIsValid($token)) {
+            logWarning('Falha na validacao CSRF', [
+                'token_prefix' => substr($token, 0, 16),
+                'session_keys' => array_keys($_SESSION['csrf_tokens'] ?? []),
+                'method' => $_SERVER['REQUEST_METHOD'],
+            ], 'security');
+            http_response_code(422);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => false,
+                'code' => 'VALIDATION_ERROR',
+                'message' => 'Token CSRF invalido ou ausente.',
+                'data' => [],
+                'meta' => [
+                    'timestamp' => date('Y-m-d\TH:i:s\Z'),
+                    'request_id' => \App\Api\ApiResponse::getRequestId()
+                ]
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $tokens = $_SESSION['csrf_tokens'] ?? [];
+        $current = $tokens[array_key_last($tokens)] ?? '';
+        if ($current === '') {
+            $current = bin2hex(random_bytes(CSRF_TOKEN_BYTES));
+            $_SESSION['csrf_tokens'] = [$current];
+        }
+        header('X-CSRF-Token: ' . $current);
+        return;
+    }
+
     if (!validateCsrfToken($token)) {
         logWarning('Falha na validacao CSRF', [
             'token_prefix' => substr($token, 0, 16),

@@ -34,21 +34,46 @@
 
 <script nonce="<?= htmlspecialchars($CSP_NONCE ?? '', ENT_QUOTES, 'UTF-8') ?>">
 (function() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+
+    function syncFormsCsrf() {
+        if (!meta) return;
+        var token = meta.getAttribute('content');
+        if (!token) return;
+        document.querySelectorAll('form input[name="csrf_token"]').forEach(function(input) {
+            input.value = token;
+        });
+    }
+
     var origFetch = window.fetch;
     if (origFetch) {
         window.fetch = function() {
             return origFetch.apply(this, arguments).then(function(response) {
                 var header = response.headers.get('X-CSRF-Token');
-                if (header) {
-                    var meta = document.querySelector('meta[name="csrf-token"]');
+                if (header && /^[a-f0-9]{64}$/i.test(header)) {
                     if (meta) {
                         meta.setAttribute('content', header);
                     }
+                    syncFormsCsrf();
                 }
                 return response;
             });
         };
     }
+
+    // A renovacao de sessao (renovar_sessao) e chamadas API consomem e rotacionam
+    // o token CSRF, invalidando os tokens fixos embutidos nos formularios estaticos.
+    // Sincroniza o token do form submetido com o meta (sempre o mais recente).
+    document.addEventListener('submit', function(event) {
+        var form = event.target;
+        if (!form || form.tagName !== 'FORM') return;
+        var csrfInput = form.querySelector('input[name="csrf_token"]');
+        if (!csrfInput || !meta) return;
+        var token = meta.getAttribute('content');
+        if (token) {
+            csrfInput.value = token;
+        }
+    }, true);
 })();
 
 let timeLeft = <?=

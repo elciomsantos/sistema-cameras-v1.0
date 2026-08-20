@@ -283,14 +283,13 @@ vite_page_js('relatorio-diario');
                                         <input type="hidden" name="registro_id" value="<?= (int)$reg->id ?>">
                                         <input type="hidden" name="data" value="<?= htmlspecialchars($dataSelecionada, ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="turno" value="<?= htmlspecialchars($turnoSelecionado, ENT_QUOTES, 'UTF-8') ?>">
-                                        <select class="form-select form-select-sm" name="situacao" onchange="this.form.submit()" aria-label="Alterar situação">
+                                        <select class="form-select form-select-sm" name="situacao" aria-label="Alterar situação">
                                             <?php foreach ($situacoes as $sit): ?>
                                             <option value="<?= $sit ?>" <?= $reg->situacao === $sit ? 'selected' : '' ?>><?= $sit ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </form>
-                                    <form method="post" action="?page=action_relatorio_diario" class="d-inline"
-                                          onsubmit="return confirm('Excluir este registro?');">
+                                    <form method="post" action="?page=action_relatorio_diario" class="d-inline">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
                                         <input type="hidden" name="acao" value="excluir_registro">
                                         <input type="hidden" name="registro_id" value="<?= (int)$reg->id ?>">

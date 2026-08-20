@@ -60,8 +60,41 @@ import { escapeHtml } from './utils/html';
     });
   }
 
+  function bindMudarSituacao() {
+    document.querySelectorAll<HTMLFormElement>('form[action*="action_relatorio_diario"]').forEach((form) => {
+      const acao = form.querySelector<HTMLInputElement>('input[name="acao"]')?.value;
+      if (acao !== 'mudar_situacao') return;
+
+      const select = form.querySelector<HTMLSelectElement>('select[name="situacao"]');
+      if (!select) return;
+
+      select.addEventListener('change', () => {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      });
+    });
+  }
+
+  function bindExcluirRegistro() {
+    document.querySelectorAll<HTMLFormElement>('form[action*="action_relatorio_diario"]').forEach((form) => {
+      const acao = form.querySelector<HTMLInputElement>('input[name="acao"]')?.value;
+      if (acao !== 'excluir_registro') return;
+
+      form.addEventListener('submit', (event) => {
+        if (!window.confirm('Excluir este registro?')) {
+          event.preventDefault();
+        }
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadEquipamentos();
     bindOsSelect();
+    bindMudarSituacao();
+    bindExcluirRegistro();
   });
 })();

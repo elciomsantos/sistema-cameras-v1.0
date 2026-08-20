@@ -102,6 +102,7 @@ try {
             $texto = trim((string)($_POST['texto'] ?? ''));
             $service->atualizarSituacaoGeral($relatorioId, $texto, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Situação geral salva.';
+            $_SESSION['campo_limpar'] = 'situacao_geral';
             $redirecionar();
 
         case 'passagem_turno':
@@ -112,6 +113,7 @@ try {
             $texto = trim((string)($_POST['texto'] ?? ''));
             $service->atualizarPassagemTurno($relatorioId, $texto, $usuarioId, $secretariaId);
             $_SESSION['sucesso'] = 'Passagem de turno salva.';
+            $_SESSION['campo_limpar'] = 'passagem_turno';
             $redirecionar();
 
         default:

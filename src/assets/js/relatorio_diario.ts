@@ -91,10 +91,18 @@ import { escapeHtml } from './utils/html';
     });
   }
 
+  function limparCampoAposSalvar() {
+    document.querySelectorAll<HTMLTextAreaElement>('textarea[data-limpar]').forEach((el) => {
+      el.value = '';
+      el.removeAttribute('data-limpar');
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadEquipamentos();
     bindOsSelect();
     bindMudarSituacao();
     bindExcluirRegistro();
+    limparCampoAposSalvar();
   });
 })();

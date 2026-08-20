@@ -13,7 +13,8 @@ $secretariaId = ($nivel === 'user') ? getUsuarioSecretariaId() : null;
 
 $sucesso = $_SESSION['sucesso'] ?? '';
 $erro = $_SESSION['erro'] ?? '';
-unset($_SESSION['sucesso'], $_SESSION['erro']);
+$campoLimpar = $_SESSION['campo_limpar'] ?? '';
+unset($_SESSION['sucesso'], $_SESSION['erro'], $_SESSION['campo_limpar']);
 
 $dataSelecionada = trim((string)($_GET['data'] ?? ''));
 $turnoSelecionado = trim((string)($_GET['turno'] ?? ''));
@@ -186,7 +187,7 @@ vite_page_js('relatorio-diario');
                         <input type="hidden" name="relatorio_id" value="<?= (int)$relatorio->id ?>">
                         <label for="situacaoGeral" class="form-label"><i class="fas fa-list-check me-1"></i>Situação geral do turno</label>
                         <textarea class="form-control" id="situacaoGeral" name="texto" rows="2"
-                                  placeholder="Resumo geral do turno..."><?= htmlspecialchars($relatorio->situacao_geral ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                                  placeholder="Resumo geral do turno..."<?= $campoLimpar === 'situacao_geral' ? ' data-limpar="1"' : '' ?>><?= htmlspecialchars($relatorio->situacao_geral ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                         <button type="submit" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="fas fa-save me-1"></i>Salvar situação geral
                         </button>
@@ -199,7 +200,7 @@ vite_page_js('relatorio-diario');
                         <input type="hidden" name="relatorio_id" value="<?= (int)$relatorio->id ?>">
                         <h6 class="text-primary"><i class="fas fa-arrow-right me-1"></i>Passagem para o próximo turno</h6>
                         <textarea class="form-control" id="passagemTurno" name="texto" rows="3"
-                                  placeholder="Informações gerais para o operador do próximo turno..."><?= htmlspecialchars($relatorio->passagem_turno ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+                                  placeholder="Informações gerais para o operador do próximo turno..."<?= $campoLimpar === 'passagem_turno' ? ' data-limpar="1"' : '' ?>><?= htmlspecialchars($relatorio->passagem_turno ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
                         <button type="submit" class="btn btn-primary btn-sm mt-2">
                             <i class="fas fa-paper-plane me-1"></i>Salvar passagem de turno
                         </button>

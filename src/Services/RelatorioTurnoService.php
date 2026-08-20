@@ -425,7 +425,7 @@ class RelatorioTurnoService
             throw ServiceException::notFound('Relatório de turno', $relatorioId);
         }
 
-        $this->autorizarOperacao($relatorio, $usuarioId);
+        $this->autorizarOperacaoRelatorio($relatorio, $usuarioId);
 
         if (mb_strlen($texto) > 10000) {
             throw ServiceException::validation('Passagem de turno não pode exceder 10000 caracteres.');
@@ -456,7 +456,7 @@ class RelatorioTurnoService
             throw ServiceException::notFound('Relatório de turno', $relatorioId);
         }
 
-        $this->autorizarOperacao($relatorio, $usuarioId);
+        $this->autorizarOperacaoRelatorio($relatorio, $usuarioId);
 
         if (mb_strlen($texto) > 10000) {
             throw ServiceException::validation('Situação geral não pode exceder 10000 caracteres.');
@@ -663,6 +663,35 @@ class RelatorioTurnoService
             $exclusao
                 ? 'Você não pode excluir registros de outros operadores.'
                 : 'Você não pode alterar registros de outros operadores.'
+        );
+    }
+
+    /**
+     * Autorização para atualizar situação geral e passagem de turno.
+     *
+     * O relatório do turno atual é um documento compartilhado: qualquer operador
+     * do turno pode preencher esses campos (registros já são compartilhados).
+     * Para relatórios de turnos anteriores mantém-se a restrição de dono/admin.
+     */
+    private function autorizarOperacaoRelatorio(object $relatorio, int $usuarioId): void
+    {
+        $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
+
+        if ((int)($relatorio->operador_id ?? 0) === $usuarioId) {
+            return;
+        }
+
+        if (in_array($nivel, ['admin', 'supervisor'], true)) {
+            return;
+        }
+
+        $atual = $this->turnoAtual();
+        if ($relatorio->data === $atual['data'] && $relatorio->turno === $atual['turno']) {
+            return;
+        }
+
+        throw ServiceException::forbidden(
+            'Você não pode alterar registros de outros operadores.'
         );
     }
 

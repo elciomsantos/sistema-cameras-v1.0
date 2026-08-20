@@ -1,0 +1,181 @@
+- generic [active] [ref=f20e1]:
+  - navigation [ref=f20e2]:
+    - generic [ref=f20e3]:
+      - link " Controle de Cameras" [ref=f20e4] [cursor=pointer]:
+        - /url: "?page=home"
+        - generic [ref=f20e5]: 
+        - text: Controle de Cameras
+      - generic [ref=f20e6]:
+        - list [ref=f20e7]:
+          - listitem [ref=f20e8]:
+            - link " Dashboard" [ref=f20e9] [cursor=pointer]:
+              - /url: "?page=home"
+              - generic [ref=f20e10]: 
+              - text: Dashboard
+          - listitem [ref=f20e11]:
+            - button " Cameras" [ref=f20e12] [cursor=pointer]:
+              - generic [ref=f20e13]: 
+              - text: Cameras
+            - text:  +   
+          - listitem [ref=f20e14]:
+            - button " Alarmes" [ref=f20e15] [cursor=pointer]:
+              - generic [ref=f20e16]: 
+              - text: Alarmes
+            - text:  +   
+        - generic [ref=f20e17]:
+          - button "Ativar modo escuro" [ref=f20e18] [cursor=pointer]:
+            - generic [ref=f20e19]: 
+          - generic [ref=f20e20]:
+            - button " usuario" [ref=f20e21] [cursor=pointer]:
+              - generic [ref=f20e22]: 
+              - strong [ref=f20e23]: usuario
+            - text:    
+  - generic [ref=f20e24]:
+    - generic [ref=f20e25]:
+      - heading " Relatório Diário de Turno" [level=1] [ref=f20e26]:
+        - generic [ref=f20e27]: 
+        - text: Relatório Diário de Turno
+      - link " Dashboard" [ref=f20e28] [cursor=pointer]:
+        - /url: "?page=home"
+        - generic [ref=f20e29]: 
+        - text: Dashboard
+    - alert [ref=f20e30]:
+      - text: Situação geral salva.
+      - button "Fechar" [ref=f20e31] [cursor=pointer]
+    - generic [ref=f20e33]:
+      - generic [ref=f20e34]:
+        - generic [ref=f20e35]: Data
+        - textbox "Data" [ref=f20e36]: 2026-08-20
+      - generic [ref=f20e37]:
+        - generic [ref=f20e38]: Turno
+        - combobox "Turno" [ref=f20e39]:
+          - option "Diurno (07:00 às 19:00)" [selected]
+          - option "Noturno (19:00 às 07:00)"
+      - button " Consultar" [ref=f20e41] [cursor=pointer]:
+        - generic [ref=f20e42]: 
+        - text: Consultar
+      - link " Turno atual" [ref=f20e44] [cursor=pointer]:
+        - /url: "?page=relatorio_diario"
+        - generic [ref=f20e45]: 
+        - text: Turno atual
+    - generic [ref=f20e46]:
+      - generic [ref=f20e47]:
+        - generic [ref=f20e48]:
+          - generic [ref=f20e49]:
+            - heading " Relatório do Turno" [level=5] [ref=f20e50]:
+              - generic [ref=f20e51]: 
+              - text: Relatório do Turno
+            - generic [ref=f20e52]: Turno atual
+          - generic [ref=f20e53]:
+            - generic [ref=f20e54]:
+              - generic [ref=f20e55]:
+                - strong [ref=f20e56]: "Data:"
+                - generic [ref=f20e57]: 20/08/2026
+              - generic [ref=f20e58]:
+                - strong [ref=f20e59]: "Turno:"
+                - generic [ref=f20e60]: DIURNO (07:00:00 às 19:00:00)
+              - generic [ref=f20e61]:
+                - strong [ref=f20e62]: "Operador:"
+                - generic [ref=f20e63]: Administrador
+            - separator [ref=f20e64]
+            - generic [ref=f20e65]:
+              - generic [ref=f20e67]:
+                - generic [ref=f20e68]: "0"
+                - text: Ocorrências
+              - generic [ref=f20e70]:
+                - generic [ref=f20e71]: "0"
+                - text: Resolvidas
+              - generic [ref=f20e73]:
+                - generic [ref=f20e74]: "0"
+                - text: Pendentes
+              - generic [ref=f20e76]:
+                - generic [ref=f20e77]: "0"
+                - text: Em acompanhamento
+            - generic [ref=f20e78]:
+              - generic [ref=f20e79]:
+                - generic [ref=f20e80]: 
+                - text: Situação geral do turno
+              - textbox " Situação geral do turno" [ref=f20e81]:
+                - /placeholder: Resumo geral do turno...
+              - button " Salvar situação geral" [ref=f20e82] [cursor=pointer]:
+                - generic [ref=f20e83]: 
+                - text: Salvar situação geral
+            - generic [ref=f20e84]:
+              - heading " Passagem para o próximo turno" [level=6] [ref=f20e85]:
+                - generic [ref=f20e86]: 
+                - text: Passagem para o próximo turno
+              - textbox "Informações gerais para o operador do próximo turno..." [ref=f20e87]: Passagem salva por usuário comum para o próximo turno
+              - button " Salvar passagem de turno" [ref=f20e88] [cursor=pointer]:
+                - generic [ref=f20e89]: 
+                - text: Salvar passagem de turno
+        - generic [ref=f20e90]:
+          - heading " Registros do Turno" [level=5] [ref=f20e92]:
+            - generic [ref=f20e93]: 
+            - text: Registros do Turno
+          - generic [ref=f20e95]:
+            - generic [ref=f20e96]: 
+            - paragraph [ref=f20e97]: Nenhum registro neste turno ainda.
+        - generic [ref=f20e98]:
+          - heading " Registrar acontecimento" [level=5] [ref=f20e100]:
+            - generic [ref=f20e101]: 
+            - text: Registrar acontecimento
+          - generic [ref=f20e104]:
+            - generic [ref=f20e105]:
+              - generic [ref=f20e106]: Horário
+              - textbox "Horário" [ref=f20e107]: 15:43
+            - generic [ref=f20e108]:
+              - generic [ref=f20e109]: Tipo
+              - combobox "Tipo" [ref=f20e110]:
+                - option "Ocorrência" [selected]
+                - option "Alarme"
+                - option "Câmera"
+                - option "Sistema"
+                - option "Rede"
+                - option "Observação"
+                - option "Outros"
+            - generic [ref=f20e111]:
+              - generic [ref=f20e112]: Situação
+              - combobox "Situação" [ref=f20e113]:
+                - option "Resolvido" [selected]
+                - option "Pendente"
+                - option "Em acompanhamento"
+            - generic [ref=f20e114]:
+              - generic [ref=f20e115]: Prioridade
+              - combobox "Prioridade" [ref=f20e116]:
+                - option "Normal" [selected]
+                - option "Atenção"
+                - option "Urgente"
+            - generic [ref=f20e117]:
+              - generic [ref=f20e118]: Título
+              - textbox "Título" [ref=f20e119]
+            - generic [ref=f20e120]:
+              - generic [ref=f20e121]: Equipamento relacionado
+              - combobox "Equipamento relacionado" [ref=f20e122]:
+                - option "Nenhum" [selected]
+            - generic [ref=f20e123]:
+              - generic [ref=f20e124]: Descrição
+              - textbox "Descrição" [ref=f20e125]
+            - generic [ref=f20e126]:
+              - generic [ref=f20e127]: O.S. relacionada (opcional)
+              - combobox "O.S. relacionada (opcional)" [ref=f20e128]:
+                - option "Nenhuma" [selected]
+            - generic [ref=f20e129]:
+              - generic [ref=f20e130]: Observação
+              - textbox "Observação" [ref=f20e131]
+            - button " Registrar" [ref=f20e133] [cursor=pointer]:
+              - generic [ref=f20e134]: 
+              - text: Registrar
+      - generic [ref=f20e135]:
+        - generic [ref=f20e136]:
+          - heading " Pendências / Em acompanhamento" [level=5] [ref=f20e138]:
+            - generic [ref=f20e139]: 
+            - text: Pendências / Em acompanhamento
+          - paragraph [ref=f20e141]: Nenhuma pendência neste turno.
+        - generic [ref=f20e142]:
+          - heading " Histórico de Turnos" [level=5] [ref=f20e144]:
+            - generic [ref=f20e145]: 
+            - text: Histórico de Turnos
+          - paragraph [ref=f20e148]: Nenhum relatório anterior.
+  - contentinfo [ref=f20e149]:
+    - generic [ref=f20e150]: Sistema de Gerenciamento de Cameras e Alarmes © 2026 - Beta +
+  - text:  

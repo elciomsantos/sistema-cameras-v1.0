@@ -529,23 +529,30 @@ class RelatorioTurnoService
 
         $result = $this->db->query(
             "SELECT 'camera' AS os_tipo, em.id AS os_id,
-                    em.numero_os, em.os_status_id,
+                    em.numero_os, em.os_status_id, st.nome AS os_status_nome,
                     e.id AS equipamento_id, e.patrimonio,
-                    COALESCE(l.nome, CONCAT('EQUIPAMENTO ', e.id)) AS equip_descricao,
-                    em.descricao AS os_descricao
+                    e.ip AS ip_num,
+                    COALESCE(l.nome, CONCAT('EQUIPAMENTO ', e.id)) AS local_nome,
+                    em.descricao AS os_descricao,
+                    em.data_hora AS os_data_hora
              FROM equipamentos_manutencoes em
              JOIN equipamentos e ON e.id = em.equipamento_id
+             JOIN status_os st ON st.id = em.os_status_id
              LEFT JOIN locais l ON l.id = e.local_id
              WHERE {$whereClause}
              UNION ALL
              SELECT 'alarme' AS os_tipo, am.id AS os_id,
-                    am.numero_os, am.os_status_id,
-                    ca.id AS equipamento_id, ca.conta AS patrimonio, ca.local AS equip_descricao,
-                    am.descricao AS os_descricao
+                    am.numero_os, am.os_status_id, st.nome AS os_status_nome,
+                    ca.id AS equipamento_id, NULL AS patrimonio,
+                    ca.ip AS ip_num,
+                    COALESCE(ca.local, CONCAT('ALARME ', ca.id)) AS local_nome,
+                    am.descricao AS os_descricao,
+                    am.data_hora AS os_data_hora
              FROM alarmes_manutencoes am
              JOIN central_alarmes ca ON ca.id = am.alarme_id
+             JOIN status_os st ON st.id = am.os_status_id
              WHERE am.os_status_id IN (1, 2)
-             ORDER BY numero_os ASC
+             ORDER BY os_tipo ASC, numero_os ASC
              LIMIT 200",
             $params
         );

@@ -1,5 +1,6 @@
 <?php
 use App\Services\RelatorioTurnoService;
+use App\Services\UsuarioAnotacaoService;
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../inc/check_access.php';
@@ -18,6 +19,7 @@ if (!isset($_POST['csrf_token']) || !validateCsrfToken($_POST['csrf_token'])) {
 }
 
 $service = new RelatorioTurnoService();
+$anotacaoService = new UsuarioAnotacaoService();
 $usuarioId = (int)($_SESSION['usuario']->id ?? 0);
 $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
 $usuarioSecretariaId = getUsuarioSecretariaId();
@@ -115,6 +117,52 @@ try {
             $_SESSION['sucesso'] = 'Passagem de turno salva.';
             $_SESSION['campo_limpar'] = 'passagem_turno';
             $redirecionar();
+
+        // ====================================================
+        // Anotações pessoais do usuário (privadas, só o dono vê)
+        // ====================================================
+        case 'anotacao_criar':
+            $anotacaoService->criar($_POST, $usuarioId);
+            $_SESSION['sucesso'] = 'Anotação adicionada.';
+            $redirecionar(['anotacoes' => $_POST['anotacoes'] ?? '']);
+
+        case 'anotacao_editar':
+            $anotacaoId = filter_input(INPUT_POST, 'anotacao_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (!$anotacaoId) {
+                throw new RuntimeException('Anotação inválida.');
+            }
+            $anotacaoService->atualizar($anotacaoId, $_POST, $usuarioId);
+            $_SESSION['sucesso'] = 'Anotação atualizada.';
+            $redirecionar(['anotacoes' => $_POST['anotacoes'] ?? '']);
+
+        case 'anotacao_mudar_status':
+            $anotacaoId = filter_input(INPUT_POST, 'anotacao_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (!$anotacaoId) {
+                throw new RuntimeException('Anotação inválida.');
+            }
+            $status = trim((string)($_POST['status'] ?? ''));
+            $anotacaoService->mudarStatus($anotacaoId, $status, $usuarioId);
+            $_SESSION['sucesso'] = 'Status da anotação atualizado.';
+            $redirecionar(['anotacoes' => $_POST['anotacoes'] ?? '']);
+
+        case 'anotacao_arquivar':
+            $anotacaoId = filter_input(INPUT_POST, 'anotacao_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (!$anotacaoId) {
+                throw new RuntimeException('Anotação inválida.');
+            }
+            $arquivar = (int)($_POST['arquivar'] ?? 1) === 1;
+            $anotacaoService->arquivar($anotacaoId, $arquivar, $usuarioId);
+            $_SESSION['sucesso'] = $arquivar ? 'Anotação arquivada.' : 'Anotação reativada.';
+            $redirecionar(['anotacoes' => $_POST['anotacoes'] ?? '']);
+
+        case 'anotacao_excluir':
+            $anotacaoId = filter_input(INPUT_POST, 'anotacao_id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            if (!$anotacaoId) {
+                throw new RuntimeException('Anotação inválida.');
+            }
+            $anotacaoService->excluir($anotacaoId, $usuarioId);
+            $_SESSION['sucesso'] = 'Anotação excluída.';
+            $redirecionar(['anotacoes' => $_POST['anotacoes'] ?? '']);
 
         default:
             throw new RuntimeException('Ação inválida.');

@@ -1,11 +1,13 @@
 <?php
 use App\Services\RelatorioTurnoService;
+use App\Services\UsuarioAnotacaoService;
 
 require_once __DIR__ . '/../inc/check_access.php';
 requererAcesso('user');
 
 $db = db();
 $service = new RelatorioTurnoService($db);
+$anotacaoService = new UsuarioAnotacaoService($db);
 
 $usuarioId = (int)($_SESSION['usuario']->id ?? 0);
 $nivel = resolveUserAccessLevel($_SESSION['usuario'] ?? null);
@@ -59,6 +61,20 @@ $tipos = RelatorioTurnoService::TIPOS;
 $situacoes = RelatorioTurnoService::SITUACOES;
 $prioridades = RelatorioTurnoService::PRIORIDADES;
 
+// Anotações pessoais (privadas do usuário logado)
+$anotacoesStatusLabels = UsuarioAnotacaoService::STATUS;
+$mostrarArquivadas = trim((string)($_GET['anotacoes'] ?? '')) === 'arquivadas';
+$anotacoesAtivas = [];
+$anotacoesArquivadas = [];
+try {
+    $anotacoesAtivas = $anotacaoService->listar($usuarioId, false);
+    if ($mostrarArquivadas) {
+        $anotacoesArquivadas = $anotacaoService->listar($usuarioId, true);
+    }
+} catch (Throwable $e) {
+    logError('[relatorio_diario] falha ao carregar anotações: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+}
+
 vite_page_js('relatorio-diario');
 ?>
 <div class="container mt-4 mb-4 relatorio-diario-page">
@@ -72,9 +88,17 @@ vite_page_js('relatorio-diario');
     </div>
 
     <?php if ($sucesso): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <?= htmlspecialchars($sucesso, ENT_QUOTES, 'UTF-8') ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div class="toast align-items-center text-bg-success border-0 shadow" role="alert"
+             aria-live="assertive" aria-atomic="true" id="sucessoToast">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-check-circle me-2"></i><?= htmlspecialchars($sucesso, ENT_QUOTES, 'UTF-8') ?>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Fechar"></button>
+            </div>
+        </div>
     </div>
     <?php endif; ?>
     <?php if ($erro): ?>
@@ -387,10 +411,15 @@ vite_page_js('relatorio-diario');
                                 <select class="form-select" id="regOs" name="os_id">
                                     <option value="">Nenhuma</option>
                                     <?php foreach ($osDisponiveis as $os): ?>
+                                    <?php
+                                    $osRef = $os->os_tipo === 'alarme'
+                                        ? ('Conta ' . ($os->local_nome ?? $os->patrimonio))
+                                        : ($os->ip_num ?: $os->patrimonio);
+                                    ?>
                                     <option value="<?= (int)$os->os_id ?>" data-os-tipo="<?= htmlspecialchars($os->os_tipo, ENT_QUOTES, 'UTF-8') ?>"
                                             data-numero-os="<?= htmlspecialchars($os->numero_os, ENT_QUOTES, 'UTF-8') ?>">
                                         #<?= htmlspecialchars($os->numero_os ?: ('OS-' . (int)$os->os_id), ENT_QUOTES, 'UTF-8') ?>
-                                        — <?= htmlspecialchars(trim(($os->patrimonio ?? '') . ' ' . ($os->equip_descricao ?? '')), ENT_QUOTES, 'UTF-8') ?: 'Equipamento' ?>
+                                        — <?= htmlspecialchars((string)$osRef, ENT_QUOTES, 'UTF-8') ?: 'Equipamento' ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -414,6 +443,66 @@ vite_page_js('relatorio-diario');
         </div>
 
         <div class="col-lg-4">
+            <!-- O.S. de manutenção em aberto (câmeras e alarmes) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>O.S. de Manutenção em Aberto</h5>
+                </div>
+                <div class="card-body py-2">
+                    <?php
+                    $osCameras = array_values(array_filter($osDisponiveis, fn($os) => $os->os_tipo === 'camera'));
+                    $osAlarmes = array_values(array_filter($osDisponiveis, fn($os) => $os->os_tipo === 'alarme'));
+                    $totalOsAbertas = count($osCameras) + count($osAlarmes);
+                    ?>
+                    <?php if ($totalOsAbertas === 0): ?>
+                    <p class="text-muted small mb-0">Nenhuma O.S. de manutenção em aberto.</p>
+                    <?php else: ?>
+                        <?php if (!empty($osCameras)): ?>
+                        <div class="small fw-bold text-uppercase text-muted mt-1 mb-1">
+                            <i class="fas fa-video me-1"></i>Câmeras (<?= count($osCameras) ?>)
+                        </div>
+                        <div class="list-group list-group-flush mb-2">
+                            <?php foreach ($osCameras as $os): ?>
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <div class="min-w-0">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary">#<?= htmlspecialchars($os->numero_os ?: ('OS-' . (int)$os->os_id), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="badge bg-dark-subtle text-capitalize"><?= htmlspecialchars($os->os_status_nome ?? 'aberta', ENT_QUOTES, 'UTF-8') ?></span>
+                                        <div class="small mt-1">
+                                            <i class="fas fa-network-wired me-1 text-muted"></i><?= htmlspecialchars($os->ip_num ?: ($os->patrimonio ?? 'Sem IP'), ENT_QUOTES, 'UTF-8') ?>
+                                            <?php if ($os->local_nome): ?><span class="text-muted">— <?= htmlspecialchars($os->local_nome, ENT_QUOTES, 'UTF-8') ?></span><?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($osAlarmes)): ?>
+                        <div class="small fw-bold text-uppercase text-muted mt-1 mb-1">
+                            <i class="fas fa-bell me-1"></i>Alarmes (<?= count($osAlarmes) ?>)
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($osAlarmes as $os): ?>
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center gap-2">
+                                    <div class="min-w-0">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary">#<?= htmlspecialchars($os->numero_os ?: ('OS-' . (int)$os->os_id), ENT_QUOTES, 'UTF-8') ?></span>
+                                        <span class="badge bg-dark-subtle text-capitalize"><?= htmlspecialchars($os->os_status_nome ?? 'aberta', ENT_QUOTES, 'UTF-8') ?></span>
+                                        <div class="small mt-1">
+                                            <i class="fas fa-hashtag me-1 text-muted"></i><?= htmlspecialchars($os->local_nome ?: ($os->patrimonio ?? 'Conta'), ENT_QUOTES, 'UTF-8') ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Pendências para continuidade -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-warning-subtle">
@@ -484,6 +573,177 @@ vite_page_js('relatorio-diario');
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Minhas Anotações (privadas do usuário logado) -->
+            <div class="card shadow-sm mb-4 usuario-anotacoes-card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note me-2"></i>Minhas Anotações</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-secondary text-uppercase small">Privado</span>
+                        <a href="?page=relatorio_diario<?= !$mostrarArquivadas ? '&anotacoes=arquivadas' : '' ?>"
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-archive me-1"></i><?= $mostrarArquivadas ? 'Ativas' : 'Arquivadas' ?>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Form nova anotação -->
+                    <form method="post" action="?page=action_relatorio_diario" class="mb-3"
+                          data-anotacao-form="nova">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="acao" value="anotacao_criar">
+                        <input type="hidden" name="anotacoes" value="<?= $mostrarArquivadas ? 'arquivadas' : '' ?>">
+                        <label for="anotacaoTitulo" class="form-label">Nova anotação</label>
+                        <input type="text" class="form-control form-control-sm mb-2" id="anotacaoTitulo"
+                               name="titulo" maxlength="150" placeholder="Título" required>
+                        <textarea class="form-control form-control-sm mb-2" id="anotacaoTexto"
+                                  name="texto" rows="2" maxlength="10000" placeholder="Escreva sua anotação..."></textarea>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i>Adicionar
+                        </button>
+                    </form>
+
+                    <?php if ($mostrarArquivadas): ?>
+                        <?php if (empty($anotacoesArquivadas)): ?>
+                        <p class="text-muted small mb-0">Nenhuma anotação arquivada.</p>
+                        <?php else: ?>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($anotacoesArquivadas as $a): ?>
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                            <span class="badge bg-secondary">Arquivada</span>
+                                            <strong><?= htmlspecialchars($a->titulo, ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <?php if ($a->texto): ?>
+                                        <p class="mb-1 small"><?= nl2br(htmlspecialchars($a->texto, ENT_QUOTES, 'UTF-8')) ?></p>
+                                        <?php endif; ?>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i><?= date('d/m/Y H:i', strtotime($a->updated_at)) ?>
+                                        </small>
+                                    </div>
+                                    <div class="d-flex gap-1 flex-shrink-0">
+                                        <form method="post" action="?page=action_relatorio_diario" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                                            <input type="hidden" name="acao" value="anotacao_arquivar">
+                                            <input type="hidden" name="anotacao_id" value="<?= (int)$a->id ?>">
+                                            <input type="hidden" name="arquivar" value="0">
+                                            <input type="hidden" name="anotacoes" value="arquivadas">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Reativar">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>
+                                        <form method="post" action="?page=action_relatorio_diario" class="d-inline" data-confirm="Excluir esta anotação permanentemente?">
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                                            <input type="hidden" name="acao" value="anotacao_excluir">
+                                            <input type="hidden" name="anotacao_id" value="<?= (int)$a->id ?>">
+                                            <input type="hidden" name="anotacoes" value="arquivadas">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <?php if (empty($anotacoesAtivas)): ?>
+                        <p class="text-muted small mb-0">Nenhuma anotação ainda. Use para registrar lembretes e tarefas pessoais.</p>
+                        <?php else: ?>
+                        <div class="list-group list-group-flush">
+                            <?php foreach ($anotacoesAtivas as $a): ?>
+                            <?php
+                            $badgeStatus = match ($a->status) {
+                                'em_andamento' => 'bg-info text-dark',
+                                'realizada' => 'bg-success',
+                                default => 'bg-warning text-dark',
+                            };
+                            ?>
+                            <div class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                            <span class="badge <?= $badgeStatus ?> text-capitalize"><?= htmlspecialchars(str_replace('_', ' ', $a->status), ENT_QUOTES, 'UTF-8') ?></span>
+                                            <strong><?= htmlspecialchars($a->titulo, ENT_QUOTES, 'UTF-8') ?></strong>
+                                        </div>
+                                        <?php if ($a->texto): ?>
+                                        <p class="mb-1 small"><?= nl2br(htmlspecialchars($a->texto, ENT_QUOTES, 'UTF-8')) ?></p>
+                                        <?php endif; ?>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i><?= date('d/m/Y H:i', strtotime($a->updated_at)) ?>
+                                        </small>
+                                    </div>
+                                    <div class="d-flex flex-column gap-1 flex-shrink-0 align-items-end">
+                                        <form method="post" action="?page=action_relatorio_diario" class="d-inline" data-anotacao-status>
+                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                                            <input type="hidden" name="acao" value="anotacao_mudar_status">
+                                            <input type="hidden" name="anotacao_id" value="<?= (int)$a->id ?>">
+                                            <select class="form-select form-select-sm anotacao-status-select" name="status" aria-label="Alterar status">
+                                                <?php foreach ($anotacoesStatusLabels as $status): ?>
+                                                <option value="<?= $status ?>" <?= $a->status === $status ? 'selected' : '' ?>><?= ucfirst(str_replace('_', ' ', $status)) ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </form>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" title="Editar"
+                                                    data-anotacao-editar
+                                                    data-id="<?= (int)$a->id ?>"
+                                                    data-titulo="<?= htmlspecialchars($a->titulo, ENT_QUOTES, 'UTF-8') ?>"
+                                                    data-texto="<?= htmlspecialchars($a->texto ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="post" action="?page=action_relatorio_diario" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                                                <input type="hidden" name="acao" value="anotacao_arquivar">
+                                                <input type="hidden" name="anotacao_id" value="<?= (int)$a->id ?>">
+                                                <input type="hidden" name="arquivar" value="1">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Arquivar">
+                                                    <i class="fas fa-archive"></i>
+                                                </button>
+                                            </form>
+                                            <form method="post" action="?page=action_relatorio_diario" class="d-inline" data-confirm="Excluir esta anotação?">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                                                <input type="hidden" name="acao" value="anotacao_excluir">
+                                                <input type="hidden" name="anotacao_id" value="<?= (int)$a->id ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <!-- Form editar anotação (preenchido via JS) -->
+                    <form method="post" action="?page=action_relatorio_diario" class="d-none mt-3 border-top pt-3"
+                          id="formEditarAnotacao" data-anotacao-form="editar">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(getCsrfToken(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="acao" value="anotacao_editar">
+                        <input type="hidden" name="anotacao_id" id="editarAnotacaoId" value="">
+                        <input type="hidden" name="anotacoes" value="<?= $mostrarArquivadas ? 'arquivadas' : '' ?>">
+                        <label class="form-label"><i class="fas fa-edit me-1"></i>Editar anotação</label>
+                        <input type="text" class="form-control form-control-sm mb-2" id="editarAnotacaoTitulo"
+                               name="titulo" maxlength="150" placeholder="Título" required>
+                        <textarea class="form-control form-control-sm mb-2" id="editarAnotacaoTexto"
+                                  name="texto" rows="2" maxlength="10000" placeholder="Escreva sua anotação..."></textarea>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-save me-1"></i>Salvar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCancelarEditarAnotacao">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

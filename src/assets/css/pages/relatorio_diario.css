@@ -6,3 +6,11 @@
     width: auto;
     min-width: 140px;
 }
+.usuario-anotacoes-card .anotacao-status-select {
+    width: auto;
+    min-width: 150px;
+}
+
+.usuario-anotacoes-card .list-group-item {
+    border-color: rgba(0, 0, 0, 0.06);
+}

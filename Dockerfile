@@ -52,12 +52,11 @@ RUN echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/memory.ini \
     && echo "apc.enabled=1" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "apc.shm_size=32M" >> /usr/local/etc/php/conf.d/opcache.ini
 
-# Apache: ouvir na 8090 (dev) para evitar conflito com servicos do WSL2 na 8080,
+# Apache: ouvir na 80 (network_mode: host no compose)
 # DocumentRoot em /var/www/html/public.
-# NOTA: para producao (target=prod), o Dockerfile.nginx separado usa 8080.
-RUN sed -i 's/Listen 80/Listen 8090/' /etc/apache2/ports.conf \
-    && a2dissite 000-default \
-    && printf '<VirtualHost *:8090>\n\
+RUN a2dissite 000-default \
+    && printf '<VirtualHost *:80>\n\
+    ServerName sistema-cameras.local\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
         Options -Indexes +FollowSymLinks\n\
@@ -69,10 +68,10 @@ RUN sed -i 's/Listen 80/Listen 8090/' /etc/apache2/ports.conf \
 
 WORKDIR /var/www/html
 
-EXPOSE 8090
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl -sf http://localhost:8090/ || exit 1
+    CMD curl -sf http://localhost:80/ || exit 1
 
 
 # ============================================

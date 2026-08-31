@@ -98,6 +98,61 @@ import { escapeHtml } from './utils/html';
     });
   }
 
+  // ---- Minhas Anotações (privadas do usuário) ----
+  function bindConfirmForms() {
+    document.querySelectorAll<HTMLFormElement>('form[data-confirm]').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        const msg = form.getAttribute('data-confirm') || 'Tem certeza?';
+        if (!window.confirm(msg)) {
+          event.preventDefault();
+        }
+      });
+    });
+  }
+
+  function bindAnotacaoStatus() {
+    document.querySelectorAll<HTMLFormElement>('form[data-anotacao-status]').forEach((form) => {
+      const select = form.querySelector<HTMLSelectElement>('select[name="status"]');
+      if (!select) return;
+      select.addEventListener('change', () => {
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+      });
+    });
+  }
+
+  function bindAnotacaoEditar() {
+    const editForm = document.getElementById('formEditarAnotacao') as HTMLFormElement | null;
+    const idInput = document.getElementById('editarAnotacaoId') as HTMLInputElement | null;
+    const tituloInput = document.getElementById('editarAnotacaoTitulo') as HTMLInputElement | null;
+    const textoInput = document.getElementById('editarAnotacaoTexto') as HTMLTextAreaElement | null;
+    const cancelBtn = document.getElementById('btnCancelarEditarAnotacao') as HTMLButtonElement | null;
+    if (!editForm || !idInput || !tituloInput || !textoInput) return;
+
+    document.querySelectorAll<HTMLElement>('[data-anotacao-editar]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        idInput.value = btn.getAttribute('data-id') || '';
+        tituloInput.value = btn.getAttribute('data-titulo') || '';
+        textoInput.value = btn.getAttribute('data-texto') || '';
+        editForm.classList.remove('d-none');
+        tituloInput.focus();
+        editForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+
+    const esconderForm = () => {
+      editForm.classList.add('d-none');
+      idInput.value = '';
+      tituloInput.value = '';
+      textoInput.value = '';
+    };
+
+    cancelBtn?.addEventListener('click', esconderForm);
+  }
+
   function bindListaComHifen() {
     ['situacaoGeral', 'passagemTurno'].forEach((id) => {
       const ta = document.getElementById(id) as HTMLTextAreaElement | null;
@@ -118,6 +173,14 @@ import { escapeHtml } from './utils/html';
     });
   }
 
+  function showSucessoToast() {
+    const toastEl = document.getElementById('sucessoToast');
+    if (!toastEl || typeof window.bootstrap === 'undefined' || !window.bootstrap.Toast) return;
+    const toast = new window.bootstrap.Toast(toastEl, { delay: 5000 });
+    toast.show();
+    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     loadEquipamentos();
     bindOsSelect();
@@ -125,5 +188,9 @@ import { escapeHtml } from './utils/html';
     bindExcluirRegistro();
     limparCampoAposSalvar();
     bindListaComHifen();
+    bindConfirmForms();
+    bindAnotacaoStatus();
+    bindAnotacaoEditar();
+    showSucessoToast();
   });
 })();

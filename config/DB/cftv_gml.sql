@@ -1,6 +1,8 @@
 
-DROP DATABASE IF EXISTS cftv_gml;
-CREATE DATABASE cftv_gml
+-- DROP DATABASE IF EXISTS cftv_gml;
+-- O MySQL ja cria o banco MYSQL_DATABASE antes dos scripts-init; manter
+-- IF NOT EXISTS mantem o script nao-destrutivo e sem erros em volume novo.
+CREATE DATABASE IF NOT EXISTS cftv_gml
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 USE cftv_gml;

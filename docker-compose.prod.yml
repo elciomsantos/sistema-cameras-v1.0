@@ -51,14 +51,16 @@ services:
         max-file: "5"
 
   app:
+    # Imagem do registry GHCR (build no CD) OU build local.
+    image: ghcr.io/${GITHUB_REPOSITORY:-elciomsantos/sistema-cameras-v1.0}:${APP_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.nginx
-    # Alternativa: usar imagem de registry pre-compilada
-    # image: ghcr.io/${GITHUB_REPOSITORY:-ghostterminals/sistema-cameras-v1.0}:${APP_TAG:-latest}
     restart: unless-stopped
     ports:
+      # HTTP (redirect 301 -> HTTPS) e HTTPS (TLS na 8443 interno -> 443 publico)
       - "${APP_PORT:-80}:8080"
+      - "${APP_HTTPS_PORT:-443}:8443"
     environment:
       CAMERAS_ENV: production
       DB_HOST: db
@@ -71,11 +73,14 @@ services:
       CAMERAS_SESSION_ABSOLUTE_TIMEOUT: 28800
       CAMERAS_CSP_ALLOW_INLINE_STYLES: 0
       SENTRY_DSN: ${SENTRY_DSN:-}
-      # Confiar no proxy Nginx (container app) para headers X-Forwarded-For
-      PROXY_TRUSTED_IPS: "127.0.0.1"
+      # Confiar no proxy Nginx (container app) para headers X-Forwarded-For.
+      # Defina em .env para listar os IPs reais dos load balancers (vazio = nenhum).
+      PROXY_TRUSTED_IPS: ${PROXY_TRUSTED_IPS:-}
     volumes:
       - app_storage:/var/www/html/storage
       - app_uploads:/var/www/html/public/uploads
+      # Certificados TLS (self-signed gerado no entrypoint; CA interna via docker cp)
+      - nginx_certs:/etc/nginx/certs
     depends_on:
       db:
         condition: service_healthy
@@ -115,3 +120,4 @@ volumes:
   mysql_data:
   app_storage:
   app_uploads:
+  nginx_certs:

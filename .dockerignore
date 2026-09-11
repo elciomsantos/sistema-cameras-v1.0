@@ -1,8 +1,14 @@
 .git
 .gitignore
 .env
+.env.*
+!.env.prod.example
+Dockerfile
+Dockerfile.*
+!.dockerignore
 node_modules
 vendor
+dist
 storage/ratelimit
 storage/cep_cache
 public/uploads
@@ -11,3 +17,4 @@ docs
 *.md
 .DS_Store
 Thumbs.db
+.github

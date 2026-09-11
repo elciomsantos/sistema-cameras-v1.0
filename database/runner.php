@@ -75,8 +75,12 @@ function getAppliedMigrations(PDO $pdo): array
 {
     $stmt = $pdo->query("SELECT filename FROM migrations ORDER BY executed_at");
     $applied = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $applied[] = $row['filename'];
+    try {
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $applied[] = $row['filename'];
+        }
+    } finally {
+        $stmt->closeCursor();
     }
     return $applied;
 }

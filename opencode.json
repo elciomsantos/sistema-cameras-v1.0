@@ -13,7 +13,7 @@
         "npx",
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "/home/urubu/projects"
+        "/home/corvo/projects"
       ]
     },
 

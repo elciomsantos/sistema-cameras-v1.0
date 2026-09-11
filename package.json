@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^22.11.0 || ^24.11.0 || >=26.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/copy-assets.js",

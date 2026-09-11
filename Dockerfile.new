@@ -14,7 +14,7 @@
 # ============================================
 # Stage base — dependencias de sistema + extensões PHP + Apache
 #============================================
-FROM php:8.4-apache AS base
+FROM php:8.5-apache AS base
 
 LABEL org.opencontainers.image.source="https://github.com/elciomsantos/sistema-cameras-v1.0"
 LABEL org.opencontainers.image.description="Sistema de Gerenciamento de Cameras e Alarmes"

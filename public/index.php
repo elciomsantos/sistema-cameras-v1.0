@@ -44,13 +44,13 @@ $cspNonce = rtrim(strtr(base64_encode(random_bytes(16)), '+/', '-_'), '=');
 $CSP_NONCE = $cspNonce;
 
 $cspPolicy = "default-src 'self'; "
-    . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
-    . "style-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
-    . "style-src-elem 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net; "
+    . "script-src 'self' 'nonce-{$cspNonce}'; "
+    . "style-src 'self' 'nonce-{$cspNonce}'; "
+    . "style-src-elem 'self' 'nonce-{$cspNonce}'; "
     . "style-src-attr 'none'; "
     . "img-src 'self' data: blob:; "
-    . "font-src 'self' data: https://cdnjs.cloudflare.com; "
-    . "connect-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://code.jquery.com https://cdn.datatables.net; "
+    . "font-src 'self' data:; "
+    . "connect-src 'self'; "
     . "frame-ancestors 'self'; "
     . "object-src 'none'; "
     . "base-uri 'self'; "

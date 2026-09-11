@@ -18,8 +18,6 @@ if (session_status() === PHP_SESSION_NONE) {
         ini_set('session.use_strict_mode', '1');
         ini_set('session.cookie_httponly', '1');
         ini_set('session.cookie_samesite', 'Strict');
-        ini_set('session.sid_length', '48');
-        ini_set('session.sid_bits_per_character', '6');
         $secureCookie = (bool)(strpos($_SERVER['HTTPS'] ?? '', 'on') === 0 || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443);
         ini_set('session.cookie_secure', $secureCookie ? '1' : '0');
         session_set_cookie_params([
@@ -209,9 +207,7 @@ function requireApiCsrf(bool $rotate = true): void
     unset($validations[$token]);
     $_SESSION['csrf_token_validations'] = $validations;
 
-    if ($rotate) {
-        rotateCsrfToken();
-    }
+    rotateCsrfToken();
 
     $tokens = $_SESSION['csrf_tokens'] ?? [];
     if (empty($tokens)) {

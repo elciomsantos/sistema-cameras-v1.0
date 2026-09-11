@@ -56,8 +56,6 @@ function configureSessionSecurity(): void
     ini_set('session.use_strict_mode', '1');
     ini_set('session.cookie_httponly', '1');
     ini_set('session.cookie_samesite', 'Strict');
-    ini_set('session.sid_length', '48');
-    ini_set('session.sid_bits_per_character', '6');
 
     $secureCookie = isHttpsRequest();
     ini_set('session.cookie_secure', $secureCookie ? '1' : '0');

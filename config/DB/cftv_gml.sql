@@ -85,10 +85,12 @@ CREATE INDEX idx_usuarios_secretaria ON usuarios(secretaria_id);
 CREATE INDEX idx_usuarios_deleted ON usuarios(deleted_at);
 
 -- Senhas padrao (seed): admin / admin@123, supervisor / admin@123, usuario / admin@123
-INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, secretaria_id) VALUES
-('Administrador', 'admin', 'admin@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 1, 1),
-('Supervisor', 'supervisor', 'supervisor@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 2, 1),
-('Usuario Padrao', 'usuario', 'usuario@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 3, 1);
+-- IMPORTANTE: senha_temporaria = 1 força a troca de senha no primeiro login.
+-- Apos o primeiro acesso de cada conta, troque a senha imediatamente.
+INSERT INTO usuarios (nome, usuario, email, senha, nivel_acesso_id, secretaria_id, senha_temporaria) VALUES
+('Administrador', 'admin', 'admin@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 1, 1, 1),
+('Supervisor', 'supervisor', 'supervisor@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 2, 1, 1),
+('Usuario Padrao', 'usuario', 'usuario@sistema.local', '$2y$12$3.lPsNIBYzzIJ3ZqVIOtAOZ47d/qo4qf2CtBnrb9bVAIj8axwUBlK', 3, 1, 1);
 
 -- =====================================================
 -- SESSAO UNICA POR USUARIO

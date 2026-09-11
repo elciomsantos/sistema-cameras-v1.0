@@ -4,6 +4,7 @@
 .env.*
 !.env.example
 !.env.docker
+!.env.prod.example
 
 # OS
 .DS_Store
